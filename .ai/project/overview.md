@@ -1,0 +1,70 @@
+Fashion-Ananas là website bán giày, quần áo, phụ kiện và thời trang nam, nữ.
+
+Người dùng có thể:
+- xem sản phẩm
+- thêm vào giỏ hàng
+- checkout
+- thanh toán
+- đặt hàng
+- đánh giá sản phẩm
+- bình luận sản phẩm
+- tìm kiếm sản phẩm
+- lọc sản phẩm
+- xem lịch sử mua hàng
+- xem thông tin cá nhân
+- xem thông tin đơn hàng
+- xem thông tin thanh toán
+- xem thông tin vận chuyển
+- xem thông tin sản phẩm
+- xem thông tin danh mục
+- xem thông tin thương hiệu
+- xem thông tin voucher
+- đăng nhập
+- đăng ký
+- quên mật khẩu
+- đặt lại mật khẩu
+- thay đổi mật khẩu
+- thay đổi thông tin cá nhân
+- thay đổi thông tin đơn hàng
+- thay đổi thông tin thanh toán
+- thay đổi thông tin vận chuyển
+- thay đổi thông tin sản phẩm
+- thay đổi thông tin danh mục
+- thay đổi thông tin thương hiệu
+- thay đổi thông tin voucher
+- thêm sản phẩm vào danh sách yêu thích
+- thêm sản phẩm vào danh sách so sánh
+- thêm sản phẩm vào danh sách mua sau
+- thêm sản phẩm vào danh sách quan tâm
+- thêm sản phẩm vào danh sách yêu thích
+- thêm sản phẩm vào danh sách so sánh
+- thêm sản phẩm vào danh sách mua sau
+- thêm sản phẩm vào danh sách quan tâm
+- thêm sản phẩm vào danh sách yêu thích
+- thêm sản phẩm vào danh sách so sánh
+- thêm sản phẩm vào danh sách mua sau
+- thêm sản phẩm vào danh sách quan tâm
+- thêm sản phẩm vào danh sách yêu thích
+- thêm sản phẩm vào danh sách so sánh
+- thêm sản phẩm vào danh sách mua sau
+- thêm sản phẩm vào danh sách quan tâm
+- thêm sản phẩm vào danh sách yêu thích
+- thêm sản phẩm vào danh sách so sánh
+- thêm sản phẩm vào danh sách mua sau
+- thêm sản phẩm vào danh sách quan tâm
+- thêm sản phẩm vào danh sách yêu thích
+- thêm sản phẩm vào danh sách so sánh
+- thêm sản phẩm vào danh sách mua sau
+- thêm sản phẩm vào danh sách quan tâm
+- thêm sản phẩm vào danh sách yêu thích
+- thêm sản phẩm vào danh sách so sánh
+- thêm sản phẩm vào danh sách mua sau
+- thêm sản phẩm vào danh sách quan tâm
+
+Admin có thể:
+- quản lý sản phẩm
+- quản lý đơn hàng
+- quản lý người dùng
+- quản lý danh mục
+- quản lý thương hiệu
+- quản lý voucher
