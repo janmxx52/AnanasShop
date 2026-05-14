@@ -136,8 +136,8 @@
 ### Dashboard
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/admin/dashboard/stats` | Thống kê tổng quan |
-| GET | `/api/admin/dashboard/revenue` | Doanh thu theo thời gian |
+| GET | `/api/admin/dashboard/stats` | Thống kê tổng quan (phase hiện tại implement endpoint này) |
+| GET | `/api/admin/dashboard/revenue` | Doanh thu theo thời gian (ngoài scope phase hiện tại) |
 
 ---
 

@@ -349,3 +349,64 @@ Tra cứu hoạt động cho:
 - user orders
 
 Không yêu cầu đăng nhập.
+
+---
+
+## 11. Admin Dashboard Stats
+
+### Security
+
+- Chỉ admin được truy cập endpoint dashboard stats.
+- Bắt buộc middleware: `auth:sanctum` + `role:admin`.
+
+### Endpoint scope
+
+- Dùng route hiện có: `GET /api/admin/dashboard/stats`.
+- Không implement `GET /api/admin/dashboard/revenue` trong phase này nếu ngoài scope.
+- Không làm frontend dashboard/chart phức tạp.
+
+### Metrics rules
+
+- `total_revenue`:
+  - Tính `SUM(orders.total)` với điều kiện:
+    - `orders.status = delivered`
+    - `orders.payment_status = paid`
+  - Không tính `cancelled`, `pending`, `processing`, `shipping`, `returned`.
+- Order counts:
+  - `total_orders`: tất cả orders
+  - `pending_orders`: `status = pending`
+  - `cancelled_orders`: `status = cancelled`
+  - `delivered_orders`: `status = delivered`
+- Stock:
+  - `low_stock_variants`: `stock > 0 AND stock <= 5`
+  - `out_of_stock_variants`: `stock = 0`
+- Reviews:
+  - `total_reviews`: chỉ tính review `is_approved = true`
+  - `average_rating`: `AVG(rating)` của review `is_approved = true`
+  - Nếu không có review => `average_rating = 0`
+- Users/Products:
+  - `total_users`: không tính soft-deleted users (nếu User có SoftDeletes)
+  - `total_products`: không tính soft-deleted products
+  - Product `is_active = false` vẫn tính vào `total_products`
+- `recent_orders`:
+  - limit = 5
+  - sort `created_at DESC`
+  - Chỉ trả field:
+    - `order_code`
+    - `status`
+    - `payment_status`
+    - `total`
+    - `created_at`
+    - `customer_name` (nếu có snapshot)
+- `top_selling_products`:
+  - limit = 5
+  - tính theo `SUM(order_items.quantity)`
+  - chỉ tính order_items thuộc orders:
+    - `status = delivered`
+    - `payment_status = paid`
+  - bỏ qua `order_items.product_id = null`
+  - trả:
+    - `product_id`
+    - `product_name`
+    - `total_sold`
+    - `revenue`

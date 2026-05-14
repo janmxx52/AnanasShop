@@ -70,10 +70,10 @@
 - [x] Feature tests cho Product Public API pass
 
 ### Test Status
+- ### Test Status
 - [x] `php artisan test` pass
-- [x] 109 tests passed
-- [x] 425 assertions passed
-
+- [x] 152 tests passed
+- [x] 591 assertions passed
 
 ### Admin Catalog — Initial (Category & Brand)
 - [x] Admin `CategoryController` and `BrandController` (basic CRUD)
@@ -278,6 +278,46 @@
 - [x] Chốt upload ảnh review qua `CloudinaryService`, tối đa 3 ảnh/review
 - [x] Chốt cleanup ảnh đã upload nếu tạo review fail (khi service hỗ trợ delete)
 
+### Admin Dashboard Stats API (Analysis & Decisions)
+- [x] Chốt `total_revenue` = `SUM(orders.total)` với `status=delivered` và `payment_status=paid`
+- [x] Chốt order counts gồm `total_orders`, `pending_orders`, `cancelled_orders`, `delivered_orders`
+- [x] Chốt stock metrics:
+  - `low_stock_variants`: `stock > 0 AND stock <= 5`
+  - `out_of_stock_variants`: `stock = 0`
+- [x] Chốt reviews metrics:
+  - `total_reviews`: chỉ `is_approved=true`
+  - `average_rating`: AVG approved reviews, không có review thì = `0`
+- [x] Chốt users/products:
+  - không tính soft-deleted users/products
+  - vẫn tính product `is_active=false` vào `total_products`
+- [x] Chốt `recent_orders`:
+  - limit `5`, sort `created_at DESC`
+  - chỉ trả `order_code`, `status`, `payment_status`, `total`, `created_at`, `customer_name`
+- [x] Chốt `top_selling_products`:
+  - limit `5`
+  - theo `SUM(order_items.quantity)`
+  - chỉ tính orders delivered + paid
+  - bỏ `order_items.product_id = null`
+  - trả `product_id`, `product_name`, `total_sold`, `revenue`
+- [x] Chốt route dùng `GET /api/admin/dashboard/stats` với middleware `auth:sanctum + role:admin`
+- [x] Chốt không implement `/api/admin/dashboard/revenue` trong phase hiện tại nếu ngoài scope
+### Admin Dashboard Stats API
+- [x] Guest cannot access dashboard stats
+- [x] Customer cannot access dashboard stats
+- [x] Admin can view dashboard stats
+- [x] Response has expected keys
+- [x] Total revenue counts only delivered and paid orders
+- [x] Pending/cancelled/delivered order counts are correct
+- [x] Low stock variants calculated correctly
+- [x] Out of stock variants calculated correctly
+- [x] Total reviews counts only approved reviews
+- [x] Average rating calculates only approved reviews
+- [x] Average rating is zero when no reviews
+- [x] Recent orders limited to five
+- [x] Recent orders does not expose unnecessary PII
+- [x] Top selling products calculated by quantity from delivered/paid orders
+- [x] Top selling products ignores order_items with null product_id
+- [x] Feature tests cho Dashboard Stats pass
 ## 📋 Upcoming — Do not work yet
 
 ### Payments
