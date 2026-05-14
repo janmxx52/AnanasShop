@@ -71,8 +71,8 @@
 
 ### Test Status
 - [x] `php artisan test` pass
-- [x] 41 tests passed
-- [x] 179 assertions passed
+- [x] 49 tests passed
+- [x] 211 assertions passed
 
 
 ### Admin Catalog — Initial (Category & Brand)
@@ -147,7 +147,6 @@
 - [x] Feature tests cho Admin Product Image pass
 ---
 
-## 🔄 Current Focus
 
 ### Cart API
 - [x] Guest cart
@@ -159,21 +158,46 @@
 - [x] Clear cart
 - [x] Same variant sums quantity
 - [x] Quantity cannot exceed variant stock
+- [x] Cannot add inactive product variant
+- [x] Merge skips inactive product and returns warning
 - [x] Cart response calculates price real-time
 - [x] Feature tests cho Cart API pass
 
-### Voucher
-- [ ] Voucher apply
-- [ ] Voucher validation
-- [ ] Voucher usage tracking
-- [ ] Voucher tests
+### Voucher API
+- [x] Admin Voucher CRUD
+- [x] Guest can check valid voucher
+- [x] User can check valid voucher
+- [x] Invalid code returns error
+- [x] Min order amount enforced
+- [x] Percent max_discount enforced
+- [x] Fixed discount calculated correctly
+- [x] Usage limit enforced
+- [x] Usage per user enforced
+- [x] Checking voucher does not mutate used_count
+- [x] Checking voucher does not create voucher_usages
+- [x] Feature tests cho Voucher API pass
 
-### Orders
-- [ ] Checkout
-- [ ] Order status flow
-- [ ] Order lookup
-- [ ] Order tests
 
+## 🔄 Current Focus
+
+### Order & Checkout API
+
+- [ ] Create order from cart
+- [ ] Guest checkout
+- [ ] Authenticated user checkout
+- [ ] Validate cart is not empty
+- [ ] Validate variant stock before checkout
+- [ ] Snapshot product, variant, price, and customer info
+- [ ] Calculate subtotal
+- [ ] Apply voucher
+- [ ] Calculate shipping fee
+- [ ] Calculate total
+- [ ] Deduct stock
+- [ ] Clear cart after success
+- [ ] Increment voucher used_count after success
+- [ ] Create voucher_usages after success
+- [ ] Use DB transaction
+- [ ] Feature tests cho Checkout
 ---
 
 ## 📋 Upcoming — Do not work yet
