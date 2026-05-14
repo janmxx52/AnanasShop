@@ -27,4 +27,12 @@ class ProductVariant extends Model
     {
         return $this->hasMany(OrderItem::class, 'product_variant_id');
     }
+
+    public function finalPrice(?Product $product = null): float
+    {
+        $resolvedProduct = $product ?? $this->product;
+        $displayPrice = $resolvedProduct ? $resolvedProduct->displayPrice() : 0.0;
+
+        return round($displayPrice + (float) $this->price_adjustment, 2);
+    }
 }

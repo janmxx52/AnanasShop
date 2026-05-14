@@ -39,7 +39,7 @@ class VoucherTest extends TestCase
         $id = $create->json('data.id');
 
         $list = $this->getJson('/api/admin/vouchers');
-        $list->assertStatus(200)->assertJsonStructure(['data']);
+        $list->assertStatus(200)->assertJsonStructure(['success', 'message', 'data', 'meta']);
 
         $show = $this->getJson("/api/admin/vouchers/{$id}");
         $show->assertStatus(200)->assertJsonPath('data.code', 'TEST10');
@@ -48,7 +48,7 @@ class VoucherTest extends TestCase
         $update->assertStatus(200)->assertJsonPath('data.code', 'TEST11');
 
         $delete = $this->deleteJson("/api/admin/vouchers/{$id}");
-        $delete->assertStatus(204);
+        $delete->assertStatus(200)->assertJsonPath('success', true);
 
         $this->assertDatabaseHas('vouchers', ['id' => $id, 'is_active' => 0]);
     }
@@ -172,5 +172,99 @@ class VoucherTest extends TestCase
 
         $this->assertDatabaseCount('voucher_usages', 0);
         $this->assertDatabaseHas('vouchers', ['id' => $voucher->id, 'used_count' => 0]);
+    }
+
+    public function test_voucher_subtotal_uses_same_price_as_product_resource()
+    {
+        $product = Product::factory()->create([
+            'base_price' => 120000,
+            'sale_price' => 100000,
+            'is_active' => true,
+        ]);
+        $variant = ProductVariant::factory()->for($product)->create([
+            'stock' => 10,
+            'price_adjustment' => 5000,
+        ]);
+
+        $guestToken = (string) Str::uuid();
+        $cart = Cart::create(['guest_token' => $guestToken]);
+        $cart->items()->create(['product_variant_id' => $variant->id, 'quantity' => 3]);
+
+        Voucher::create([
+            'code' => 'PRICECHECK',
+            'type' => 'fixed',
+            'value' => 1000,
+            'min_order_amount' => 0,
+            'usage_limit' => null,
+            'usage_per_user' => 1,
+            'is_active' => 1,
+        ]);
+
+        $productResponse = $this->getJson('/api/products/' . $product->slug);
+        $productResponse->assertStatus(200);
+        $displayedVariantPrice = (float) $productResponse->json('data.variants.0.price');
+
+        $response = $this->withHeader('X-Guest-Token', $guestToken)
+            ->postJson('/api/vouchers/check', ['code' => 'PRICECHECK']);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.discount', 1000);
+        $this->assertEquals(round($displayedVariantPrice * 3, 2), (float) $response->json('data.subtotal'));
+    }
+
+    public function test_voucher_check_and_checkout_return_same_discount_for_same_cart()
+    {
+        $product = Product::factory()->create([
+            'base_price' => 200000,
+            'sale_price' => null,
+            'is_active' => true,
+        ]);
+        $variant = ProductVariant::factory()->for($product)->create([
+            'stock' => 10,
+            'price_adjustment' => 10000,
+        ]);
+
+        $guestToken = (string) Str::uuid();
+        $cart = Cart::create(['guest_token' => $guestToken]);
+        $cart->items()->create([
+            'product_variant_id' => $variant->id,
+            'quantity' => 2,
+        ]);
+
+        Voucher::create([
+            'code' => 'CONSISTCHECK',
+            'type' => 'percent',
+            'value' => 20,
+            'max_discount' => 50000,
+            'min_order_amount' => 0,
+            'usage_limit' => null,
+            'usage_per_user' => 1,
+            'is_active' => 1,
+        ]);
+
+        $checkResponse = $this->withHeader('X-Guest-Token', $guestToken)
+            ->postJson('/api/vouchers/check', ['code' => 'CONSISTCHECK']);
+
+        $checkResponse->assertStatus(200);
+
+        $checkoutResponse = $this->withHeader('X-Guest-Token', $guestToken)
+            ->postJson('/api/checkout/guest', [
+                'full_name' => 'Discount Consistency',
+                'email' => 'consistency@example.com',
+                'phone' => '0900999888',
+                'shipping_address' => 'Consistency Street',
+                'voucher_code' => 'CONSISTCHECK',
+            ]);
+
+        $checkoutResponse->assertStatus(201);
+
+        $this->assertEquals(
+            (float) $checkResponse->json('data.subtotal'),
+            (float) $checkoutResponse->json('data.subtotal')
+        );
+        $this->assertEquals(
+            (float) $checkResponse->json('data.discount'),
+            (float) $checkoutResponse->json('data.discount_amount')
+        );
     }
 }

@@ -60,7 +60,7 @@ class AdminProductImageTest extends TestCase
         for ($i = 1; $i <= 10; $i++) {
             $file = UploadedFile::fake()->create("img{$i}.jpg", 100, 'image/jpeg');
             $resp = $this->postJson("/api/admin/products/{$product->id}/images", ['file' => $file]);
-            $resp->assertStatus(201);
+            $resp->assertStatus(201)->assertJsonPath('success', true);
         }
 
         $this->assertDatabaseCount('product_images', 10);
@@ -86,7 +86,9 @@ class AdminProductImageTest extends TestCase
         $a = ProductImage::factory()->for($product)->create(['is_primary' => true]);
         $b = ProductImage::factory()->for($product)->create(['is_primary' => false]);
 
-        $this->patchJson("/api/admin/products/{$product->id}/images/{$b->id}/primary")->assertStatus(200);
+        $this->patchJson("/api/admin/products/{$product->id}/images/{$b->id}/primary")
+            ->assertStatus(200)
+            ->assertJsonPath('success', true);
 
         $this->assertDatabaseHas('product_images', ['id' => $b->id, 'is_primary' => 1]);
         $this->assertDatabaseHas('product_images', ['id' => $a->id, 'is_primary' => 0]);
@@ -106,7 +108,9 @@ class AdminProductImageTest extends TestCase
         $product = Product::factory()->create();
         $img = ProductImage::factory()->for($product)->create(['public_id' => 'pdel', 'url' => 'https://res.cloudinary/fake.jpg']);
 
-        $this->deleteJson("/api/admin/products/{$product->id}/images/{$img->id}")->assertStatus(200);
+        $this->deleteJson("/api/admin/products/{$product->id}/images/{$img->id}")
+            ->assertStatus(200)
+            ->assertJsonPath('success', true);
 
         $this->assertDatabaseMissing('product_images', ['id' => $img->id]);
     }

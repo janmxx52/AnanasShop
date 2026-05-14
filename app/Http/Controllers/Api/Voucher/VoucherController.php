@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Voucher;
 
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\Voucher\VoucherService;
@@ -9,6 +10,8 @@ use Illuminate\Validation\ValidationException;
 
 class VoucherController extends Controller
 {
+    use ApiResponse;
+
     public function check(Request $request, VoucherService $service)
     {
         $request->validate(['code' => ['required', 'string']]);
@@ -29,6 +32,6 @@ class VoucherController extends Controller
 
     public function apply(Request $request)
     {
-        return response()->json(['success' => false, 'message' => 'Not implemented'], 501);
+        return $this->notImplemented();
     }
 }

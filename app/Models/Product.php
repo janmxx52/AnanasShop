@@ -55,4 +55,9 @@ class Product extends Model
     {
         return $this->hasMany(Review::class);
     }
+
+    public function displayPrice(): float
+    {
+        return round((float) ($this->sale_price ?? $this->base_price), 2);
+    }
 }

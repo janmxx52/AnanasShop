@@ -57,14 +57,18 @@ class AdminProductTest extends TestCase
             'sale_price' => 90,
         ]);
 
-        $create->assertStatus(201)->assertJsonFragment(['name' => 'Test Product']);
+        $create->assertStatus(201)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.name', 'Test Product');
 
-        $id = $create->json('id');
+        $id = $create->json('data.id');
         $this->assertDatabaseHas('products', ['id' => $id, 'name' => 'Test Product']);
 
         // Update
         $update = $this->putJson("/api/admin/products/{$id}", ['name' => 'Updated Product']);
-        $update->assertStatus(200)->assertJsonFragment(['name' => 'Updated Product']);
+        $update->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.name', 'Updated Product');
         $this->assertDatabaseHas('products', ['id' => $id, 'name' => 'Updated Product']);
 
         // Soft delete
@@ -74,12 +78,16 @@ class AdminProductTest extends TestCase
 
         // Restore
         $restore = $this->postJson("/api/admin/products/{$id}/restore");
-        $restore->assertStatus(200)->assertJsonFragment(['id' => $id]);
+        $restore->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.id', $id);
         $this->assertDatabaseHas('products', ['id' => $id, 'deleted_at' => null]);
 
         // Toggle active
         $toggle = $this->patchJson("/api/admin/products/{$id}/status", ['is_active' => false]);
-        $toggle->assertStatus(200)->assertJsonFragment(['is_active' => false]);
+        $toggle->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.is_active', false);
         $this->assertDatabaseHas('products', ['id' => $id, 'is_active' => 0]);
     }
 
@@ -98,7 +106,7 @@ class AdminProductTest extends TestCase
             'base_price' => 50,
         ]);
         $a->assertStatus(201);
-        $slugA = $a->json('slug');
+        $slugA = $a->json('data.slug');
 
         $b = $this->postJson('/api/admin/products', [
             'name' => 'Unique Name',
@@ -107,7 +115,7 @@ class AdminProductTest extends TestCase
             'base_price' => 60,
         ]);
         $b->assertStatus(201);
-        $slugB = $b->json('slug');
+        $slugB = $b->json('data.slug');
 
         $this->assertNotEquals($slugA, $slugB);
     }

@@ -2,18 +2,20 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AdminProductIndexRequest;
+use App\Http\Requests\Admin\AdminProductStatusRequest;
 use App\Http\Requests\Admin\AdminProductStoreRequest;
 use App\Http\Requests\Admin\AdminProductUpdateRequest;
-use App\Http\Requests\Admin\AdminProductStatusRequest;
 use App\Http\Resources\Admin\AdminProductResource;
 use App\Models\Product;
-use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
+    use ApiResponse;
+
     public function index(AdminProductIndexRequest $request)
     {
         $query = Product::with(['category', 'brand']);
@@ -56,7 +58,7 @@ class ProductController extends Controller
         $perPage = (int) $request->query('per_page', 20);
         $products = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
-        return response()->json($products);
+        return $this->paginated(AdminProductResource::collection($products), 'Products fetched');
     }
 
     public function store(AdminProductStoreRequest $request)
@@ -71,24 +73,27 @@ class ProductController extends Controller
 
         $product = Product::create($data);
 
-        $resource = new AdminProductResource($product->load(['category', 'brand']));
+        $resource = (new AdminProductResource($product->load(['category', 'brand'])))->resolve();
 
-        return response()->json($resource->resolve(), 201);
+        return $this->success($resource, 'Product created', 201);
     }
 
     public function show($id)
     {
         $product = Product::with(['category', 'brand'])->withTrashed()->find($id);
         if (!$product) {
-            return response()->json(['message' => 'Not found'], 404);
+            return $this->error('Not found', null, 404);
         }
-        $resource = new AdminProductResource($product);
-        return response()->json($resource->resolve());
+
+        return $this->success((new AdminProductResource($product))->resolve(), 'Product fetched');
     }
 
     public function update(AdminProductUpdateRequest $request, $id)
     {
-        $product = Product::findOrFail($id);
+        $product = Product::find($id);
+        if (!$product) {
+            return $this->error('Not found', null, 404);
+        }
 
         $data = $request->validated();
 
@@ -102,35 +107,52 @@ class ProductController extends Controller
 
         $product->update($data);
 
-        $resource = new AdminProductResource($product->load(['category', 'brand']));
-        return response()->json($resource->resolve());
+        $resource = (new AdminProductResource($product->load(['category', 'brand'])))->resolve();
+
+        return $this->success($resource, 'Product updated');
     }
 
     public function destroy($id)
     {
-        $product = Product::findOrFail($id);
+        $product = Product::find($id);
+        if (!$product) {
+            return $this->error('Not found', null, 404);
+        }
+
         $product->delete();
-        return response()->json(['message' => 'Deleted']);
+
+        return $this->success(null, 'Product deleted');
     }
 
     public function restore($id)
     {
-        $product = Product::withTrashed()->findOrFail($id);
-        if (!$product->trashed()) {
-            return response()->json(['message' => 'Not trashed'], 400);
+        $product = Product::withTrashed()->find($id);
+        if (!$product) {
+            return $this->error('Not found', null, 404);
         }
+
+        if (!$product->trashed()) {
+            return $this->error('Not trashed', null, 400);
+        }
+
         $product->restore();
-        $resource = new AdminProductResource($product->load(['category', 'brand']));
-        return response()->json($resource->resolve());
+        $resource = (new AdminProductResource($product->load(['category', 'brand'])))->resolve();
+
+        return $this->success($resource, 'Product restored');
     }
 
     public function status(AdminProductStatusRequest $request, $id)
     {
-        $product = Product::findOrFail($id);
+        $product = Product::find($id);
+        if (!$product) {
+            return $this->error('Not found', null, 404);
+        }
+
         $product->is_active = (bool) $request->input('is_active');
         $product->save();
-        $resource = new AdminProductResource($product->load(['category', 'brand']));
-        return response()->json($resource->resolve());
+        $resource = (new AdminProductResource($product->load(['category', 'brand'])))->resolve();
+
+        return $this->success($resource, 'Product status updated');
     }
 
     private function generateUniqueSlug(string $base, $ignoreId = null): string

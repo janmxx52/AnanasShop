@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AdminProductVariantStoreRequest;
 use App\Http\Requests\Admin\AdminProductVariantUpdateRequest;
@@ -14,11 +15,14 @@ use Illuminate\Support\Facades\Schema;
 
 class ProductVariantController extends Controller
 {
+    use ApiResponse;
+
     public function index(Product $product, Request $request)
     {
         $perPage = (int) $request->query('per_page', 20);
         $variants = $product->variants()->orderBy('id', 'asc')->paginate($perPage);
-        return response()->json($variants);
+
+        return $this->paginated(AdminProductVariantResource::collection($variants), 'Variants fetched');
     }
 
     public function store(AdminProductVariantStoreRequest $request, Product $product)
@@ -29,31 +33,28 @@ class ProductVariantController extends Controller
         if (ProductVariant::where('product_id', $product->id)
             ->where('size', $data['size'])
             ->where('color', $data['color'])->exists()) {
-            return response()->json([
-                'message' => 'Variant already exists for this product',
-                'errors' => ['variant' => ['Duplicate size+color for product']],
-            ], 422);
+            return $this->error('Variant already exists for this product', ['variant' => ['Duplicate size+color for product']], 422);
         }
 
         $data['product_id'] = $product->id;
         $variant = ProductVariant::create($data);
 
-        return response()->json((new AdminProductVariantResource($variant))->resolve(), 201);
+        return $this->success((new AdminProductVariantResource($variant))->resolve(), 'Variant created', 201);
     }
 
     public function show(Product $product, ProductVariant $variant)
     {
         if ($variant->product_id !== $product->id) {
-            return response()->json(['message' => 'Not found'], 404);
+            return $this->error('Not found', null, 404);
         }
 
-        return response()->json((new AdminProductVariantResource($variant))->resolve());
+        return $this->success((new AdminProductVariantResource($variant))->resolve(), 'Variant fetched');
     }
 
     public function update(AdminProductVariantUpdateRequest $request, Product $product, ProductVariant $variant)
     {
         if ($variant->product_id !== $product->id) {
-            return response()->json(['message' => 'Not found'], 404);
+            return $this->error('Not found', null, 404);
         }
 
         $data = $request->validated();
@@ -66,21 +67,18 @@ class ProductVariantController extends Controller
             ->where('color', $newColor)
             ->where('id', '!=', $variant->id)
             ->exists()) {
-            return response()->json([
-                'message' => 'Variant already exists for this product',
-                'errors' => ['variant' => ['Duplicate size+color for product']],
-            ], 422);
+            return $this->error('Variant already exists for this product', ['variant' => ['Duplicate size+color for product']], 422);
         }
 
         $variant->update($data);
 
-        return response()->json((new AdminProductVariantResource($variant))->resolve());
+        return $this->success((new AdminProductVariantResource($variant))->resolve(), 'Variant updated');
     }
 
     public function destroy(Product $product, ProductVariant $variant)
     {
         if ($variant->product_id !== $product->id) {
-            return response()->json(['message' => 'Not found'], 404);
+            return $this->error('Not found', null, 404);
         }
 
         // If variant referenced in order_items, prevent deletion (no soft delete schema)
@@ -89,10 +87,11 @@ class ProductVariantController extends Controller
             $referenced = DB::table('order_items')->where('product_variant_id', $variant->id)->exists();
         }
         if ($referenced) {
-            return response()->json(['message' => 'Variant cannot be deleted because it is referenced in orders'], 400);
+            return $this->error('Variant cannot be deleted because it is referenced in orders', null, 400);
         }
 
         $variant->delete();
-        return response()->json(['message' => 'Deleted']);
+
+        return $this->success(null, 'Variant deleted');
     }
 }

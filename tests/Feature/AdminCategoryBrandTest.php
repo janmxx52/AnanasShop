@@ -51,20 +51,24 @@ class AdminCategoryBrandTest extends TestCase
 
         // Create
         $create = $this->postJson('/api/admin/categories', ['name' => 'Shoes']);
-        $create->assertStatus(201)->assertJsonFragment(['name' => 'Shoes']);
+        $create->assertStatus(201)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.name', 'Shoes');
 
         $this->assertDatabaseHas('categories', ['name' => 'Shoes']);
 
-        $id = $create->json('id');
+        $id = $create->json('data.id');
 
         // Update
         $update = $this->putJson("/api/admin/categories/{$id}", ['name' => 'Footwear']);
-        $update->assertStatus(200)->assertJsonFragment(['name' => 'Footwear']);
+        $update->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.name', 'Footwear');
         $this->assertDatabaseHas('categories', ['name' => 'Footwear']);
 
         // Delete
         $delete = $this->deleteJson("/api/admin/categories/{$id}");
-        $delete->assertStatus(200);
+        $delete->assertStatus(200)->assertJsonPath('success', true);
         $this->assertDatabaseMissing('categories', ['id' => $id]);
     }
 
@@ -75,20 +79,24 @@ class AdminCategoryBrandTest extends TestCase
 
         // Create
         $create = $this->postJson('/api/admin/brands', ['name' => 'Acme']);
-        $create->assertStatus(201)->assertJsonFragment(['name' => 'Acme']);
+        $create->assertStatus(201)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.name', 'Acme');
 
         $this->assertDatabaseHas('brands', ['name' => 'Acme']);
 
-        $id = $create->json('id');
+        $id = $create->json('data.id');
 
         // Update
         $update = $this->putJson("/api/admin/brands/{$id}", ['name' => 'AcmeCo']);
-        $update->assertStatus(200)->assertJsonFragment(['name' => 'AcmeCo']);
+        $update->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.name', 'AcmeCo');
         $this->assertDatabaseHas('brands', ['name' => 'AcmeCo']);
 
         // Delete
         $delete = $this->deleteJson("/api/admin/brands/{$id}");
-        $delete->assertStatus(200);
+        $delete->assertStatus(200)->assertJsonPath('success', true);
         $this->assertDatabaseMissing('brands', ['id' => $id]);
     }
 }

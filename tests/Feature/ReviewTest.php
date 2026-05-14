@@ -366,7 +366,13 @@ class ReviewTest extends TestCase
 
     private function createOrderItem(User $user, Product $product, string $status): OrderItem
     {
+        $variantIndex = ProductVariant::query()
+            ->where('product_id', $product->id)
+            ->count() + 1;
+
         $variant = ProductVariant::factory()->for($product)->create([
+            'size' => 'S' . $variantIndex,
+            'color' => 'Color ' . $variantIndex,
             'stock' => 10,
             'price_adjustment' => 0,
         ]);

@@ -44,7 +44,7 @@ class ProductResource extends JsonResource
                         'color_hex' => $v->color_hex,
                         'sku' => $v->sku,
                         'stock' => (int) $v->stock,
-                        'price' => (float) round($product->base_price + $v->price_adjustment, 2),
+                        'price' => $v->finalPrice($product),
                     ];
                 });
             }),

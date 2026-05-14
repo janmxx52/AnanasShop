@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Http\Controllers\Concerns\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AdminProductImageStoreRequest;
 use App\Http\Resources\Admin\AdminProductImageResource;
@@ -14,6 +15,8 @@ use Illuminate\Support\Facades\DB;
 
 class ProductImageController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(private CloudinaryService $cloudinary)
     {
     }
@@ -21,7 +24,8 @@ class ProductImageController extends Controller
     public function index(Product $product): JsonResponse
     {
         $images = $product->images()->orderByDesc('is_primary')->orderBy('sort_order')->get();
-        return response()->json(AdminProductImageResource::collection($images)->resolve());
+
+        return $this->success(AdminProductImageResource::collection($images)->resolve(), 'Images fetched');
     }
 
     public function store(AdminProductImageStoreRequest $request, Product $product): JsonResponse
@@ -34,7 +38,7 @@ class ProductImageController extends Controller
         $publicId = $uploaded['public_id'] ?? null;
 
         if (empty($url)) {
-            return response()->json(['message' => 'Upload failed'], 500);
+            return $this->error('Upload failed', null, 500);
         }
 
         // Use transaction to enforce max count and primary swap
@@ -59,41 +63,43 @@ class ProductImageController extends Controller
                 ]);
             });
 
-            return response()->json((new AdminProductImageResource($image))->resolve(), 201);
+            return $this->success((new AdminProductImageResource($image))->resolve(), 'Image uploaded', 201);
         } catch (\Exception $e) {
             // Try to clean up uploaded remote asset if exists
             if (!empty($publicId)) {
                 $this->cloudinary->delete($publicId);
             }
             if ($e->getMessage() === 'max_images') {
-                return response()->json(['message' => 'Max images reached'], 422);
+                return $this->error('Max images reached', null, 422);
             }
-            return response()->json(['message' => 'Failed to save image'], 500);
+
+            return $this->error('Failed to save image', null, 500);
         }
     }
 
     public function destroy(Product $product, ProductImage $image): JsonResponse
     {
         if ($image->product_id !== $product->id) {
-            return response()->json(['message' => 'Not found'], 404);
+            return $this->error('Not found', null, 404);
         }
 
         // If public_id exists, delete remote first
         if (!empty($image->public_id)) {
             $ok = $this->cloudinary->delete($image->public_id);
             if (!$ok) {
-                return response()->json(['message' => 'Failed to delete remote image'], 500);
+                return $this->error('Failed to delete remote image', null, 500);
             }
         }
 
         $image->delete();
-        return response()->json(['message' => 'Deleted']);
+
+        return $this->success(null, 'Image deleted');
     }
 
     public function setPrimary(Product $product, ProductImage $image): JsonResponse
     {
         if ($image->product_id !== $product->id) {
-            return response()->json(['message' => 'Not found'], 404);
+            return $this->error('Not found', null, 404);
         }
 
         DB::transaction(function () use ($product, $image) {
@@ -102,6 +108,6 @@ class ProductImageController extends Controller
             $image->save();
         });
 
-        return response()->json((new AdminProductImageResource($image->fresh()))->resolve());
+        return $this->success((new AdminProductImageResource($image->fresh()))->resolve(), 'Primary image updated');
     }
 }

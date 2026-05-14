@@ -708,6 +708,44 @@ class CheckoutTest extends TestCase
         ])->assertStatus(422)->assertJsonValidationErrors(['payment_method']);
     }
 
+    public function test_checkout_order_item_unit_price_is_consistent_with_product_display_price()
+    {
+        [$product, $variant] = $this->createProductVariant(
+            basePrice: 120000,
+            stock: 10,
+            salePrice: 100000,
+            priceAdjustment: 5000
+        );
+        $guestToken = (string) Str::uuid();
+        $cart = Cart::create(['guest_token' => $guestToken]);
+        CartItem::create([
+            'cart_id' => $cart->id,
+            'product_variant_id' => $variant->id,
+            'quantity' => 1,
+        ]);
+
+        $productResponse = $this->getJson('/api/products/' . $product->slug);
+        $productResponse->assertStatus(200);
+        $displayedVariantPrice = (float) $productResponse->json('data.variants.0.price');
+
+        $response = $this->withHeader('X-Guest-Token', $guestToken)->postJson('/api/checkout/guest', [
+            'full_name' => 'Guest Pricing',
+            'email' => 'guest-pricing@example.com',
+            'phone' => '0900000099',
+            'shipping_address' => 'Pricing Street',
+        ]);
+
+        $response->assertStatus(201);
+        $this->assertEquals($displayedVariantPrice, (float) $response->json('data.subtotal'));
+
+        $orderId = $response->json('data.id');
+        $this->assertDatabaseHas('order_items', [
+            'order_id' => $orderId,
+            'product_variant_id' => $variant->id,
+            'unit_price' => $displayedVariantPrice,
+        ]);
+    }
+
     private function createProductVariant(
         float $basePrice,
         int $stock,

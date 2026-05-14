@@ -55,14 +55,19 @@ class AdminProductVariantTest extends TestCase
             'stock' => 5,
             'price_adjustment' => 0,
         ]);
-        $create->assertStatus(201)->assertJsonFragment(['size' => 'M', 'color' => 'Black']);
-        $variantId = $create->json('id');
+        $create->assertStatus(201)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.size', 'M')
+            ->assertJsonPath('data.color', 'Black');
+        $variantId = $create->json('data.id');
 
         // Update
         $update = $this->putJson("/api/admin/products/{$product->id}/variants/{$variantId}", [
             'stock' => 10
         ]);
-        $update->assertStatus(200)->assertJsonFragment(['stock' => 10]);
+        $update->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.stock', 10);
 
         // Delete
         $delete = $this->deleteJson("/api/admin/products/{$product->id}/variants/{$variantId}");
@@ -121,7 +126,7 @@ class AdminProductVariantTest extends TestCase
             'size' => 'S', 'color' => 'Green', 'stock' => 1
         ])->assertStatus(201);
 
-        $variantId = $create->json('id');
+        $variantId = $create->json('data.id');
 
         // Try to access variant under a different product
         $this->getJson("/api/admin/products/{$p2->id}/variants/{$variantId}")->assertStatus(404);

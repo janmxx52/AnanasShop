@@ -15,10 +15,7 @@ class CartItemResource extends JsonResource
         }
 
         $product = $variant?->product;
-
-        $base = $product?->sale_price ?? $product?->base_price;
-        $priceAdjustment = $variant?->price_adjustment ?? 0;
-        $unitPrice = isset($base) ? round($base + $priceAdjustment, 2) : null;
+        $unitPrice = $variant && $product ? $variant->finalPrice($product) : null;
 
         return [
             'id' => $this->id,

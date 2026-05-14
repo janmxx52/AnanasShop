@@ -7,9 +7,9 @@ use App\Models\CartItem;
 use App\Models\Order;
 use App\Models\ProductVariant;
 use App\Models\User;
-use App\Models\Voucher;
 use App\Models\VoucherUsage;
 use App\Services\Cart\CartService;
+use App\Services\Voucher\VoucherCalculator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -20,7 +20,10 @@ class OrderService
     private const SHIPPING_FEE = 30000.0;
     private const FREE_SHIPPING_THRESHOLD = 500000.0;
 
-    public function __construct(private CartService $cartService)
+    public function __construct(
+        private CartService $cartService,
+        private VoucherCalculator $voucherCalculator
+    )
     {
     }
 
@@ -124,8 +127,7 @@ class OrderService
                     ]);
                 }
 
-                $basePrice = $product->sale_price ?? $product->base_price;
-                $unitPrice = round(((float) $basePrice) + ((float) $variant->price_adjustment), 2);
+                $unitPrice = $variant->finalPrice($product);
                 $lineTotal = round($unitPrice * $cartItem->quantity, 2);
 
                 $subtotal += $lineTotal;
@@ -235,67 +237,14 @@ class OrderService
             return [null, 0.0];
         }
 
-        $voucher = Voucher::query()->where('code', $voucherCode)->lockForUpdate()->first();
-        if (!$voucher) {
-            throw ValidationException::withMessages(['voucher_code' => 'Voucher not found']);
-        }
-
-        if (!$voucher->is_active) {
-            throw ValidationException::withMessages(['voucher_code' => 'Voucher is inactive']);
-        }
-
-        $now = now();
-        if ($voucher->starts_at && $now->lt($voucher->starts_at)) {
-            throw ValidationException::withMessages(['voucher_code' => 'Voucher not started']);
-        }
-        if ($voucher->expires_at && $now->gt($voucher->expires_at)) {
-            throw ValidationException::withMessages(['voucher_code' => 'Voucher expired']);
-        }
-
-        if ($subtotal < (float) $voucher->min_order_amount) {
-            throw ValidationException::withMessages([
-                'voucher_code' => 'Minimum order amount not met',
-            ]);
-        }
-
-        $totalUsed = VoucherUsage::query()
-            ->where('voucher_id', $voucher->id)
-            ->whereNull('revoked_at')
-            ->count();
-        if ($voucher->usage_limit !== null && $totalUsed >= $voucher->usage_limit) {
-            throw ValidationException::withMessages(['voucher_code' => 'Voucher usage limit reached']);
-        }
-
-        $usedByCurrent = 0;
-        if ($userId) {
-            $usedByCurrent = VoucherUsage::query()
-                ->where('voucher_id', $voucher->id)
-                ->where('user_id', $userId)
-                ->whereNull('revoked_at')
-                ->count();
-        } elseif ($guestToken) {
-            $usedByCurrent = VoucherUsage::query()
-                ->where('voucher_id', $voucher->id)
-                ->where('guest_token', $guestToken)
-                ->whereNull('revoked_at')
-                ->count();
-        }
-
-        if ($voucher->usage_per_user && $usedByCurrent >= $voucher->usage_per_user) {
-            throw ValidationException::withMessages(['voucher_code' => 'Voucher usage per user exceeded']);
-        }
-
-        $discount = 0.0;
-        if ($voucher->type === 'percent') {
-            $discount = round($subtotal * ((float) $voucher->value / 100), 2);
-            if ($voucher->max_discount !== null) {
-                $discount = min($discount, (float) $voucher->max_discount);
-            }
-        } else {
-            $discount = min((float) $voucher->value, $subtotal);
-        }
-
-        return [$voucher, round($discount, 2)];
+        return $this->voucherCalculator->resolveByCode(
+            code: $voucherCode,
+            subtotal: $subtotal,
+            userId: $userId,
+            guestToken: $guestToken,
+            errorField: 'voucher_code',
+            lockForUpdate: true
+        );
     }
 
     private function calculateShippingFee(float $subtotal): float

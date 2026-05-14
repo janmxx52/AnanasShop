@@ -14,6 +14,7 @@ class ProductRepository
         $query = Product::query()->where('is_active', true)
             ->with(['variants', 'images', 'category', 'brand']);
         $this->applyReviewAggregates($query);
+        $displayPriceExpression = 'CAST(COALESCE(sale_price, base_price) AS NUMERIC)';
 
         if (!empty($filters['q'])) {
             $q = $filters['q'];
@@ -62,20 +63,20 @@ class ProductRepository
         }
 
         if (!empty($filters['min_price'])) {
-            $query->where('base_price', '>=', $filters['min_price']);
+            $query->whereRaw("{$displayPriceExpression} >= ?", [(float) $filters['min_price']]);
         }
 
         if (!empty($filters['max_price'])) {
-            $query->where('base_price', '<=', $filters['max_price']);
+            $query->whereRaw("{$displayPriceExpression} <= ?", [(float) $filters['max_price']]);
         }
 
         $sort = $filters['sort'] ?? null;
         switch ($sort) {
             case 'price_asc':
-                $query->orderBy('base_price', 'asc');
+                $query->orderByRaw("{$displayPriceExpression} asc");
                 break;
             case 'price_desc':
-                $query->orderBy('base_price', 'desc');
+                $query->orderByRaw("{$displayPriceExpression} desc");
                 break;
             case 'newest':
                 $query->orderBy('created_at', 'desc');

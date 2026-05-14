@@ -18,7 +18,7 @@ class CartTest extends TestCase
 
     public function test_guest_can_add_and_view_cart()
     {
-        $product = Product::factory()->create();
+        $product = Product::factory()->create(['is_active' => true]);
         $variant = ProductVariant::factory()->for($product)->create(['stock' => 10, 'price_adjustment' => 0]);
 
         $guestToken = (string) Str::uuid();
@@ -40,7 +40,7 @@ class CartTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user, 'sanctum');
 
-        $product = Product::factory()->create();
+        $product = Product::factory()->create(['is_active' => true]);
         $variant = ProductVariant::factory()->for($product)->create(['stock' => 5]);
 
         $add = $this->postJson('/api/cart/items', ['product_variant_id' => $variant->id, 'quantity' => 2]);
@@ -63,7 +63,7 @@ class CartTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user, 'sanctum');
 
-        $product = Product::factory()->create();
+        $product = Product::factory()->create(['is_active' => true]);
         $variant = ProductVariant::factory()->for($product)->create(['stock' => 4]);
 
         $this->postJson('/api/cart/items', ['product_variant_id' => $variant->id, 'quantity' => 3])->assertStatus(201);
@@ -78,7 +78,7 @@ class CartTest extends TestCase
 
         // guest cart
         $guestToken = (string) Str::uuid();
-        $product = Product::factory()->create();
+        $product = Product::factory()->create(['is_active' => true]);
         $variant = ProductVariant::factory()->for($product)->create(['stock' => 10]);
 
         $this->withHeader('X-Guest-Token', $guestToken)->postJson('/api/cart/items', ['product_variant_id' => $variant->id, 'quantity' => 2])->assertStatus(201);
@@ -132,5 +132,34 @@ class CartTest extends TestCase
 
         // ensure guest cart removed
         $this->assertDatabaseMissing('carts', ['guest_token' => $guestToken]);
+    }
+
+    public function test_cart_total_uses_same_price_as_product_resource()
+    {
+        $guestToken = (string) Str::uuid();
+
+        $product = Product::factory()->create([
+            'base_price' => 120000,
+            'sale_price' => 100000,
+            'is_active' => true,
+        ]);
+        $variant = ProductVariant::factory()->for($product)->create([
+            'stock' => 10,
+            'price_adjustment' => 5000,
+        ]);
+
+        $this->withHeader('X-Guest-Token', $guestToken)
+            ->postJson('/api/cart/items', ['product_variant_id' => $variant->id, 'quantity' => 2])
+            ->assertStatus(201);
+
+        $productResponse = $this->getJson('/api/products/' . $product->slug);
+        $productResponse->assertStatus(200);
+        $displayedVariantPrice = (float) $productResponse->json('data.variants.0.price');
+
+        $cartResponse = $this->withHeader('X-Guest-Token', $guestToken)->getJson('/api/cart');
+        $cartResponse->assertStatus(200);
+
+        $this->assertSame($displayedVariantPrice, (float) $cartResponse->json('items.0.unit_price'));
+        $this->assertSame(round($displayedVariantPrice * 2, 2), (float) $cartResponse->json('total'));
     }
 }

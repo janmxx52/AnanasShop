@@ -108,8 +108,16 @@ class ProductPublicApiTest extends TestCase
 
     public function test_filter_by_min_max_price()
     {
-        $cheap = Product::factory()->create(['base_price' => 1000, 'is_active' => true]);
-        $exp = Product::factory()->create(['base_price' => 5000, 'is_active' => true]);
+        $cheap = Product::factory()->create([
+            'base_price' => 1000,
+            'sale_price' => null,
+            'is_active' => true,
+        ]);
+        $exp = Product::factory()->create([
+            'base_price' => 5000,
+            'sale_price' => null,
+            'is_active' => true,
+        ]);
 
         $resp = $this->getJson('/api/products?min_price=2000');
         $resp->assertStatus(200);
@@ -128,8 +136,16 @@ class ProductPublicApiTest extends TestCase
         $this->assertEquals($new->slug, $resp->json('data')[0]['slug']);
 
         // Create two products with extreme prices to assert ordering deterministically
-        $pLow = Product::factory()->create(['base_price' => 1, 'is_active' => true]);
-        $pHigh = Product::factory()->create(['base_price' => 99999999, 'is_active' => true]);
+        $pLow = Product::factory()->create([
+            'base_price' => 1,
+            'sale_price' => null,
+            'is_active' => true,
+        ]);
+        $pHigh = Product::factory()->create([
+            'base_price' => 99999999,
+            'sale_price' => null,
+            'is_active' => true,
+        ]);
 
         $respAsc = $this->getJson('/api/products?sort=price_asc');
         $respAsc->assertStatus(200);
@@ -163,5 +179,64 @@ class ProductPublicApiTest extends TestCase
         $this->getJson('/api/products/' . $inactive->slug)->assertStatus(404);
 
         $this->getJson('/api/products/non-existent-slug')->assertStatus(404);
+    }
+
+    public function test_product_detail_and_list_variant_price_use_sale_price_when_available()
+    {
+        $product = Product::factory()->create([
+            'base_price' => 120000,
+            'sale_price' => 100000,
+            'is_active' => true,
+        ]);
+
+        ProductVariant::factory()->for($product)->create([
+            'price_adjustment' => 5000,
+            'stock' => 10,
+        ]);
+
+        $expectedPrice = 105000.0;
+
+        $detailResponse = $this->getJson('/api/products/' . $product->slug);
+        $detailResponse->assertStatus(200);
+        $this->assertEquals($expectedPrice, (float) $detailResponse->json('data.variants.0.price'));
+
+        $listResponse = $this->getJson('/api/products');
+        $listResponse->assertStatus(200);
+
+        $listed = collect($listResponse->json('data'))->firstWhere('slug', $product->slug);
+        $this->assertNotNull($listed);
+        $this->assertSame($expectedPrice, (float) $listed['variants'][0]['price']);
+    }
+
+    public function test_price_filter_and_sort_use_product_display_price()
+    {
+        $saleProduct = Product::factory()->create([
+            'base_price' => 1000,
+            'sale_price' => 100,
+            'is_active' => true,
+        ]);
+        $regularProduct = Product::factory()->create([
+            'base_price' => 200,
+            'sale_price' => null,
+            'is_active' => true,
+        ]);
+
+        $filterResponse = $this->getJson('/api/products?min_price=150');
+        $filterResponse->assertStatus(200);
+        $filteredSlugs = collect($filterResponse->json('data'))->pluck('slug')->all();
+
+        $this->assertContains($regularProduct->slug, $filteredSlugs);
+        $this->assertNotContains($saleProduct->slug, $filteredSlugs);
+
+        $sortResponse = $this->getJson('/api/products?sort=price_asc');
+        $sortResponse->assertStatus(200);
+        $sortedSlugs = collect($sortResponse->json('data'))->pluck('slug')->all();
+
+        $saleIndex = array_search($saleProduct->slug, $sortedSlugs, true);
+        $regularIndex = array_search($regularProduct->slug, $sortedSlugs, true);
+
+        $this->assertIsInt($saleIndex);
+        $this->assertIsInt($regularIndex);
+        $this->assertTrue($saleIndex < $regularIndex);
     }
 }
