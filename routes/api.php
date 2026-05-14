@@ -95,10 +95,20 @@ Route::middleware('auth:sanctum')->group(function () {
 // ============================================================
 // ADMIN ROUTES
 // ============================================================
-Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
+// (debug ping removed)
+Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     // Products
     Route::apiResource('products', \App\Http\Controllers\Api\Admin\ProductController::class);
     Route::post('/products/{id}/images', [\App\Http\Controllers\Api\Admin\ProductController::class, 'uploadImages']);
+    Route::post('/products/{id}/restore', [\App\Http\Controllers\Api\Admin\ProductController::class, 'restore']);
+    Route::patch('/products/{id}/status', [\App\Http\Controllers\Api\Admin\ProductController::class, 'status']);
+    // Product Variants (nested)
+    Route::get('/products/{product}/variants', [\App\Http\Controllers\Api\Admin\ProductVariantController::class, 'index']);
+    Route::post('/products/{product}/variants', [\App\Http\Controllers\Api\Admin\ProductVariantController::class, 'store']);
+    Route::get('/products/{product}/variants/{variant}', [\App\Http\Controllers\Api\Admin\ProductVariantController::class, 'show']);
+    Route::put('/products/{product}/variants/{variant}', [\App\Http\Controllers\Api\Admin\ProductVariantController::class, 'update']);
+    Route::patch('/products/{product}/variants/{variant}', [\App\Http\Controllers\Api\Admin\ProductVariantController::class, 'update']);
+    Route::delete('/products/{product}/variants/{variant}', [\App\Http\Controllers\Api\Admin\ProductVariantController::class, 'destroy']);
     // Categories
     Route::apiResource('categories', \App\Http\Controllers\Api\Admin\CategoryController::class);
     // Brands
