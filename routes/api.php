@@ -99,7 +99,11 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     // Products
     Route::apiResource('products', \App\Http\Controllers\Api\Admin\ProductController::class);
-    Route::post('/products/{id}/images', [\App\Http\Controllers\Api\Admin\ProductController::class, 'uploadImages']);
+    // Admin product images (separate controller)
+    Route::get('/products/{product}/images', [\App\Http\Controllers\Api\Admin\ProductImageController::class, 'index']);
+    Route::post('/products/{product}/images', [\App\Http\Controllers\Api\Admin\ProductImageController::class, 'store']);
+    Route::delete('/products/{product}/images/{image}', [\App\Http\Controllers\Api\Admin\ProductImageController::class, 'destroy']);
+    Route::patch('/products/{product}/images/{image}/primary', [\App\Http\Controllers\Api\Admin\ProductImageController::class, 'setPrimary']);
     Route::post('/products/{id}/restore', [\App\Http\Controllers\Api\Admin\ProductController::class, 'restore']);
     Route::patch('/products/{id}/status', [\App\Http\Controllers\Api\Admin\ProductController::class, 'status']);
     // Product Variants (nested)

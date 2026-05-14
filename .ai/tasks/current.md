@@ -96,10 +96,6 @@
 - [x] Nested admin product variant routes registered
 - [x] Feature tests for Admin Product Variant — pass
 
----
-
-## 🔄 Current Focus
-
 ### Admin Catalog CRUD
 
 #### Admin Category
@@ -117,35 +113,43 @@
 - [x] Show brand detail
 
 #### Admin Product
-- [ ] Create product
-- [ ] Update product
-- [ ] Soft delete product
-- [ ] Restore product
-- [ ] Active / inactive product
-- [ ] List products for admin
-- [ ] Show product detail for admin
+- [x] Create product
+- [x] Update product
+- [x] Soft delete product
+- [x] Restore product
+- [x] Active / inactive product
+- [x] List products for admin
+- [x] Show product detail for admin
 
 #### Admin Product Variant
-- [ ] Create variant
-- [ ] Update variant
-- [ ] Delete variant
-- [ ] Validate unique `product_id + size + color`
-- [ ] Manage stock
+- [x] Create variant
+- [x] Update variant
+- [x] Delete variant
+- [x] Validate unique `product_id + size + color`
+- [x] Manage stock
 
-#### Admin Product Image
+#### Security
+- [x] Protect admin routes with `auth:sanctum`
+- [x] Allow only `admin` role
+
+#### Testing
+- [x] Feature tests cho Admin Category & Brand
+- [x] Feature tests cho Admin Product
+- [x] Feature tests cho Admin Product Variant
+
+## 🔄 Current Focus
+
+### Admin Product Image CRUD
+
 - [ ] Upload product image to Cloudinary
 - [ ] Delete product image from Cloudinary
 - [ ] Set primary image
 - [ ] Validate max 10 images per product
 - [ ] Ensure only 1 primary image per product
-
-#### Security
-- [ ] Protect admin routes with `auth:sanctum`
-- [ ] Allow only `admin` role
-
-#### Testing
-- [ ] Feature tests cho Admin Catalog CRUD
-
+- [ ] Store `image_url` and `public_id`
+- [ ] Protect routes with `auth:sanctum` + `role:admin`
+- [ ] Mock Cloudinary service in tests
+- [ ] Feature tests cho Admin Product Image
 ---
 
 ## 📋 Next Queue
