@@ -71,8 +71,9 @@
 
 ### Test Status
 - [x] `php artisan test` pass
-- [x] 30 tests passed
-- [x] 130 assertions passed
+- [x] 41 tests passed
+- [x] 179 assertions passed
+
 
 ### Admin Catalog — Initial (Category & Brand)
 - [x] Admin `CategoryController` and `BrandController` (basic CRUD)
@@ -137,29 +138,29 @@
 - [x] Feature tests cho Admin Product
 - [x] Feature tests cho Admin Product Variant
 
-## 🔄 Current Focus
-
-### Admin Product Image CRUD
-
-- [ ] Upload product image to Cloudinary
-- [ ] Delete product image from Cloudinary
-- [ ] Set primary image
-- [ ] Validate max 10 images per product
-- [ ] Ensure only 1 primary image per product
-- [ ] Store `image_url` and `public_id`
-- [ ] Protect routes with `auth:sanctum` + `role:admin`
-- [ ] Mock Cloudinary service in tests
-- [ ] Feature tests cho Admin Product Image
+### Admin Product Image
+- [x] Upload product image to Cloudinary
+- [x] Delete product image from Cloudinary
+- [x] Set primary image
+- [x] Validate max 10 images per product
+- [x] Ensure only 1 primary image per product
+- [x] Feature tests cho Admin Product Image pass
 ---
 
-## 📋 Next Queue
+## 🔄 Current Focus
 
-### Cart
-- [ ] Guest cart
-- [ ] User cart
-- [ ] Merge guest cart
-- [ ] Cart API
-- [ ] Cart tests
+### Cart API
+- [x] Guest cart
+- [x] User cart
+- [x] Merge guest cart
+- [x] Add item to cart
+- [x] Update item quantity
+- [x] Remove item from cart
+- [x] Clear cart
+- [x] Same variant sums quantity
+- [x] Quantity cannot exceed variant stock
+- [x] Cart response calculates price real-time
+- [x] Feature tests cho Cart API pass
 
 ### Voucher
 - [ ] Voucher apply
