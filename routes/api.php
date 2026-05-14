@@ -36,6 +36,9 @@ Route::get('/brands', [\App\Http\Controllers\Api\Brand\BrandController::class, '
 Route::get('/brands/{slug}', [\App\Http\Controllers\Api\Brand\BrandController::class, 'show']);
 // Vouchers (check public)
 Route::post('/vouchers/check', [\App\Http\Controllers\Api\Voucher\VoucherController::class, 'check']);
+// Order lookup (public)
+Route::post('/orders/lookup', [\App\Http\Controllers\Api\Order\OrderLookupController::class, 'store'])
+    ->middleware('throttle:10,1');
 
 // ============================================================
 // CART ROUTES (guest + user — không yêu cầu auth)

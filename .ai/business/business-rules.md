@@ -118,6 +118,10 @@ OrderItem phải snapshot:
 - sku
 - unit_price
 - image_url
+- customer_name (nullable)
+- customer_email (nullable)
+- customer_phone (nullable)
+- Ưu tiên `customer_email` / `customer_phone` cho lookup; giữ tương thích `guest_email` / `shipping_phone` trong giai đoạn chuyển tiếp.
 7. Trừ stock từng variant → xóa giỏ hàng 
 - Trừ stock phải thực hiện trong DB transaction
 - Lock row variant khi checkout (`SELECT FOR UPDATE`)
@@ -208,6 +212,9 @@ Khách hàng có thể tra cứu đơn hàng bằng:
 - **order_code + email**
 hoặc
 - **order_code + phone**
+- Đối chiếu contact theo snapshot trên `orders`: `customer_email`, `customer_phone`.
+- Không dùng `users.email` làm source chính cho lookup.
+- Giữ tương thích dữ liệu cũ bằng fallback `guest_email` / `shipping_phone` khi `customer_*` chưa có.
 
 Cả 2 thông tin phải khớp với dữ liệu lúc đặt hàng.
 
@@ -220,7 +227,7 @@ Cả 2 thông tin phải khớp với dữ liệu lúc đặt hàng.
   - email
   - phone
 - Nếu nhập cả email và phone:
-- cả hai phải cùng khớp
+  - cả hai phải cùng khớp.
 
 ---
 
@@ -245,6 +252,7 @@ Sau khi tra cứu thành công, hiển thị:
 - order_code
 - order_status
 - order_date
+- order_items
 - danh sách sản phẩm
 - quantity
 - tổng tiền
@@ -252,6 +260,7 @@ Sau khi tra cứu thành công, hiển thị:
 - địa chỉ giao hàng (có thể mask một phần)
 - trạng thái vận chuyển
 - tracking_number (nếu có)
+- Mask `shipping_address`: chỉ hiển thị 20 ký tự đầu, phần còn lại thay bằng `****`.
 
 ---
 
@@ -259,12 +268,12 @@ Sau khi tra cứu thành công, hiển thị:
 
 Khách hàng có thể xem tiến trình đơn hàng:
 
-- Pending
-- Confirmed
-- Processing
-- Shipped
-- Delivered
-- Cancelled
+- Timeline là static timeline suy ra từ `orders.status` hiện tại.
+- Mỗi item timeline gồm:
+  - `status`
+  - `state`: `reached` | `current` | `pending`
+- Nếu đơn ở `cancelled` thì timeline dừng ở `cancelled`.
+- Nếu đơn ở `returned` thì timeline dừng ở `returned`.
 
 ---
 
@@ -273,6 +282,7 @@ Khách hàng có thể xem tiến trình đơn hàng:
 Giới hạn số lần tra cứu:
 
 - tối đa `10 requests / phút / IP`
+- Gắn middleware `throttle:10,1` cho `POST /api/orders/lookup`.
 
 Để tránh brute-force dò mã đơn hàng.
 

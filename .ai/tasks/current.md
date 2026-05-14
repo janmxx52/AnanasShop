@@ -71,8 +71,8 @@
 
 ### Test Status
 - [x] `php artisan test` pass
-- [x] 89 tests passed
-- [x] 343 assertions passed
+- [x] 102 tests passed
+- [x] 395 assertions passed
 
 
 ### Admin Catalog — Initial (Category & Brand)
@@ -216,6 +216,21 @@
 - [x] Admin update order status
 - [x] Validate order status flow
 - [x] Feature tests cho Order Management pass
+
+### Order Lookup API
+- [x] Public endpoint `POST /api/orders/lookup`
+- [x] Lookup by `order_code + email`
+- [x] Lookup by `order_code + phone`
+- [x] Supports guest orders
+- [x] Supports user orders
+- [x] Rejects lookup with only `order_code`
+- [x] Requires both email and phone to match if both provided
+- [x] Failed lookup returns generic message only
+- [x] Failed lookup does not leak email/phone/address
+- [x] Success response masks shipping address
+- [x] Response contains status timeline
+- [x] Throttle applies to lookup endpoint
+- [x] Feature tests cho Order Lookup pass
 
 ## 📋 Upcoming — Do not work yet
 

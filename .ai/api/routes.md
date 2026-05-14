@@ -36,6 +36,11 @@
 |--------|----------|-------------|
 | POST | `/api/vouchers/check` | Kiểm tra voucher hợp lệ |
 
+### Order Lookup
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/orders/lookup` | Tra cứu đơn hàng không cần đăng nhập (`throttle:10,1`) |
+
 ---
 
 ## 🔐 Protected Routes (auth:sanctum required)

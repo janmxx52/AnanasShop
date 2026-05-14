@@ -186,6 +186,9 @@
 | user_id | bigint UNSIGNED | NULLABLE, FK → users.id | NULL = guest order |
 | guest_name | varchar(255) | NULLABLE | Bắt buộc nếu guest |
 | guest_email | varchar(255) | NULLABLE | Bắt buộc nếu guest |
+| customer_name | varchar(255) | NULLABLE | Contact snapshot for order lookup |
+| customer_email | varchar(255) | NULLABLE | Contact snapshot for order lookup |
+| customer_phone | varchar(20) | NULLABLE | Contact snapshot for order lookup |
 | voucher_id | bigint UNSIGNED | NULLABLE, FK → vouchers.id | |
 | code | varchar(50) | NOT NULL, UNIQUE | VD: ANS-20250511-0001 |
 | status | enum | NOT NULL | Xem bên dưới |
@@ -204,6 +207,7 @@
 | updated_at | timestamp | | |
 
 > **Guest order**: `user_id = null`, `guest_name` + `guest_email` bắt buộc (validate ở service layer)
+> **Order lookup contact source**: Ưu tiên `customer_email` + `customer_phone`; giữ tương thích `guest_email` + `shipping_phone` cho dữ liệu cũ.
 
 **Order Status enum:**
 - `pending` — Chờ xác nhận
