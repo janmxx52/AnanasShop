@@ -110,10 +110,10 @@ class DashboardStatsTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $product = Product::factory()->create(['is_active' => true]);
 
-        ProductVariant::factory()->for($product)->create(['stock' => 1]);
-        ProductVariant::factory()->for($product)->create(['stock' => 5]);
-        ProductVariant::factory()->for($product)->create(['stock' => 6]);
-        ProductVariant::factory()->for($product)->create(['stock' => 0]);
+        ProductVariant::factory()->for($product)->create(['size' => 'S1', 'color' => 'Color 1', 'stock' => 1]);
+        ProductVariant::factory()->for($product)->create(['size' => 'S2', 'color' => 'Color 2', 'stock' => 5]);
+        ProductVariant::factory()->for($product)->create(['size' => 'S3', 'color' => 'Color 3', 'stock' => 6]);
+        ProductVariant::factory()->for($product)->create(['size' => 'S4', 'color' => 'Color 4', 'stock' => 0]);
 
         $response = $this->actingAs($admin, 'sanctum')->getJson('/api/admin/dashboard/stats');
 
@@ -125,9 +125,9 @@ class DashboardStatsTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $product = Product::factory()->create(['is_active' => true]);
 
-        ProductVariant::factory()->for($product)->create(['stock' => 0]);
-        ProductVariant::factory()->for($product)->create(['stock' => 0]);
-        ProductVariant::factory()->for($product)->create(['stock' => 2]);
+        ProductVariant::factory()->for($product)->create(['size' => 'S1', 'color' => 'Color 1', 'stock' => 0]);
+        ProductVariant::factory()->for($product)->create(['size' => 'S2', 'color' => 'Color 2', 'stock' => 0]);
+        ProductVariant::factory()->for($product)->create(['size' => 'S3', 'color' => 'Color 3', 'stock' => 2]);
 
         $response = $this->actingAs($admin, 'sanctum')->getJson('/api/admin/dashboard/stats');
 
@@ -304,7 +304,13 @@ class DashboardStatsTest extends TestCase
     {
         $variant = null;
         if ($product) {
+            $variantIndex = ProductVariant::query()
+                ->where('product_id', $product->id)
+                ->count() + 1;
+
             $variant = ProductVariant::factory()->for($product)->create([
+                'size' => 'S' . $variantIndex,
+                'color' => 'Color ' . $variantIndex,
                 'stock' => 20,
                 'price_adjustment' => 0,
             ]);
