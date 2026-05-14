@@ -246,19 +246,34 @@
 | id | bigint UNSIGNED | PK, AI | |
 | user_id | bigint UNSIGNED | FK → users.id | |
 | product_id | bigint UNSIGNED | FK → products.id | |
-| order_item_id | bigint UNSIGNED | NULLABLE, FK → order_items.id | Chỉ review sau khi mua |
+| order_item_id | bigint UNSIGNED | FK → order_items.id, UNIQUE | Mỗi order_item chỉ 1 review |
 | rating | tinyint | NOT NULL | 1–5 |
 | comment | text | NULLABLE | |
-| images | json | NULLABLE | Mảng Cloudinary URLs |
-| is_approved | tinyint(1) | DEFAULT 1 | |
+| is_approved | tinyint(1) | DEFAULT 1 | Phase hiện tại default true |
 | created_at | timestamp | | |
 | updated_at | timestamp | | |
 
-> **UNIQUE**: (user_id, order_item_id)
+> **UNIQUE**: (order_item_id)
 
 ---
 
-## 14. wishlists
+## 14. review_images
+
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|-------|
+| id | bigint UNSIGNED | PK, AI | |
+| review_id | bigint UNSIGNED | FK → reviews.id | |
+| image_url | varchar(500) | NOT NULL | Cloudinary URL |
+| public_id | varchar(255) | NOT NULL | Cloudinary public_id |
+| sort_order | int | NULLABLE | |
+| created_at | timestamp | | |
+| updated_at | timestamp | | |
+
+> **Rule**: Mỗi review tối đa 3 ảnh (enforce ở app layer + tests).
+
+---
+
+## 15. wishlists
 
 | Column | Type | Constraints | Notes |
 |--------|------|-------------|-------|
@@ -271,7 +286,7 @@
 
 ---
 
-## 15. voucher_usages
+## 16. voucher_usages
 
 | Column | Type | Constraints | Notes |
 |--------|------|-------------|-------|
@@ -295,6 +310,8 @@ users          ─< carts >─< cart_items >─ product_variants
 users          ─< orders >─< order_items >─ product_variants
 users          ─< wishlists >─ products
 users          ─< reviews
+products       ─< reviews
+reviews        ─< review_images
 products       ─< product_variants
 products       ─< product_images
 products       >─ categories

@@ -190,10 +190,33 @@ pending → confirmed → processing → shipping → delivered
 
 ## 7. Reviews
 
-- Chỉ review sản phẩm đã mua (order status = `delivered`)
-- Mỗi order_item review **1 lần** duy nhất
-- Rating 1–5 sao; tối đa 3 ảnh kèm theo
-- Rating avg tính real-time (không lưu trong DB)
+- Chỉ user đã đăng nhập mới được review (`auth:sanctum`)
+- Guest không được review
+- Chỉ review sản phẩm đã mua và order phải có status = `delivered`
+- Mỗi `order_item` chỉ được review 1 lần
+  - Dùng unique theo `order_item_id`
+  - User mua cùng product nhiều lần ở các `order_item` khác nhau vẫn được review nhiều lần
+- Rating từ `1..5`; comment là optional
+- Không lưu images bằng JSON trong bảng `reviews`
+- Dùng bảng riêng `review_images`:
+  - `review_id`
+  - `image_url`
+  - `public_id`
+  - `sort_order` (nullable)
+- Mỗi review tối đa 3 ảnh
+- Upload ảnh review dùng `CloudinaryService`
+  - Ưu tiên tách folder riêng cho review images nếu service hỗ trợ
+  - Nếu upload ảnh thành công nhưng tạo review fail, cần cleanup ảnh đã upload nếu codebase hỗ trợ delete
+- Giữ route `DELETE /api/reviews/{id}`
+  - User chỉ được xóa review của chính mình
+  - Chưa làm admin moderation ở phase này
+- Product public API trả:
+  - `rating_avg`
+  - `review_count`
+  cho cả product list và product detail
+- Rating avg tính real-time, không lưu DB
+- Nếu có field `is_approved`, chỉ tính aggregate trên review `is_approved = true`
+- Trong phase này `is_approved` default = true, chưa làm admin moderation
 - Không cho sửa rating sau khi submit
 ---
 

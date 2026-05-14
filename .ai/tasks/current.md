@@ -266,6 +266,18 @@
 - [x] Response includes product data
 - [x] Feature tests cho Wishlist pass
 
+### Review API (Analysis & Decisions)
+- [x] Chốt dùng bảng `review_images` thay cho `reviews.images` JSON
+- [x] Chốt mỗi `order_item` chỉ review 1 lần với unique `order_item_id`
+- [x] Chốt user mua cùng product nhiều lần vẫn review nhiều lần theo `order_item` khác nhau
+- [x] Chốt giữ route `DELETE /api/reviews/{id}` và user chỉ xóa review của chính mình
+- [x] Chốt Product public API trả `rating_avg` + `review_count` cho list và detail
+- [x] Chốt aggregate rating tính real-time, không lưu DB
+- [x] Chốt chỉ tính review `is_approved = true` khi aggregate (nếu có field)
+- [x] Chốt phase này `is_approved` default true, chưa làm admin moderation
+- [x] Chốt upload ảnh review qua `CloudinaryService`, tối đa 3 ảnh/review
+- [x] Chốt cleanup ảnh đã upload nếu tạo review fail (khi service hỗ trợ delete)
+
 ## 📋 Upcoming — Do not work yet
 
 ### Payments

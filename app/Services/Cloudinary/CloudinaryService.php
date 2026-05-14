@@ -15,10 +15,21 @@ class CloudinaryService
      */
     public function upload(UploadedFile $file): array
     {
+        return $this->uploadToFolder($file, 'ananas/avatars');
+    }
+
+    /**
+     * Upload a file to Cloudinary with a specific folder.
+     * Returns ['url' => string, 'public_id' => ?string]
+     */
+    public function uploadToFolder(UploadedFile $file, ?string $folder = null): array
+    {
+        $targetFolder = $folder ?: 'ananas/avatars';
+
         try {
             if (class_exists('\\Cloudinary\\Uploader')) {
                 $path = $file->getPathname();
-                $result = \Cloudinary\Uploader::upload($path, ['folder' => 'ananas/avatars']);
+                $result = \Cloudinary\Uploader::upload($path, ['folder' => $targetFolder]);
                 return [
                     'url' => $result['secure_url'] ?? $result['url'] ?? null,
                     'public_id' => $result['public_id'] ?? null,
@@ -29,7 +40,8 @@ class CloudinaryService
         }
 
         // Fallback: store in local 'public' disk
-        $stored = $file->store('public/avatars');
+        $localFolder = str_replace(['ananas/', '\\'], ['', '/'], $targetFolder);
+        $stored = $file->store('public/' . trim($localFolder, '/'));
         return [
             'url' => Storage::url($stored),
             'public_id' => null,

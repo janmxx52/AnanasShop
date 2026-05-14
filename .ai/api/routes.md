@@ -19,8 +19,8 @@
 ### Products
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/api/products` | Danh sách sản phẩm (filter, sort, paginate) |
-| GET | `/api/products/{slug}` | Chi tiết sản phẩm |
+| GET | `/api/products` | Danh sách sản phẩm (filter, sort, paginate, có `rating_avg` + `review_count`) |
+| GET | `/api/products/{slug}` | Chi tiết sản phẩm (có `rating_avg` + `review_count`) |
 | GET | `/api/products/{slug}/reviews` | Danh sách đánh giá |
 
 ### Categories & Brands
@@ -88,8 +88,8 @@
 ### Reviews & Wishlist
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/products/{slug}/reviews` | Đăng đánh giá |
-| DELETE | `/api/reviews/{id}` | Xóa đánh giá |
+| POST | `/api/products/{slug}/reviews` | Đăng đánh giá (chỉ user đã mua, order delivered) |
+| DELETE | `/api/reviews/{id}` | Xóa đánh giá (user chỉ xóa review của chính mình) |
 | GET | `/api/wishlist` | Danh sách yêu thích (paginate, default `per_page=12`, max `50`) |
 | POST | `/api/wishlist/toggle` | Toggle yêu thích theo `product_id` |
 | DELETE | `/api/wishlist/{product}` | Xóa wishlist item (idempotent: item không tồn tại vẫn success) |

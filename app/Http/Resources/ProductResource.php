@@ -22,6 +22,8 @@ class ProductResource extends JsonResource
             'sale_price' => $product->sale_price !== null ? (float) $product->sale_price : null,
             'is_featured' => (bool) $product->is_featured,
             'is_active' => (bool) $product->is_active,
+            'rating_avg' => $product->rating_avg !== null ? round((float) $product->rating_avg, 2) : null,
+            'review_count' => isset($product->review_count) ? (int) $product->review_count : 0,
             'brand' => $product->brand ? [
                 'id' => $product->brand->id,
                 'name' => $product->brand->name,

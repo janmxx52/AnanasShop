@@ -13,6 +13,7 @@ class ProductRepository
     {
         $query = Product::query()->where('is_active', true)
             ->with(['variants', 'images', 'category', 'brand']);
+        $this->applyReviewAggregates($query);
 
         if (!empty($filters['q'])) {
             $q = $filters['q'];
@@ -92,11 +93,34 @@ class ProductRepository
 
     public function findBySlugWithRelations(string $slug): ?Product
     {
-        return Product::with(['variants', 'images', 'category', 'brand'])->where('slug', $slug)->first();
+        $query = Product::query()
+            ->with(['variants', 'images', 'category', 'brand'])
+            ->where('slug', $slug);
+        $this->applyReviewAggregates($query);
+
+        return $query->first();
     }
 
     public function findByIdWithRelations(int $id): ?Product
     {
-        return Product::with(['variants', 'images', 'category', 'brand'])->find($id);
+        $query = Product::query()
+            ->with(['variants', 'images', 'category', 'brand'])
+            ->whereKey($id);
+        $this->applyReviewAggregates($query);
+
+        return $query->first();
+    }
+
+    private function applyReviewAggregates($query): void
+    {
+        $query->withAvg([
+            'reviews as rating_avg' => function ($reviewQuery) {
+                $reviewQuery->where('is_approved', true);
+            },
+        ], 'rating')->withCount([
+            'reviews as review_count' => function ($reviewQuery) {
+                $reviewQuery->where('is_approved', true);
+            },
+        ]);
     }
 }
