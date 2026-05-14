@@ -29,7 +29,7 @@ return new class extends Migration
             $table->decimal('shipping_fee', 12, 2)->default(0);
             $table->decimal('total', 12, 2);
             $table->enum('payment_method', ['cod', 'vnpay', 'momo'])->default('cod');
-            $table->enum('payment_status', ['pending', 'paid', 'failed', 'refunded'])->default('pending');
+            $table->enum('payment_status', ['pending', 'paid', 'failed', 'cancelled', 'refunded'])->default('pending');
             $table->string('shipping_name');
             $table->string('shipping_phone', 20);
             $table->text('shipping_address');

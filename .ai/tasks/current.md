@@ -71,8 +71,8 @@
 
 ### Test Status
 - [x] `php artisan test` pass
-- [x] 102 tests passed
-- [x] 395 assertions passed
+- [x] 109 tests passed
+- [x] 425 assertions passed
 
 
 ### Admin Catalog — Initial (Category & Brand)
@@ -231,6 +231,16 @@
 - [x] Response contains status timeline
 - [x] Throttle applies to lookup endpoint
 - [x] Feature tests cho Order Lookup pass
+
+### Payment Foundation
+- [x] COD checkout creates order with `payment_status = pending`
+- [x] Admin marks COD order delivered -> `payment_status = paid`
+- [x] Customer cancelling COD order -> `payment_status = cancelled`
+- [x] Admin cancelling COD order -> `payment_status = cancelled`
+- [x] Non-delivered COD order remains `pending`
+- [x] `payment_status` cannot be changed directly by normal order status payload
+- [x] `failed` is not used for COD cancel
+- [x] Feature tests cho Payment Foundation pass
 
 ## 📋 Upcoming — Do not work yet
 

@@ -197,7 +197,7 @@
 | shipping_fee | decimal(10,2) | DEFAULT 0 | |
 | total | decimal(12,2) | NOT NULL | Tổng thanh toán |
 | payment_method | enum('cod','vnpay','momo') | NOT NULL | |
-| payment_status | enum('pending','paid','failed','refunded') | DEFAULT 'pending' | |
+| payment_status | enum('pending','paid','failed','cancelled','refunded') | DEFAULT 'pending' | |
 | shipping_name | varchar(255) | NOT NULL | Snapshot địa chỉ |
 | shipping_phone | varchar(20) | NOT NULL | |
 | shipping_address | text | NOT NULL | Full address string |
@@ -208,6 +208,8 @@
 
 > **Guest order**: `user_id = null`, `guest_name` + `guest_email` bắt buộc (validate ở service layer)
 > **Order lookup contact source**: Ưu tiên `customer_email` + `customer_phone`; giữ tương thích `guest_email` + `shipping_phone` cho dữ liệu cũ.
+
+> **Payment Foundation note**: Nếu schema cũ chưa có `payment_status = cancelled` thì phải add migration để mở rộng enum/constraint tương ứng.
 
 **Order Status enum:**
 - `pending` — Chờ xác nhận

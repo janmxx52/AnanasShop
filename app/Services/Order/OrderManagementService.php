@@ -85,6 +85,9 @@ class OrderManagementService
                 $this->cancelOrder($order);
             } else {
                 $order->status = $newStatus;
+                if ($newStatus === 'delivered' && $order->payment_method === 'cod') {
+                    $order->payment_status = 'paid';
+                }
                 $order->save();
             }
 
@@ -153,6 +156,7 @@ class OrderManagementService
         }
 
         $order->status = 'cancelled';
+        $order->payment_status = 'cancelled';
         $order->save();
     }
 }

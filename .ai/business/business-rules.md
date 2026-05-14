@@ -143,9 +143,23 @@ pending → confirmed → processing → shipping → delivered
 
 ## 6. Payment
 
+### 6.0 Payment Foundation (current phase override)
+
+- Chốt convention `payment_status`:
+  - `pending`: COD chưa thu tiền hoặc online payment chưa callback.
+  - `paid`: đã thanh toán thành công.
+  - `failed`: chỉ dùng cho online payment thất bại (VNPay/MoMo callback fail ở phase sau).
+  - `cancelled`: order bị hủy trước khi thanh toán hoàn tất.
+  - `refunded`: đã hoàn tiền.
+- COD flow:
+  - Checkout COD: `payment_method = cod`, `payment_status = pending`.
+  - Admin update order `delivered`: nếu `payment_method = cod` thì `payment_status = paid`.
+  - Customer/Admin cancel order: `payment_status = cancelled`.
+- Phase này không tích hợp VNPay/MoMo, không gọi external payment gateway.
+
 - 3 phương thức: `cod`, `vnpay`, `momo`
 - COD: payment_status = `pending` cho đến khi giao
-- VNPay/MoMo: callback thành công → `paid`; thất bại → order `cancelled`, hoàn stock
+- VNPay/MoMo: callback thành công → `paid`; thất bại → `payment_status = failed` (order xử lý theo flow online payment ở phase sau)
 - Payment callback phải idempotent (cùng callback gọi nhiều lần không được xử lý lặp)
 
 ### 6.1 Cấu hình
@@ -169,7 +183,8 @@ pending → confirmed → processing → shipping → delivered
   - chỉ xử lý 1 lần duy nhất
 
 ### 6.4 Update status
-- order_status = `delivered` → payment_status = `paid`
+- order_status = `delivered` và `payment_method = cod` → payment_status = `paid`
+- order_status = `cancelled` → payment_status = `cancelled`
 
 ---
 

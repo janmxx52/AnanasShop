@@ -19,6 +19,9 @@ class AdminUpdateOrderStatusRequest extends FormRequest
                 'string',
                 'in:pending,confirmed,processing,shipping,delivered,cancelled,returned',
             ],
+            'payment_status' => [
+                'prohibited',
+            ],
         ];
     }
 }
