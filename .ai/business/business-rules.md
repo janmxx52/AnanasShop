@@ -199,9 +199,24 @@ pending → confirmed → processing → shipping → delivered
 
 ## 8. Wishlist
 
+- Wishlist chỉ dành cho user đã đăng nhập (`auth:sanctum`)
+- Guest không dùng wishlist
+- API chuẩn:
+  - `GET /api/wishlist`
+  - `POST /api/wishlist/toggle`
+  - `DELETE /api/wishlist/{product}`
+- Không giữ backward compatibility với endpoint cũ `POST /api/wishlist/{productId}`
 - Toggle: add nếu chưa có, remove nếu đã có
+- `DELETE /api/wishlist/{product}` là idempotent:
+  - item tồn tại → xóa và trả success
+  - item không tồn tại → vẫn trả success (không trả 404)
+- `GET /api/wishlist` dùng pagination:
+  - default `per_page = 12`
+  - max `per_page = 50`
+- Chỉ cho wishlist product `is_active = true`
+- Product soft deleted không được wishlist
 - Không giới hạn số lượng sản phẩm
-- Không được duplicate (user_id + product_id)
+- Database phải đảm bảo unique `(user_id, product_id)`
 
 ---
 

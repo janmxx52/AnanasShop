@@ -242,6 +242,30 @@
 - [x] `failed` is not used for COD cancel
 - [x] Feature tests cho Payment Foundation pass
 
+### Wishlist API (Analysis & Decisions)
+- [x] Chốt routes chuẩn: `GET /api/wishlist`, `POST /api/wishlist/toggle`, `DELETE /api/wishlist/{product}`
+- [x] Không giữ endpoint cũ `POST /api/wishlist/{productId}`
+- [x] Chốt `DELETE /api/wishlist/{product}` idempotent (không trả 404 khi item không tồn tại)
+- [x] Chốt pagination cho `GET /api/wishlist` (default `per_page=12`, max `50`)
+- [x] Chốt chỉ cho user đăng nhập (`auth:sanctum`)
+- [x] Chốt chỉ wishlist product active và chưa soft delete
+- [x] Chốt database unique `(user_id, product_id)`
+
+### Wishlist API
+- [x] Guest cannot access wishlist routes
+- [x] User can add product to wishlist via toggle
+- [x] User can remove product from wishlist via toggle
+- [x] User can list own wishlist
+- [x] Wishlist list is paginated
+- [x] User cannot wishlist inactive product
+- [x] User cannot wishlist soft deleted product
+- [x] Duplicate wishlist is prevented
+- [x] DELETE removes existing wishlist item
+- [x] DELETE is idempotent when item does not exist
+- [x] User cannot affect another user's wishlist item
+- [x] Response includes product data
+- [x] Feature tests cho Wishlist pass
+
 ## 📋 Upcoming — Do not work yet
 
 ### Payments

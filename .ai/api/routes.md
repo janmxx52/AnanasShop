@@ -90,8 +90,9 @@
 |--------|----------|-------------|
 | POST | `/api/products/{slug}/reviews` | Đăng đánh giá |
 | DELETE | `/api/reviews/{id}` | Xóa đánh giá |
-| GET | `/api/wishlist` | Danh sách yêu thích |
-| POST | `/api/wishlist/{productId}` | Toggle yêu thích |
+| GET | `/api/wishlist` | Danh sách yêu thích (paginate, default `per_page=12`, max `50`) |
+| POST | `/api/wishlist/toggle` | Toggle yêu thích theo `product_id` |
+| DELETE | `/api/wishlist/{product}` | Xóa wishlist item (idempotent: item không tồn tại vẫn success) |
 
 ---
 
@@ -153,6 +154,13 @@
 ?sort=price_asc|price_desc|newest|popular
 ?search={keyword}
 ?is_featured=1
+```
+
+### GET /api/wishlist
+```
+?page=1
+?per_page=12      // default
+?per_page<=50     // max
 ```
 
 ---

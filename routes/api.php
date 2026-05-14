@@ -90,7 +90,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Wishlist
     Route::prefix('wishlist')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\User\WishlistController::class, 'index']);
-        Route::post('/{productId}', [\App\Http\Controllers\Api\User\WishlistController::class, 'toggle']);
+        Route::post('/toggle', [\App\Http\Controllers\Api\User\WishlistController::class, 'toggle']);
+        Route::delete('/{product}', [\App\Http\Controllers\Api\User\WishlistController::class, 'destroy'])->whereNumber('product');
     });
     // Vouchers (apply)
     Route::post('/vouchers/apply', [\App\Http\Controllers\Api\Voucher\VoucherController::class, 'apply']);
