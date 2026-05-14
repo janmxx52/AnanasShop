@@ -71,8 +71,8 @@
 |--------|----------|-------------|
 | GET | `/api/orders` | Lịch sử đơn hàng |
 | POST | `/api/orders` | Tạo đơn hàng mới |
-| GET | `/api/orders/{code}` | Chi tiết đơn hàng |
-| POST | `/api/orders/{code}/cancel` | Hủy đơn hàng |
+| GET | `/api/orders/{order_code}` | Chi tiết đơn hàng |
+| POST | `/api/orders/{order_code}/cancel` | Hủy đơn hàng |
 
 ### Payment
 | Method | Endpoint | Description |
@@ -116,8 +116,8 @@
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/api/admin/orders` | Tất cả đơn hàng |
-| GET | `/api/admin/orders/{code}` | Chi tiết |
-| PUT | `/api/admin/orders/{code}/status` | Cập nhật trạng thái |
+| GET | `/api/admin/orders/{order_code}` | Chi tiết |
+| PATCH | `/api/admin/orders/{order_code}/status` | Cập nhật trạng thái (bao gồm cancel với `status=cancelled`) |
 
 ### Users & Vouchers
 | Method | Endpoint | Description |

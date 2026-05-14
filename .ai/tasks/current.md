@@ -71,8 +71,8 @@
 
 ### Test Status
 - [x] `php artisan test` pass
-- [x] 62 tests passed
-- [x] 254 assertions passed
+- [x] 89 tests passed
+- [x] 343 assertions passed
 
 
 ### Admin Catalog — Initial (Category & Brand)
@@ -201,15 +201,21 @@
 
 ### Order Management API
 
-- [ ] List user orders
-- [ ] Show order detail by code
-- [ ] Cancel order
-- [ ] Restore stock when order cancelled
-- [ ] Restore voucher usage when order cancelled
-- [ ] Admin list orders
-- [ ] Admin show order detail
-- [ ] Admin update order status
-- [ ] Feature tests cho Order Management
+- [x] Apply decisions: voucher usage rollback via `revoked_at` (no hard delete)
+- [x] Apply decisions: admin cancel via PATCH status=`cancelled` (no separate endpoint)
+- [x] Apply decisions: admin order status route standardized to PATCH only
+- [x] List user orders
+- [x] Show user order detail by order_code
+- [x] Cancel user order
+- [x] Restore stock when order cancelled
+- [x] Restore voucher usage with revoked_at
+- [x] Decrement voucher used_count when cancelled
+- [x] Prevent double cancel / double restore
+- [x] Admin list orders
+- [x] Admin show order detail
+- [x] Admin update order status
+- [x] Validate order status flow
+- [x] Feature tests cho Order Management pass
 
 ## 📋 Upcoming — Do not work yet
 

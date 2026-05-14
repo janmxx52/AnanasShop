@@ -95,6 +95,10 @@ Nếu guest đăng nhập khi đang có cart:
 - Mỗi order chỉ áp dụng **1 voucher**
 - Sau đặt hàng thành công → `used_count += 1`
 - Nếu order bị cancel → hoàn lại lượt dùng voucher
+- Không xóa `voucher_usages` khi order bị cancel.
+- Rollback voucher usage bằng cách set `voucher_usages.revoked_at = now()`.
+- Khi rollback voucher usage phải `used_count -= 1` trong cùng transaction.
+- Khi check `usage_limit` và `usage_per_user` chỉ tính `voucher_usages` có `revoked_at = null`.
 - Voucher usage update phải chạy trong DB transaction 
 
 ---
@@ -122,6 +126,7 @@ OrderItem phải snapshot:
 ### 5.2 Hủy đơn
 - Customer hủy khi status ∈ `[pending, confirmed]`
 - Admin hủy ở mọi status trừ `delivered`
+- Admin hủy đi qua API update status với `status=cancelled` (không có endpoint admin-cancel riêng)
 - Khi hủy: hoàn stock + hoàn voucher usage
 
 ### 5.3 Status Flow

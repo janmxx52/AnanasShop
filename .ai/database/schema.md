@@ -271,9 +271,13 @@
 |--------|------|-------------|-------|
 | id | bigint UNSIGNED | PK, AI | |
 | voucher_id | bigint UNSIGNED | FK → vouchers.id | |
-| user_id | bigint UNSIGNED | FK → users.id | |
-| order_id | bigint UNSIGNED | FK → orders.id | |
+| user_id | bigint UNSIGNED | NULLABLE, FK → users.id | Null when guest usage |
+| guest_token | varchar(100) | NULLABLE | Null when user usage |
+| order_id | bigint UNSIGNED | NULLABLE, FK → orders.id | Keep usage audit if order deleted |
+| revoked_at | timestamp | NULLABLE | Soft-revoke usage when order is cancelled |
 | created_at | timestamp | | |
+
+> **Usage counting rule**: `usage_limit` và `usage_per_user` chỉ tính các row có `revoked_at IS NULL`.
 
 ---
 

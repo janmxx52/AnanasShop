@@ -46,7 +46,9 @@ class VoucherService
         }
 
         // usage limit
-        $totalUsed = VoucherUsage::where('voucher_id', $voucher->id)->count();
+        $totalUsed = VoucherUsage::where('voucher_id', $voucher->id)
+            ->whereNull('revoked_at')
+            ->count();
         if ($voucher->usage_limit && $totalUsed >= $voucher->usage_limit) {
             throw ValidationException::withMessages(['code' => 'Voucher usage limit reached']);
         }
@@ -56,9 +58,15 @@ class VoucherService
         $guestToken = $request->header('X-Guest-Token');
         $usedByCurrent = 0;
         if ($user) {
-            $usedByCurrent = VoucherUsage::where('voucher_id', $voucher->id)->where('user_id', $user->id)->count();
+            $usedByCurrent = VoucherUsage::where('voucher_id', $voucher->id)
+                ->where('user_id', $user->id)
+                ->whereNull('revoked_at')
+                ->count();
         } elseif ($guestToken) {
-            $usedByCurrent = VoucherUsage::where('voucher_id', $voucher->id)->where('guest_token', $guestToken)->count();
+            $usedByCurrent = VoucherUsage::where('voucher_id', $voucher->id)
+                ->where('guest_token', $guestToken)
+                ->whereNull('revoked_at')
+                ->count();
         }
 
         if ($voucher->usage_per_user && $usedByCurrent >= $voucher->usage_per_user) {

@@ -10,7 +10,11 @@ class VoucherUsage extends Model
     use HasFactory;
 
     protected $fillable = [
-        'voucher_id', 'user_id', 'guest_token', 'order_id',
+        'voucher_id', 'user_id', 'guest_token', 'order_id', 'revoked_at',
+    ];
+
+    protected $casts = [
+        'revoked_at' => 'datetime',
     ];
 
     public function voucher()

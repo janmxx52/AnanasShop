@@ -73,8 +73,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('orders')->group(function () {
         Route::get('/', [\App\Http\Controllers\Api\Order\OrderController::class, 'index']);
         Route::post('/', [\App\Http\Controllers\Api\Order\OrderController::class, 'store']);
-        Route::get('/{code}', [\App\Http\Controllers\Api\Order\OrderController::class, 'show']);
-        Route::post('/{code}/cancel', [\App\Http\Controllers\Api\Order\OrderController::class, 'cancel']);
+        Route::get('/{order_code}', [\App\Http\Controllers\Api\Order\OrderController::class, 'show']);
+        Route::post('/{order_code}/cancel', [\App\Http\Controllers\Api\Order\OrderController::class, 'cancel']);
     });
     // Payment (checkout yêu cầu auth)
     Route::post('/payments/checkout', [\App\Http\Controllers\Api\Payment\PaymentController::class, 'checkout']);
@@ -119,8 +119,8 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->name('admin.
     Route::apiResource('brands', \App\Http\Controllers\Api\Admin\BrandController::class);
     // Orders
     Route::get('/orders', [\App\Http\Controllers\Api\Admin\OrderController::class, 'index']);
-    Route::get('/orders/{code}', [\App\Http\Controllers\Api\Admin\OrderController::class, 'show']);
-    Route::put('/orders/{code}/status', [\App\Http\Controllers\Api\Admin\OrderController::class, 'updateStatus']);
+    Route::get('/orders/{order_code}', [\App\Http\Controllers\Api\Admin\OrderController::class, 'show']);
+    Route::patch('/orders/{order_code}/status', [\App\Http\Controllers\Api\Admin\OrderController::class, 'updateStatus']);
     // Users
     Route::get('/users', [\App\Http\Controllers\Api\Admin\UserController::class, 'index']);
     Route::get('/users/{id}', [\App\Http\Controllers\Api\Admin\UserController::class, 'show']);
