@@ -1,0 +1,328 @@
+<?php
+
+namespace App\Services\Order;
+
+use App\Models\Cart;
+use App\Models\CartItem;
+use App\Models\Order;
+use App\Models\ProductVariant;
+use App\Models\User;
+use App\Models\Voucher;
+use App\Models\VoucherUsage;
+use App\Services\Cart\CartService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+
+class OrderService
+{
+    private const SHIPPING_FEE = 30000.0;
+    private const FREE_SHIPPING_THRESHOLD = 500000.0;
+
+    public function __construct(private CartService $cartService)
+    {
+    }
+
+    public function checkoutGuest(Request $request, array $payload): Order
+    {
+        $this->assertCodOnly($payload['payment_method'] ?? null);
+
+        return $this->checkout(
+            request: $request,
+            user: null,
+            guestName: $payload['full_name'],
+            guestEmail: $payload['email'],
+            shippingName: $payload['full_name'],
+            shippingPhone: $payload['phone'],
+            shippingAddress: $payload['shipping_address'],
+            voucherCode: $payload['voucher_code'] ?? null,
+            note: $payload['note'] ?? null,
+        );
+    }
+
+    public function checkoutUser(Request $request, User $user, array $payload): Order
+    {
+        $this->assertCodOnly($payload['payment_method'] ?? null);
+
+        return $this->checkout(
+            request: $request,
+            user: $user,
+            guestName: null,
+            guestEmail: null,
+            shippingName: $payload['shipping_name'],
+            shippingPhone: $payload['shipping_phone'],
+            shippingAddress: $payload['shipping_address'],
+            voucherCode: $payload['voucher_code'] ?? null,
+            note: $payload['note'] ?? null,
+        );
+    }
+
+    private function checkout(
+        Request $request,
+        ?User $user,
+        ?string $guestName,
+        ?string $guestEmail,
+        string $shippingName,
+        string $shippingPhone,
+        string $shippingAddress,
+        ?string $voucherCode,
+        ?string $note
+    ): Order {
+        return DB::transaction(function () use (
+            $request,
+            $user,
+            $guestName,
+            $guestEmail,
+            $shippingName,
+            $shippingPhone,
+            $shippingAddress,
+            $voucherCode,
+            $note
+        ) {
+            [$cart] = $this->cartService->getOrCreateCartFromRequest($request);
+
+            $cart = Cart::query()->whereKey($cart->id)->lockForUpdate()->first();
+            if (!$cart) {
+                throw ValidationException::withMessages(['cart' => 'Cart not found']);
+            }
+
+            $cartItems = CartItem::query()
+                ->where('cart_id', $cart->id)
+                ->lockForUpdate()
+                ->get();
+
+            if ($cartItems->isEmpty()) {
+                throw ValidationException::withMessages(['cart' => 'Cart is empty']);
+            }
+
+            $variantIds = $cartItems->pluck('product_variant_id')->unique()->values()->all();
+
+            $variants = ProductVariant::query()
+                ->with(['product.images'])
+                ->whereIn('id', $variantIds)
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('id');
+
+            $subtotal = 0.0;
+            $snapshotItems = [];
+
+            foreach ($cartItems as $cartItem) {
+                $variant = $variants->get($cartItem->product_variant_id);
+                $product = $variant?->product;
+
+                if (!$variant || !$product || !$product->is_active) {
+                    throw ValidationException::withMessages([
+                        'cart_items' => "Variant {$cartItem->product_variant_id} unavailable",
+                    ]);
+                }
+
+                if ($variant->stock < $cartItem->quantity) {
+                    throw ValidationException::withMessages([
+                        'cart_items' => "Variant {$variant->id} has insufficient stock",
+                    ]);
+                }
+
+                $basePrice = $product->sale_price ?? $product->base_price;
+                $unitPrice = round(((float) $basePrice) + ((float) $variant->price_adjustment), 2);
+                $lineTotal = round($unitPrice * $cartItem->quantity, 2);
+
+                $subtotal += $lineTotal;
+
+                $variantName = $this->buildVariantName($variant->size, $variant->color);
+                $imageUrl = $product->images->firstWhere('is_primary', true)?->url
+                    ?? $product->images->sortBy('sort_order')->first()?->url;
+
+                $snapshotItems[] = [
+                    'variant' => $variant,
+                    'quantity' => $cartItem->quantity,
+                    'product_id' => $product->id,
+                    'product_variant_id' => $variant->id,
+                    'product_name' => $product->name,
+                    'variant_name' => $variantName,
+                    'sku' => $variant->sku,
+                    'image_url' => $imageUrl,
+                    'unit_price' => $unitPrice,
+                    'line_total' => $lineTotal,
+                    'variant_info' => [
+                        'size' => $variant->size,
+                        'color' => $variant->color,
+                        'color_hex' => $variant->color_hex,
+                        'sku' => $variant->sku,
+                        'price_adjustment' => (float) $variant->price_adjustment,
+                    ],
+                ];
+            }
+
+            $subtotal = round($subtotal, 2);
+
+            [$voucher, $discountAmount] = $this->resolveVoucher(
+                voucherCode: $voucherCode,
+                subtotal: $subtotal,
+                userId: $user?->id,
+                guestToken: $cart->guest_token
+            );
+
+            $shippingFee = $this->calculateShippingFee($subtotal);
+            $total = round($subtotal - $discountAmount + $shippingFee, 2);
+
+            $order = Order::create([
+                'user_id' => $user?->id,
+                'guest_name' => $guestName,
+                'guest_email' => $guestEmail,
+                'voucher_id' => $voucher?->id,
+                'code' => $this->generateUniqueOrderCode(),
+                'status' => 'pending',
+                'subtotal' => $subtotal,
+                'discount_amount' => $discountAmount,
+                'shipping_fee' => $shippingFee,
+                'total' => $total,
+                'payment_method' => 'cod',
+                'payment_status' => 'pending',
+                'shipping_name' => $shippingName,
+                'shipping_phone' => $shippingPhone,
+                'shipping_address' => $shippingAddress,
+                'note' => $note,
+            ]);
+
+            foreach ($snapshotItems as $snapshotItem) {
+                $order->items()->create([
+                    'product_id' => $snapshotItem['product_id'],
+                    'product_variant_id' => $snapshotItem['product_variant_id'],
+                    'product_name' => $snapshotItem['product_name'],
+                    'variant_name' => $snapshotItem['variant_name'],
+                    'sku' => $snapshotItem['sku'],
+                    'image_url' => $snapshotItem['image_url'],
+                    'unit_price' => $snapshotItem['unit_price'],
+                    'quantity' => $snapshotItem['quantity'],
+                    'line_total' => $snapshotItem['line_total'],
+                    'variant_info' => $snapshotItem['variant_info'],
+                ]);
+
+                $variant = $snapshotItem['variant'];
+                $variant->stock = $variant->stock - $snapshotItem['quantity'];
+                $variant->save();
+            }
+
+            if ($voucher) {
+                VoucherUsage::create([
+                    'voucher_id' => $voucher->id,
+                    'user_id' => $user?->id,
+                    'guest_token' => $cart->guest_token,
+                    'order_id' => $order->id,
+                ]);
+
+                $voucher->increment('used_count');
+            }
+
+            CartItem::query()->where('cart_id', $cart->id)->delete();
+
+            return $order->load(['items', 'voucher']);
+        });
+    }
+
+    private function resolveVoucher(
+        ?string $voucherCode,
+        float $subtotal,
+        ?int $userId,
+        ?string $guestToken
+    ): array {
+        if (!$voucherCode) {
+            return [null, 0.0];
+        }
+
+        $voucher = Voucher::query()->where('code', $voucherCode)->lockForUpdate()->first();
+        if (!$voucher) {
+            throw ValidationException::withMessages(['voucher_code' => 'Voucher not found']);
+        }
+
+        if (!$voucher->is_active) {
+            throw ValidationException::withMessages(['voucher_code' => 'Voucher is inactive']);
+        }
+
+        $now = now();
+        if ($voucher->starts_at && $now->lt($voucher->starts_at)) {
+            throw ValidationException::withMessages(['voucher_code' => 'Voucher not started']);
+        }
+        if ($voucher->expires_at && $now->gt($voucher->expires_at)) {
+            throw ValidationException::withMessages(['voucher_code' => 'Voucher expired']);
+        }
+
+        if ($subtotal < (float) $voucher->min_order_amount) {
+            throw ValidationException::withMessages([
+                'voucher_code' => 'Minimum order amount not met',
+            ]);
+        }
+
+        $totalUsed = VoucherUsage::query()->where('voucher_id', $voucher->id)->count();
+        if ($voucher->usage_limit !== null && $totalUsed >= $voucher->usage_limit) {
+            throw ValidationException::withMessages(['voucher_code' => 'Voucher usage limit reached']);
+        }
+
+        $usedByCurrent = 0;
+        if ($userId) {
+            $usedByCurrent = VoucherUsage::query()
+                ->where('voucher_id', $voucher->id)
+                ->where('user_id', $userId)
+                ->count();
+        } elseif ($guestToken) {
+            $usedByCurrent = VoucherUsage::query()
+                ->where('voucher_id', $voucher->id)
+                ->where('guest_token', $guestToken)
+                ->count();
+        }
+
+        if ($voucher->usage_per_user && $usedByCurrent >= $voucher->usage_per_user) {
+            throw ValidationException::withMessages(['voucher_code' => 'Voucher usage per user exceeded']);
+        }
+
+        $discount = 0.0;
+        if ($voucher->type === 'percent') {
+            $discount = round($subtotal * ((float) $voucher->value / 100), 2);
+            if ($voucher->max_discount !== null) {
+                $discount = min($discount, (float) $voucher->max_discount);
+            }
+        } else {
+            $discount = min((float) $voucher->value, $subtotal);
+        }
+
+        return [$voucher, round($discount, 2)];
+    }
+
+    private function calculateShippingFee(float $subtotal): float
+    {
+        return $subtotal >= self::FREE_SHIPPING_THRESHOLD ? 0.0 : self::SHIPPING_FEE;
+    }
+
+    private function generateUniqueOrderCode(): string
+    {
+        do {
+            $code = 'ANS-' . now()->format('dmY') . '-' . Str::upper(Str::random(6));
+        } while (Order::query()->where('code', $code)->exists());
+
+        return $code;
+    }
+
+    private function buildVariantName(?string $size, ?string $color): string
+    {
+        $parts = [];
+        if ($size) {
+            $parts[] = 'Size ' . $size;
+        }
+        if ($color) {
+            $parts[] = 'Color ' . $color;
+        }
+
+        return $parts ? implode(' / ', $parts) : 'Default';
+    }
+
+    private function assertCodOnly(?string $paymentMethod): void
+    {
+        if ($paymentMethod !== null && $paymentMethod !== 'cod') {
+            throw ValidationException::withMessages([
+                'payment_method' => 'Only cod is supported',
+            ]);
+        }
+    }
+}

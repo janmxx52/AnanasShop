@@ -71,8 +71,8 @@
 
 ### Test Status
 - [x] `php artisan test` pass
-- [x] 49 tests passed
-- [x] 211 assertions passed
+- [x] 62 tests passed
+- [x] 254 assertions passed
 
 
 ### Admin Catalog — Initial (Category & Brand)
@@ -177,28 +177,39 @@
 - [x] Checking voucher does not create voucher_usages
 - [x] Feature tests cho Voucher API pass
 
+### Order & Checkout API
+- [x] Create order from cart
+- [x] Guest checkout
+- [x] Authenticated user checkout
+- [x] Validate cart is not empty
+- [x] Validate variant stock before checkout
+- [x] Snapshot product, variant, price, and customer info
+- [x] Calculate subtotal
+- [x] Apply voucher
+- [x] Calculate shipping fee
+- [x] Calculate total
+- [x] Deduct stock
+- [x] Clear cart after success
+- [x] Increment voucher used_count after success
+- [x] Create voucher_usages after success
+- [x] Use DB transaction
+- [x] Feature tests cho Checkout pass
+---
+
 
 ## 🔄 Current Focus
 
-### Order & Checkout API
+### Order Management API
 
-- [ ] Create order from cart
-- [ ] Guest checkout
-- [ ] Authenticated user checkout
-- [ ] Validate cart is not empty
-- [ ] Validate variant stock before checkout
-- [ ] Snapshot product, variant, price, and customer info
-- [ ] Calculate subtotal
-- [ ] Apply voucher
-- [ ] Calculate shipping fee
-- [ ] Calculate total
-- [ ] Deduct stock
-- [ ] Clear cart after success
-- [ ] Increment voucher used_count after success
-- [ ] Create voucher_usages after success
-- [ ] Use DB transaction
-- [ ] Feature tests cho Checkout
----
+- [ ] List user orders
+- [ ] Show order detail by code
+- [ ] Cancel order
+- [ ] Restore stock when order cancelled
+- [ ] Restore voucher usage when order cancelled
+- [ ] Admin list orders
+- [ ] Admin show order detail
+- [ ] Admin update order status
+- [ ] Feature tests cho Order Management
 
 ## 📋 Upcoming — Do not work yet
 
