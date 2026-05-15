@@ -1,322 +1,364 @@
 # Database Schema — Ananas Fashion
 
-> Database: MySQL | Charset: utf8mb4 | Collation: utf8mb4_unicode_ci
+> Updated: 2026-05-15  
+> Source of truth: `database/migrations`
 
 ---
 
-## 1. users
+## 1) `users`
 
-| Column | Type | Constraints | Notes |
-|--------|------|-------------|-------|
-| id | bigint UNSIGNED | PK, AI | |
-| name | varchar(255) | NOT NULL | |
-| email | varchar(255) | NOT NULL, UNIQUE | |
-| email_verified_at | timestamp | NULLABLE | |
-| password | varchar(255) | NOT NULL | bcrypt |
-| phone | varchar(20) | NULLABLE | |
-| avatar | varchar(500) | NULLABLE | Cloudinary URL |
-| role | enum('customer','admin') | DEFAULT 'customer' | |
-| is_banned | tinyint(1) | DEFAULT 0 | |
-| remember_token | varchar(100) | NULLABLE | |
-| created_at | timestamp | | |
-| updated_at | timestamp | | |
-| deleted_at | timestamp | NULLABLE | SoftDelete |
+| Column | Type | Constraints / Default |
+|---|---|---|
+| id | bigint unsigned | PK, AI |
+| name | varchar(255) | required |
+| email | varchar(255) | unique, required |
+| email_verified_at | timestamp | nullable |
+| password | varchar(255) | required |
+| phone | varchar(255) | nullable |
+| avatar | varchar(255) | nullable |
+| role | varchar(255) | default `customer` |
+| is_banned | tinyint(1) / bool | default `false` |
+| remember_token | varchar(100) | nullable |
+| avatar_public_id | varchar(255) | nullable |
+| last_login_at | timestamp | nullable |
+| password_changed_at | timestamp | nullable |
+| created_at | timestamp | |
+| updated_at | timestamp | |
 
----
-
-## 2. addresses
-
-| Column | Type | Constraints | Notes |
-|--------|------|-------------|-------|
-| id | bigint UNSIGNED | PK, AI | |
-| user_id | bigint UNSIGNED | FK → users.id | |
-| full_name | varchar(255) | NOT NULL | |
-| phone | varchar(20) | NOT NULL | |
-| province | varchar(100) | NOT NULL | Tỉnh/TP |
-| district | varchar(100) | NOT NULL | Quận/Huyện |
-| ward | varchar(100) | NOT NULL | Phường/Xã |
-| address_line | varchar(500) | NOT NULL | Số nhà, đường |
-| is_default | tinyint(1) | DEFAULT 0 | |
-| created_at | timestamp | | |
-| updated_at | timestamp | | |
+**Important notes**
+- `users` hiện **không có SoftDeletes** (`deleted_at` không tồn tại trong migrations).
+- Role không dùng enum DB, hiện là string.
 
 ---
 
-## 3. categories
+## 2) `personal_access_tokens`
 
-| Column | Type | Constraints | Notes |
-|--------|------|-------------|-------|
-| id | bigint UNSIGNED | PK, AI | |
-| parent_id | bigint UNSIGNED | NULLABLE, FK → categories.id | Danh mục con |
-| name | varchar(255) | NOT NULL | |
-| slug | varchar(255) | NOT NULL, UNIQUE | |
-| image | varchar(500) | NULLABLE | Cloudinary URL |
-| description | text | NULLABLE | |
-| sort_order | int | DEFAULT 0 | |
-| is_active | tinyint(1) | DEFAULT 1 | |
-| created_at | timestamp | | |
-| updated_at | timestamp | | |
-
----
-
-## 4. brands
-
-| Column | Type | Constraints | Notes |
-|--------|------|-------------|-------|
-| id | bigint UNSIGNED | PK, AI | |
-| name | varchar(255) | NOT NULL | |
-| slug | varchar(255) | NOT NULL, UNIQUE | |
-| logo | varchar(500) | NULLABLE | Cloudinary URL |
-| description | text | NULLABLE | |
-| is_active | tinyint(1) | DEFAULT 1 | |
-| created_at | timestamp | | |
-| updated_at | timestamp | | |
+| Column | Type | Constraints / Default |
+|---|---|---|
+| id | bigint unsigned | PK, AI |
+| tokenable_type / tokenable_id | morphs | indexed |
+| name | text | required |
+| token | varchar(64) | unique |
+| abilities | text | nullable |
+| last_used_at | timestamp | nullable |
+| expires_at | timestamp | nullable, indexed |
+| created_at | timestamp | |
+| updated_at | timestamp | |
 
 ---
 
-## 5. products
+## 3) `categories`
 
-| Column | Type | Constraints | Notes |
-|--------|------|-------------|-------|
-| id | bigint UNSIGNED | PK, AI | |
-| category_id | bigint UNSIGNED | FK → categories.id | |
-| brand_id | bigint UNSIGNED | FK → brands.id | |
-| name | varchar(255) | NOT NULL | |
-| slug | varchar(255) | NOT NULL, UNIQUE | |
-| description | longtext | NULLABLE | HTML/Markdown |
-| base_price | decimal(12,2) | NOT NULL | Giá gốc |
-| sale_price | decimal(12,2) | NULLABLE | Giá khuyến mãi |
-| is_featured | tinyint(1) | DEFAULT 0 | |
-| is_active | tinyint(1) | DEFAULT 1 | |
-| created_at | timestamp | | |
-| updated_at | timestamp | | |
-| deleted_at | timestamp | NULLABLE | SoftDelete |
+| Column | Type | Constraints / Default |
+|---|---|---|
+| id | bigint unsigned | PK, AI |
+| parent_id | bigint unsigned | nullable, FK -> `categories.id`, `nullOnDelete` |
+| name | varchar(255) | required |
+| slug | varchar(255) | unique |
+| image | varchar(500) | nullable |
+| description | text | nullable |
+| sort_order | int | default `0` |
+| is_active | bool | default `true` |
+| created_at | timestamp | |
+| updated_at | timestamp | |
 
 ---
 
-## 6. product_images
+## 4) `brands`
 
-| Column | Type | Constraints | Notes |
-|--------|------|-------------|-------|
-| id | bigint UNSIGNED | PK, AI | |
-| product_id | bigint UNSIGNED | FK → products.id | |
-| url | varchar(500) | NOT NULL | Cloudinary URL |
-| public_id | varchar(255) | NOT NULL | Cloudinary public_id |
-| sort_order | int | DEFAULT 0 | |
-| is_primary | tinyint(1) | DEFAULT 0 | |
-| created_at | timestamp | | |
-| updated_at | timestamp | | |
-
----
-
-## 7. product_variants
-
-| Column | Type | Constraints | Notes |
-|--------|------|-------------|-------|
-| id | bigint UNSIGNED | PK, AI | |
-| product_id | bigint UNSIGNED | FK → products.id | |
-| size | varchar(20) | NULLABLE | XS/S/M/L/XL/XXL hoặc số giày |
-| color | varchar(50) | NULLABLE | Tên màu |
-| color_hex | varchar(7) | NULLABLE | Hex code VD: #FF0000 |
-| sku | varchar(100) | NULLABLE, UNIQUE | |
-| stock | int | DEFAULT 0 | Tồn kho |
-| price_adjustment | decimal(10,2) | DEFAULT 0 | +/- so với base_price |
-| created_at | timestamp | | |
-| updated_at | timestamp | | |
+| Column | Type | Constraints / Default |
+|---|---|---|
+| id | bigint unsigned | PK, AI |
+| name | varchar(255) | required |
+| slug | varchar(255) | unique |
+| logo | varchar(500) | nullable |
+| description | text | nullable |
+| is_active | bool | default `true` |
+| created_at | timestamp | |
+| updated_at | timestamp | |
 
 ---
 
-## 8. carts
+## 5) `products`
 
-| Column | Type | Constraints | Notes |
-|--------|------|-------------|-------|
-| id | bigint UNSIGNED | PK, AI | |
-| user_id | bigint UNSIGNED | NULLABLE, FK → users.id, UNIQUE | NULL = guest cart |
-| guest_token | varchar(100) | NULLABLE, UNIQUE | Token định danh guest |
-| created_at | timestamp | | |
-| updated_at | timestamp | | |
+| Column | Type | Constraints / Default |
+|---|---|---|
+| id | bigint unsigned | PK, AI |
+| category_id | bigint unsigned | FK -> `categories.id`, cascadeOnDelete |
+| brand_id | bigint unsigned | FK -> `brands.id`, cascadeOnDelete |
+| name | varchar(255) | required |
+| slug | varchar(255) | unique |
+| description | longText | nullable |
+| base_price | decimal(12,2) | required |
+| sale_price | decimal(12,2) | nullable |
+| is_featured | bool | default `false` |
+| is_active | bool | default `true` |
+| created_at | timestamp | |
+| updated_at | timestamp | |
+| deleted_at | timestamp | soft deletes |
 
-> **Constraint**: `user_id` và `guest_token` không được cùng NULL — 1 trong 2 bắt buộc phải có.
-> **UNIQUE**: `user_id` (khi không null) — 1 user = 1 cart
-> **UNIQUE**: `guest_token` (khi không null)
-
----
-
-## 9. cart_items
-
-| Column | Type | Constraints | Notes |
-|--------|------|-------------|-------|
-| id | bigint UNSIGNED | PK, AI | |
-| cart_id | bigint UNSIGNED | FK → carts.id | |
-| product_variant_id | bigint UNSIGNED | FK → product_variants.id | |
-| quantity | int | NOT NULL, DEFAULT 1 | |
-| created_at | timestamp | | |
-| updated_at | timestamp | | |
-
-> **UNIQUE**: (cart_id, product_variant_id)
+**Important notes**
+- Product có SoftDeletes.
+- Quy tắc giá hiển thị: `sale_price ?? base_price`.
 
 ---
 
-## 10. vouchers
+## 6) `product_variants`
 
-| Column | Type | Constraints | Notes |
-|--------|------|-------------|-------|
-| id | bigint UNSIGNED | PK, AI | |
-| code | varchar(50) | NOT NULL, UNIQUE | |
-| type | enum('percent','fixed') | NOT NULL | |
-| value | decimal(10,2) | NOT NULL | % hoặc số tiền cố định |
-| min_order_amount | decimal(12,2) | DEFAULT 0 | Đơn tối thiểu |
-| max_discount | decimal(12,2) | NULLABLE | Giảm tối đa (khi type=percent) |
-| usage_limit | int | NULLABLE | Giới hạn lượt dùng tổng |
-| usage_per_user | int | DEFAULT 1 | Giới hạn mỗi user |
-| used_count | int | DEFAULT 0 | |
-| starts_at | timestamp | NULLABLE | |
-| expires_at | timestamp | NULLABLE | |
-| is_active | tinyint(1) | DEFAULT 1 | |
-| created_at | timestamp | | |
-| updated_at | timestamp | | |
+| Column | Type | Constraints / Default |
+|---|---|---|
+| id | bigint unsigned | PK, AI |
+| product_id | bigint unsigned | FK -> `products.id`, cascadeOnDelete |
+| size | varchar(20) | nullable |
+| color | varchar(50) | nullable |
+| color_hex | varchar(7) | nullable |
+| sku | varchar(100) | nullable, unique |
+| stock | int | default `0` |
+| price_adjustment | decimal(10,2) | default `0` |
+| created_at | timestamp | |
+| updated_at | timestamp | |
 
----
-
-## 11. orders
-
-| Column | Type | Constraints | Notes |
-|--------|------|-------------|-------|
-| id | bigint UNSIGNED | PK, AI | |
-| user_id | bigint UNSIGNED | NULLABLE, FK → users.id | NULL = guest order |
-| guest_name | varchar(255) | NULLABLE | Bắt buộc nếu guest |
-| guest_email | varchar(255) | NULLABLE | Bắt buộc nếu guest |
-| customer_name | varchar(255) | NULLABLE | Contact snapshot for order lookup |
-| customer_email | varchar(255) | NULLABLE | Contact snapshot for order lookup |
-| customer_phone | varchar(20) | NULLABLE | Contact snapshot for order lookup |
-| voucher_id | bigint UNSIGNED | NULLABLE, FK → vouchers.id | |
-| code | varchar(50) | NOT NULL, UNIQUE | VD: ANS-20250511-0001 |
-| status | enum | NOT NULL | Xem bên dưới |
-| subtotal | decimal(12,2) | NOT NULL | Trước giảm giá |
-| discount_amount | decimal(12,2) | DEFAULT 0 | |
-| shipping_fee | decimal(10,2) | DEFAULT 0 | |
-| total | decimal(12,2) | NOT NULL | Tổng thanh toán |
-| payment_method | enum('cod','vnpay','momo') | NOT NULL | |
-| payment_status | enum('pending','paid','failed','cancelled','refunded') | DEFAULT 'pending' | |
-| shipping_name | varchar(255) | NOT NULL | Snapshot địa chỉ |
-| shipping_phone | varchar(20) | NOT NULL | |
-| shipping_address | text | NOT NULL | Full address string |
-| note | text | NULLABLE | |
-| paid_at | timestamp | NULLABLE | |
-| created_at | timestamp | | |
-| updated_at | timestamp | | |
-
-> **Guest order**: `user_id = null`, `guest_name` + `guest_email` bắt buộc (validate ở service layer)
-> **Order lookup contact source**: Ưu tiên `customer_email` + `customer_phone`; giữ tương thích `guest_email` + `shipping_phone` cho dữ liệu cũ.
-
-> **Payment Foundation note**: Nếu schema cũ chưa có `payment_status = cancelled` thì phải add migration để mở rộng enum/constraint tương ứng.
-
-**Order Status enum:**
-- `pending` — Chờ xác nhận
-- `confirmed` — Đã xác nhận
-- `processing` — Đang xử lý
-- `shipping` — Đang giao hàng
-- `delivered` — Đã giao
-- `cancelled` — Đã hủy
-- `returned` — Hoàn hàng
+**Indexes / unique**
+- Unique composite: `unique(product_id, size, color)` (`product_variant_unique`).
 
 ---
 
-## 12. order_items
+## 7) `product_images`
 
-| Column | Type | Constraints | Notes |
-|--------|------|-------------|-------|
-| id | bigint UNSIGNED | PK, AI | |
-| order_id | bigint UNSIGNED | FK → orders.id | |
-| product_variant_id | bigint UNSIGNED | FK → product_variants.id | |
-| product_name | varchar(255) | NOT NULL | Snapshot |
-| variant_info | varchar(100) | NULLABLE | "Size M / Màu Đen" - Snapshot |
-| unit_price | decimal(12,2) | NOT NULL | Giá tại thời điểm mua |
-| quantity | int | NOT NULL | |
-| subtotal | decimal(12,2) | NOT NULL | unit_price * quantity |
-| created_at | timestamp | | |
-| updated_at | timestamp | | |
+| Column | Type | Constraints / Default |
+|---|---|---|
+| id | bigint unsigned | PK, AI |
+| product_id | bigint unsigned | FK -> `products.id`, cascadeOnDelete |
+| url | varchar(500) | required |
+| public_id | varchar(255) | required |
+| sort_order | int | default `0` |
+| is_primary | bool | default `false` |
+| created_at | timestamp | |
+| updated_at | timestamp | |
 
 ---
 
-## 13. reviews
+## 8) `carts`
 
-| Column | Type | Constraints | Notes |
-|--------|------|-------------|-------|
-| id | bigint UNSIGNED | PK, AI | |
-| user_id | bigint UNSIGNED | FK → users.id | |
-| product_id | bigint UNSIGNED | FK → products.id | |
-| order_item_id | bigint UNSIGNED | FK → order_items.id, UNIQUE | Mỗi order_item chỉ 1 review |
-| rating | tinyint | NOT NULL | 1–5 |
-| comment | text | NULLABLE | |
-| is_approved | tinyint(1) | DEFAULT 1 | Phase hiện tại default true |
-| created_at | timestamp | | |
-| updated_at | timestamp | | |
+| Column | Type | Constraints / Default |
+|---|---|---|
+| id | bigint unsigned | PK, AI |
+| user_id | bigint unsigned | nullable, unique, FK -> `users.id`, cascadeOnDelete |
+| guest_token | varchar(255) | nullable, unique |
+| created_at | timestamp | |
+| updated_at | timestamp | |
 
-> **UNIQUE**: (order_item_id)
+**Important notes**
+- Hỗ trợ cả guest cart và user cart.
+- DB chưa có check constraint bắt buộc `user_id` hoặc `guest_token`; rule này đang enforce ở app layer.
 
 ---
 
-## 14. review_images
+## 9) `cart_items`
 
-| Column | Type | Constraints | Notes |
-|--------|------|-------------|-------|
-| id | bigint UNSIGNED | PK, AI | |
-| review_id | bigint UNSIGNED | FK → reviews.id | |
-| image_url | varchar(500) | NOT NULL | Cloudinary URL |
-| public_id | varchar(255) | NOT NULL | Cloudinary public_id |
-| sort_order | int | NULLABLE | |
-| created_at | timestamp | | |
-| updated_at | timestamp | | |
+| Column | Type | Constraints / Default |
+|---|---|---|
+| id | bigint unsigned | PK, AI |
+| cart_id | bigint unsigned | FK -> `carts.id`, cascadeOnDelete |
+| product_variant_id | bigint unsigned | FK -> `product_variants.id`, cascadeOnDelete |
+| quantity | int | default `1` |
+| created_at | timestamp | |
+| updated_at | timestamp | |
 
-> **Rule**: Mỗi review tối đa 3 ảnh (enforce ở app layer + tests).
-
----
-
-## 15. wishlists
-
-| Column | Type | Constraints | Notes |
-|--------|------|-------------|-------|
-| id | bigint UNSIGNED | PK, AI | |
-| user_id | bigint UNSIGNED | FK → users.id | |
-| product_id | bigint UNSIGNED | FK → products.id | |
-| created_at | timestamp | | |
-
-> **UNIQUE**: (user_id, product_id)
+**Indexes / unique**
+- Unique composite: `unique(cart_id, product_variant_id)`.
 
 ---
 
-## 16. voucher_usages
+## 10) `vouchers`
 
-| Column | Type | Constraints | Notes |
-|--------|------|-------------|-------|
-| id | bigint UNSIGNED | PK, AI | |
-| voucher_id | bigint UNSIGNED | FK → vouchers.id | |
-| user_id | bigint UNSIGNED | NULLABLE, FK → users.id | Null when guest usage |
-| guest_token | varchar(100) | NULLABLE | Null when user usage |
-| order_id | bigint UNSIGNED | NULLABLE, FK → orders.id | Keep usage audit if order deleted |
-| revoked_at | timestamp | NULLABLE | Soft-revoke usage when order is cancelled |
-| created_at | timestamp | | |
-
-> **Usage counting rule**: `usage_limit` và `usage_per_user` chỉ tính các row có `revoked_at IS NULL`.
+| Column | Type | Constraints / Default |
+|---|---|---|
+| id | bigint unsigned | PK, AI |
+| code | varchar(50) | unique |
+| type | enum | `percent` / `fixed` |
+| value | decimal(10,2) | required |
+| min_order_amount | decimal(12,2) | default `0` |
+| max_discount | decimal(12,2) | nullable |
+| usage_limit | int | nullable |
+| usage_per_user | int | default `1` |
+| used_count | int | default `0` |
+| starts_at | timestamp | nullable |
+| expires_at | timestamp | nullable |
+| is_active | tinyint(1) | default `1` |
+| created_at | timestamp | |
+| updated_at | timestamp | |
 
 ---
 
-## Relationships Summary
+## 11) `orders`
 
-```
-users          ─< addresses
-users          ─< carts >─< cart_items >─ product_variants
-users          ─< orders >─< order_items >─ product_variants
-users          ─< wishlists >─ products
-users          ─< reviews
-products       ─< reviews
-reviews        ─< review_images
-products       ─< product_variants
-products       ─< product_images
-products       >─ categories
-products       >─ brands
-categories     ─< categories (self-referential, parent_id)
-vouchers       ─< orders
-vouchers       ─< voucher_usages
-```
+| Column | Type | Constraints / Default |
+|---|---|---|
+| id | bigint unsigned | PK, AI |
+| user_id | bigint unsigned | nullable, FK -> `users.id`, set null on delete |
+| guest_name | varchar(255) | nullable |
+| guest_email | varchar(255) | nullable |
+| customer_name | varchar(255) | nullable |
+| customer_email | varchar(255) | nullable |
+| customer_phone | varchar(20) | nullable |
+| voucher_id | bigint unsigned | nullable, FK -> `vouchers.id`, set null on delete |
+| code | varchar(50) | unique |
+| status | enum | `pending, confirmed, processing, shipping, delivered, cancelled, returned` |
+| subtotal | decimal(12,2) | required |
+| discount_amount | decimal(12,2) | default `0` |
+| shipping_fee | decimal(12,2) | default `0` |
+| total | decimal(12,2) | required |
+| payment_method | enum | `cod, vnpay, momo` |
+| payment_status | enum | `pending, paid, failed, cancelled, refunded` |
+| shipping_name | varchar(255) | required |
+| shipping_phone | varchar(20) | required |
+| shipping_address | text | required |
+| note | text | nullable |
+| paid_at | timestamp | nullable |
+| created_at | timestamp | indexed |
+| updated_at | timestamp | |
+
+**Indexes**
+- `index(user_id)`
+- `index(status)`
+- `index(created_at)`
+
+**Important notes**
+- Có contact snapshot (`customer_name`, `customer_email`, `customer_phone`) cho Order Lookup.
+- `payment_status=cancelled` đã được hỗ trợ trong schema hiện tại.
+
+---
+
+## 12) `order_items`
+
+| Column | Type | Constraints / Default |
+|---|---|---|
+| id | bigint unsigned | PK, AI |
+| order_id | bigint unsigned | FK -> `orders.id`, cascadeOnDelete |
+| product_id | bigint unsigned | nullable, FK -> `products.id`, set null on delete |
+| product_variant_id | bigint unsigned | nullable, FK -> `product_variants.id`, set null on delete |
+| product_name | varchar(255) | required |
+| variant_name | varchar(255) | required |
+| sku | varchar(255) | nullable |
+| image_url | varchar(500) | nullable |
+| unit_price | decimal(12,2) | required |
+| quantity | int | required |
+| line_total | decimal(12,2) | required |
+| variant_info | json | nullable |
+| created_at | timestamp | |
+| updated_at | timestamp | |
+
+**Indexes**
+- `index(order_id)`
+- `index(product_id)`
+- `index(product_variant_id)`
+
+**Important notes**
+- Snapshot fields đã dùng cột riêng (không dùng schema cũ kiểu `subtotal`/`variant_info` string).
+
+---
+
+## 13) `voucher_usages`
+
+| Column | Type | Constraints / Default |
+|---|---|---|
+| id | bigint unsigned | PK, AI |
+| voucher_id | bigint unsigned | FK -> `vouchers.id`, cascadeOnDelete |
+| user_id | bigint unsigned | nullable, FK -> `users.id`, cascadeOnDelete |
+| guest_token | varchar(100) | nullable |
+| order_id | bigint unsigned | nullable, FK -> `orders.id`, `nullOnDelete` |
+| revoked_at | timestamp | nullable |
+| created_at | timestamp | |
+| updated_at | timestamp | |
+
+**Indexes**
+- `index(voucher_id)`
+- `index(voucher_id, user_id)`
+- `index(voucher_id, guest_token)`
+- `index(voucher_id, revoked_at)`
+
+**Important notes**
+- `voucher_usages` là source of truth cho usage.
+- Rollback khi cancel order dùng `revoked_at` (không hard delete usage row).
+
+---
+
+## 14) `wishlists`
+
+| Column | Type | Constraints / Default |
+|---|---|---|
+| id | bigint unsigned | PK, AI |
+| user_id | bigint unsigned | FK -> `users.id`, cascadeOnDelete |
+| product_id | bigint unsigned | FK -> `products.id`, cascadeOnDelete |
+| created_at | timestamp | |
+| updated_at | timestamp | |
+
+**Indexes / unique**
+- Unique composite: `unique(user_id, product_id)`.
+- `index(user_id)`, `index(product_id)`.
+
+---
+
+## 15) `reviews`
+
+| Column | Type | Constraints / Default |
+|---|---|---|
+| id | bigint unsigned | PK, AI |
+| user_id | bigint unsigned | FK -> `users.id`, cascadeOnDelete |
+| product_id | bigint unsigned | FK -> `products.id`, cascadeOnDelete |
+| order_item_id | bigint unsigned | FK -> `order_items.id`, cascadeOnDelete, unique |
+| rating | tinyInteger | required |
+| comment | text | nullable |
+| is_approved | bool | default `true` |
+| created_at | timestamp | indexed |
+| updated_at | timestamp | |
+
+**Indexes / unique**
+- `unique(order_item_id)` (mỗi order item chỉ review 1 lần).
+- `index(product_id, is_approved)`.
+
+**Important notes**
+- Không lưu review images dạng JSON trong `reviews`.
+
+---
+
+## 16) `review_images`
+
+| Column | Type | Constraints / Default |
+|---|---|---|
+| id | bigint unsigned | PK, AI |
+| review_id | bigint unsigned | FK -> `reviews.id`, cascadeOnDelete |
+| image_url | varchar(500) | required |
+| public_id | varchar(255) | nullable |
+| sort_order | int | nullable |
+| created_at | timestamp | |
+| updated_at | timestamp | |
+
+**Indexes**
+- `index(review_id)`
+- `index(sort_order)`
+
+---
+
+## 17) Tables có trong skeleton nhưng không thuộc core business flow
+
+- `password_reset_tokens`
+- `sessions`
+- `cache`, `cache_locks`
+- `jobs`, `job_batches`, `failed_jobs`
+
+---
+
+## 18) Explicit sync notes
+
+- `users`: **không** soft delete; có `role`, `is_banned`.
+- `products`: có soft delete, `sale_price`, `is_active`.
+- `product_variants`: có unique `(product_id, size, color)`.
+- `carts`: có cả `user_id` và `guest_token` (đều unique, nullable).
+- `voucher_usages`: có `order_id` nullable + `nullOnDelete`, có `revoked_at`.
+- `orders`: có snapshot customer fields + `payment_status` convention mới.
+- `order_items`: đã dùng snapshot fields chuẩn mới (`product_name`, `variant_name`, `sku`, `image_url`, `unit_price`, `quantity`, `line_total`, `variant_info` JSON).
+- `wishlists`: unique `(user_id, product_id)`.
+- `reviews`: unique `order_item_id`, có `is_approved`, ảnh nằm ở bảng `review_images` (không dùng JSON column).
+

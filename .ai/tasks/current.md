@@ -1,331 +1,153 @@
 # Current Tasks — Ananas Fashion
 
-> Updated: 2026-05-14
+> Updated: 2026-05-15
 
 ---
 
 ## ✅ Done
 
-### Project Foundation
-- [x] Khởi tạo project Laravel 12
-- [x] Thiết kế kiến trúc (`architecture.md`)
-- [x] Viết `AGENT.md`
-- [x] Tạo folder structure theo architecture
-- [x] Viết `database/schema.md`
-- [x] Viết `business/business-rules.md`
-- [x] Viết `api/routes.md`
-- [x] Viết `laravel/folder-rules.md`
-- [x] Tạo `routes/api.php` skeleton
+### Foundation
+- [x] Laravel 12 project bootstrap
+- [x] Core architecture docs (`overview`, `architecture`, `tech-stack`, conventions, folder-rules)
+- [x] Core database schema and API route docs initialized
+- [x] Sanctum + Cloudinary integration
 
-### Packages & Configuration
-- [x] Cài `laravel/sanctum`
-- [x] Cài `cloudinary-labs/cloudinary-laravel`
-- [x] Config `.env.example` (MySQL, Sanctum, Cloudinary)
-
-### Auth API
+### Auth
 - [x] Register
 - [x] Login
 - [x] Logout current device
 - [x] Logout all devices
-- [x] Update profile
+- [x] Me profile
+- [x] Update profile + avatar upload
 - [x] Change password
-- [x] Sanctum token authentication
-- [x] `UserResource`
-- [x] Feature tests cho Auth flow pass
-
-### Media
-- [x] Cloudinary wrapper
-- [x] Avatar upload
-- [x] Fallback local storage
-
-### Products & Variants Foundation
-- [x] Migrations: `categories`, `brands`, `products`, `product_images`, `product_variants`
-- [x] Models: `Category`, `Brand`, `Product`, `ProductVariant`, `ProductImage`
-- [x] Relationships:
-  - [x] Category parent / children / products
-  - [x] Brand products
-  - [x] Product category / brand / variants / images
-  - [x] Product soft delete
-  - [x] ProductVariant product
-  - [x] ProductImage product
-- [x] Seeders: `CategorySeeder`, `BrandSeeder`, `ProductFactory`, `ProductSeeder`
 
 ### Product Public API
-- [x] Product listing
+- [x] Product list + pagination
 - [x] Product detail by slug
-- [x] Search by product name
-- [x] Filter by category
-- [x] Filter by brand
-- [x] Filter by size
-- [x] Filter by color
-- [x] Filter by price range
-- [x] Sort by newest
-- [x] Sort by price asc
-- [x] Sort by price desc
-- [x] `ProductRepository`
-- [x] `ProductResource`
-- [x] `ProductController` public
-- [x] `ProductIndexRequest`
-- [x] `ProductShowRequest`
-- [x] Feature tests cho Product Public API pass
+- [x] Search/filter/sort
+- [x] Active-only public visibility
+- [x] Rating/review aggregates on list/detail
 
-### Test Status
-- ### Test Status
-- [x] `php artisan test` pass
-- [x] 152 tests passed
-- [x] 591 assertions passed
+### Admin Catalog
+- [x] Admin category CRUD
+- [x] Admin brand CRUD
+- [x] Admin product CRUD + restore + active toggle
+- [x] Admin variant CRUD (nested by product)
+- [x] Admin product image CRUD + primary image
+- [x] Admin protection via `auth:sanctum + role:admin`
 
-### Admin Catalog — Initial (Category & Brand)
-- [x] Admin `CategoryController` and `BrandController` (basic CRUD)
-- [x] Admin FormRequests for Category/Brand (store/update)
-- [x] `EnsureUserRole` middleware + `role` alias registered
-- [x] Admin routes normalized to `routes/api.php` (removed duplicates from `routes/web.php`)
-- [x] Created stub controllers for missing API endpoints (to satisfy `route:list`/tests)
-- [x] Feature tests for Admin Category & Brand — pass
+### Cart
+- [x] Guest cart via `X-Guest-Token`
+- [x] User cart via Sanctum
+- [x] Add/update/remove/clear item
+- [x] Merge guest cart into user cart
+- [x] Stock-aware validation
+- [x] Real-time pricing (no hard price snapshot in cart)
 
-### Admin Product — Core
-- [x] Admin `ProductController` (core CRUD: create/update/show/list/delete/restore/status)
-- [x] Admin Product FormRequests (store/update/index/status)
-- [x] `AdminProductResource`
-- [x] Admin routes for products registered under `routes/api.php`
-- [x] Feature tests for Admin Product — pass
+### Voucher
+- [x] Public voucher check endpoint
+- [x] Admin voucher CRUD
+- [x] Rules: min order, usage limit, usage per user, max discount
+- [x] Voucher check is read-only (no mutation of `used_count`/`voucher_usages`)
 
-### Admin Product Variant
-- [x] Admin `ProductVariantController` (nested CRUD)
-- [x] Admin ProductVariant FormRequests (store/update)
-- [x] `AdminProductVariantResource`
-- [x] Nested admin product variant routes registered
-- [x] Feature tests for Admin Product Variant — pass
-
-### Admin Catalog CRUD
-
-#### Admin Category
-- [x] Create category
-- [x] Update category
-- [x] Delete category
-- [x] List categories
-- [x] Show category detail
-
-#### Admin Brand
-- [x] Create brand
-- [x] Update brand
-- [x] Delete brand
-- [x] List brands
-- [x] Show brand detail
-
-#### Admin Product
-- [x] Create product
-- [x] Update product
-- [x] Soft delete product
-- [x] Restore product
-- [x] Active / inactive product
-- [x] List products for admin
-- [x] Show product detail for admin
-
-#### Admin Product Variant
-- [x] Create variant
-- [x] Update variant
-- [x] Delete variant
-- [x] Validate unique `product_id + size + color`
-- [x] Manage stock
-
-#### Security
-- [x] Protect admin routes with `auth:sanctum`
-- [x] Allow only `admin` role
-
-#### Testing
-- [x] Feature tests cho Admin Category & Brand
-- [x] Feature tests cho Admin Product
-- [x] Feature tests cho Admin Product Variant
-
-### Admin Product Image
-- [x] Upload product image to Cloudinary
-- [x] Delete product image from Cloudinary
-- [x] Set primary image
-- [x] Validate max 10 images per product
-- [x] Ensure only 1 primary image per product
-- [x] Feature tests cho Admin Product Image pass
----
-
-
-### Cart API
-- [x] Guest cart
-- [x] User cart
-- [x] Merge guest cart
-- [x] Add item to cart
-- [x] Update item quantity
-- [x] Remove item from cart
-- [x] Clear cart
-- [x] Same variant sums quantity
-- [x] Quantity cannot exceed variant stock
-- [x] Cannot add inactive product variant
-- [x] Merge skips inactive product and returns warning
-- [x] Cart response calculates price real-time
-- [x] Feature tests cho Cart API pass
-
-### Voucher API
-- [x] Admin Voucher CRUD
-- [x] Guest can check valid voucher
-- [x] User can check valid voucher
-- [x] Invalid code returns error
-- [x] Min order amount enforced
-- [x] Percent max_discount enforced
-- [x] Fixed discount calculated correctly
-- [x] Usage limit enforced
-- [x] Usage per user enforced
-- [x] Checking voucher does not mutate used_count
-- [x] Checking voucher does not create voucher_usages
-- [x] Feature tests cho Voucher API pass
-
-### Order & Checkout API
-- [x] Create order from cart
+### Checkout
 - [x] Guest checkout
 - [x] Authenticated user checkout
-- [x] Validate cart is not empty
-- [x] Validate variant stock before checkout
-- [x] Snapshot product, variant, price, and customer info
-- [x] Calculate subtotal
-- [x] Apply voucher
-- [x] Calculate shipping fee
-- [x] Calculate total
-- [x] Deduct stock
+- [x] Cart empty/stock validation
+- [x] Voucher apply at checkout
+- [x] Shipping fee rule
+- [x] Order + order_items snapshot
+- [x] Stock deduction
 - [x] Clear cart after success
-- [x] Increment voucher used_count after success
-- [x] Create voucher_usages after success
-- [x] Use DB transaction
-- [x] Feature tests cho Checkout pass
+- [x] Transaction + row locking for checkout flow
+
+### Order Management
+- [x] User order list/detail/cancel
+- [x] Admin order list/detail/update status
+- [x] Admin cancel via `PATCH status=cancelled`
+- [x] Status transition enforcement
+- [x] Cancel rollback: restore stock + voucher usage rollback
+- [x] `voucher_usages.revoked_at` rollback strategy
+
+### Order Lookup
+- [x] Public lookup endpoint `POST /api/orders/lookup`
+- [x] Lookup by `order_code + email` or `order_code + phone`
+- [x] If both email+phone provided, both must match
+- [x] Generic fail message only
+- [x] Masked shipping address
+- [x] Static status timeline
+- [x] Throttle `10 req/min`
+
+### Payment Foundation (COD)
+- [x] COD checkout => `payment_status=pending`
+- [x] COD delivered => `payment_status=paid`
+- [x] Cancelled order => `payment_status=cancelled`
+- [x] Reject direct `payment_status` update in normal status payload
+- [x] `failed` reserved for online payment failure in future phases
+
+### Wishlist
+- [x] User-only wishlist (`auth:sanctum`)
+- [x] `GET /wishlist`, `POST /wishlist/toggle`, `DELETE /wishlist/{product}`
+- [x] Delete idempotent
+- [x] Pagination default 12, max 50
+- [x] Active/non-deleted product only
+- [x] Duplicate protection via unique `(user_id, product_id)`
+
+### Reviews
+- [x] Public review list by product slug
+- [x] Authenticated review create/delete
+- [x] Review only delivered order items
+- [x] Owner-only order item review
+- [x] One review per order item (unique `order_item_id`)
+- [x] Review images via `review_images` table + Cloudinary
+- [x] Max 3 review images
+- [x] `is_approved` default true (no moderation phase yet)
+
+### Dashboard Stats
+- [x] Admin dashboard stats endpoint
+- [x] Metrics for users/products/orders/revenue/stocks/reviews
+- [x] `total_revenue` only from delivered + paid orders
+- [x] `recent_orders` limit 5 with minimized PII
+- [x] `top_selling_products` limit 5 (delivered + paid orders)
+
+### Hardening & Contracts
+- [x] Route hardening for out-of-scope endpoints
+- [x] Stub endpoints return controlled 501 envelope
+- [x] Removed API route duplication from `routes/web.php`
+- [x] API response contract foundation (`ApiResponse` helper/trait)
+- [x] Admin API response contract migration (selected admin modules)
+- [x] Pricing consistency fix (display price + variant final price unified)
+- [x] Voucher rule centralization (`VoucherCalculator` shared by voucher check + checkout)
+- [x] API documentation generated (`.ai/api/api-documentation.md`, `.ai/api/postman-notes.md`)
+
 ---
 
+## 🧪 Test Status
+
+- [x] `php artisan route:list` passes
+- [x] `php artisan test` passes (latest verified run in project context)
+- [x] 167 tests passed (latest recorded full-suite status)
+
+---
 
 ## 🔄 Current Focus
 
-### Order Management API
+### Project Stabilization / Deployment Preparation
+- [ ] Production environment checklist (env, queue, cache, storage)
+- [ ] Migration/seed strategy for deployment
+- [ ] Health checks and runtime observability
+- [ ] API contract stabilization for public endpoints (progressive migration)
+- [ ] CI/CD and release process hardening
 
-- [x] Apply decisions: voucher usage rollback via `revoked_at` (no hard delete)
-- [x] Apply decisions: admin cancel via PATCH status=`cancelled` (no separate endpoint)
-- [x] Apply decisions: admin order status route standardized to PATCH only
-- [x] List user orders
-- [x] Show user order detail by order_code
-- [x] Cancel user order
-- [x] Restore stock when order cancelled
-- [x] Restore voucher usage with revoked_at
-- [x] Decrement voucher used_count when cancelled
-- [x] Prevent double cancel / double restore
-- [x] Admin list orders
-- [x] Admin show order detail
-- [x] Admin update order status
-- [x] Validate order status flow
-- [x] Feature tests cho Order Management pass
+---
 
-### Order Lookup API
-- [x] Public endpoint `POST /api/orders/lookup`
-- [x] Lookup by `order_code + email`
-- [x] Lookup by `order_code + phone`
-- [x] Supports guest orders
-- [x] Supports user orders
-- [x] Rejects lookup with only `order_code`
-- [x] Requires both email and phone to match if both provided
-- [x] Failed lookup returns generic message only
-- [x] Failed lookup does not leak email/phone/address
-- [x] Success response masks shipping address
-- [x] Response contains status timeline
-- [x] Throttle applies to lookup endpoint
-- [x] Feature tests cho Order Lookup pass
-
-### Payment Foundation
-- [x] COD checkout creates order with `payment_status = pending`
-- [x] Admin marks COD order delivered -> `payment_status = paid`
-- [x] Customer cancelling COD order -> `payment_status = cancelled`
-- [x] Admin cancelling COD order -> `payment_status = cancelled`
-- [x] Non-delivered COD order remains `pending`
-- [x] `payment_status` cannot be changed directly by normal order status payload
-- [x] `failed` is not used for COD cancel
-- [x] Feature tests cho Payment Foundation pass
-
-### Wishlist API (Analysis & Decisions)
-- [x] Chốt routes chuẩn: `GET /api/wishlist`, `POST /api/wishlist/toggle`, `DELETE /api/wishlist/{product}`
-- [x] Không giữ endpoint cũ `POST /api/wishlist/{productId}`
-- [x] Chốt `DELETE /api/wishlist/{product}` idempotent (không trả 404 khi item không tồn tại)
-- [x] Chốt pagination cho `GET /api/wishlist` (default `per_page=12`, max `50`)
-- [x] Chốt chỉ cho user đăng nhập (`auth:sanctum`)
-- [x] Chốt chỉ wishlist product active và chưa soft delete
-- [x] Chốt database unique `(user_id, product_id)`
-
-### Wishlist API
-- [x] Guest cannot access wishlist routes
-- [x] User can add product to wishlist via toggle
-- [x] User can remove product from wishlist via toggle
-- [x] User can list own wishlist
-- [x] Wishlist list is paginated
-- [x] User cannot wishlist inactive product
-- [x] User cannot wishlist soft deleted product
-- [x] Duplicate wishlist is prevented
-- [x] DELETE removes existing wishlist item
-- [x] DELETE is idempotent when item does not exist
-- [x] User cannot affect another user's wishlist item
-- [x] Response includes product data
-- [x] Feature tests cho Wishlist pass
-
-### Review API (Analysis & Decisions)
-- [x] Chốt dùng bảng `review_images` thay cho `reviews.images` JSON
-- [x] Chốt mỗi `order_item` chỉ review 1 lần với unique `order_item_id`
-- [x] Chốt user mua cùng product nhiều lần vẫn review nhiều lần theo `order_item` khác nhau
-- [x] Chốt giữ route `DELETE /api/reviews/{id}` và user chỉ xóa review của chính mình
-- [x] Chốt Product public API trả `rating_avg` + `review_count` cho list và detail
-- [x] Chốt aggregate rating tính real-time, không lưu DB
-- [x] Chốt chỉ tính review `is_approved = true` khi aggregate (nếu có field)
-- [x] Chốt phase này `is_approved` default true, chưa làm admin moderation
-- [x] Chốt upload ảnh review qua `CloudinaryService`, tối đa 3 ảnh/review
-- [x] Chốt cleanup ảnh đã upload nếu tạo review fail (khi service hỗ trợ delete)
-
-### Admin Dashboard Stats API (Analysis & Decisions)
-- [x] Chốt `total_revenue` = `SUM(orders.total)` với `status=delivered` và `payment_status=paid`
-- [x] Chốt order counts gồm `total_orders`, `pending_orders`, `cancelled_orders`, `delivered_orders`
-- [x] Chốt stock metrics:
-  - `low_stock_variants`: `stock > 0 AND stock <= 5`
-  - `out_of_stock_variants`: `stock = 0`
-- [x] Chốt reviews metrics:
-  - `total_reviews`: chỉ `is_approved=true`
-  - `average_rating`: AVG approved reviews, không có review thì = `0`
-- [x] Chốt users/products:
-  - không tính soft-deleted users/products
-  - vẫn tính product `is_active=false` vào `total_products`
-- [x] Chốt `recent_orders`:
-  - limit `5`, sort `created_at DESC`
-  - chỉ trả `order_code`, `status`, `payment_status`, `total`, `created_at`, `customer_name`
-- [x] Chốt `top_selling_products`:
-  - limit `5`
-  - theo `SUM(order_items.quantity)`
-  - chỉ tính orders delivered + paid
-  - bỏ `order_items.product_id = null`
-  - trả `product_id`, `product_name`, `total_sold`, `revenue`
-- [x] Chốt route dùng `GET /api/admin/dashboard/stats` với middleware `auth:sanctum + role:admin`
-- [x] Chốt không implement `/api/admin/dashboard/revenue` trong phase hiện tại nếu ngoài scope
-### Admin Dashboard Stats API
-- [x] Guest cannot access dashboard stats
-- [x] Customer cannot access dashboard stats
-- [x] Admin can view dashboard stats
-- [x] Response has expected keys
-- [x] Total revenue counts only delivered and paid orders
-- [x] Pending/cancelled/delivered order counts are correct
-- [x] Low stock variants calculated correctly
-- [x] Out of stock variants calculated correctly
-- [x] Total reviews counts only approved reviews
-- [x] Average rating calculates only approved reviews
-- [x] Average rating is zero when no reviews
-- [x] Recent orders limited to five
-- [x] Recent orders does not expose unnecessary PII
-- [x] Top selling products calculated by quantity from delivered/paid orders
-- [x] Top selling products ignores order_items with null product_id
-- [x] Feature tests cho Dashboard Stats pass
-## 📋 Upcoming — Do not work yet
+## 📋 Upcoming (Not in current coding scope)
 
 ### Payments
-- [ ] VNPay
-- [ ] MoMo
+- [ ] VNPay integration
+- [ ] MoMo integration
 
-### Extra Features
-- [ ] Reviews
-- [ ] Wishlist
-- [ ] Dashboard stats
-- [ ] Unit tests for Services
+### Platform
+- [ ] Deployment automation and rollout playbook
+- [ ] Service-level/unit tests expansion for critical services
+

@@ -1,70 +1,90 @@
-Fashion-Ananas là website bán giày, quần áo, phụ kiện và thời trang nam, nữ.
+# Project Overview — Ananas Fashion Backend
 
-Người dùng có thể:
-- xem sản phẩm
-- thêm vào giỏ hàng
-- checkout
-- thanh toán
-- đặt hàng
-- đánh giá sản phẩm
-- bình luận sản phẩm
-- tìm kiếm sản phẩm
-- lọc sản phẩm
-- xem lịch sử mua hàng
-- xem thông tin cá nhân
-- xem thông tin đơn hàng
-- xem thông tin thanh toán
-- xem thông tin vận chuyển
-- xem thông tin sản phẩm
-- xem thông tin danh mục
-- xem thông tin thương hiệu
-- xem thông tin voucher
-- đăng nhập
-- đăng ký
-- quên mật khẩu
-- đặt lại mật khẩu
-- thay đổi mật khẩu
-- thay đổi thông tin cá nhân
-- thay đổi thông tin đơn hàng
-- thay đổi thông tin thanh toán
-- thay đổi thông tin vận chuyển
-- thay đổi thông tin sản phẩm
-- thay đổi thông tin danh mục
-- thay đổi thông tin thương hiệu
-- thay đổi thông tin voucher
-- thêm sản phẩm vào danh sách yêu thích
-- thêm sản phẩm vào danh sách so sánh
-- thêm sản phẩm vào danh sách mua sau
-- thêm sản phẩm vào danh sách quan tâm
-- thêm sản phẩm vào danh sách yêu thích
-- thêm sản phẩm vào danh sách so sánh
-- thêm sản phẩm vào danh sách mua sau
-- thêm sản phẩm vào danh sách quan tâm
-- thêm sản phẩm vào danh sách yêu thích
-- thêm sản phẩm vào danh sách so sánh
-- thêm sản phẩm vào danh sách mua sau
-- thêm sản phẩm vào danh sách quan tâm
-- thêm sản phẩm vào danh sách yêu thích
-- thêm sản phẩm vào danh sách so sánh
-- thêm sản phẩm vào danh sách mua sau
-- thêm sản phẩm vào danh sách quan tâm
-- thêm sản phẩm vào danh sách yêu thích
-- thêm sản phẩm vào danh sách so sánh
-- thêm sản phẩm vào danh sách mua sau
-- thêm sản phẩm vào danh sách quan tâm
-- thêm sản phẩm vào danh sách yêu thích
-- thêm sản phẩm vào danh sách so sánh
-- thêm sản phẩm vào danh sách mua sau
-- thêm sản phẩm vào danh sách quan tâm
-- thêm sản phẩm vào danh sách yêu thích
-- thêm sản phẩm vào danh sách so sánh
-- thêm sản phẩm vào danh sách mua sau
-- thêm sản phẩm vào danh sách quan tâm
+> Updated: 2026-05-15
 
-Admin có thể:
-- quản lý sản phẩm
-- quản lý đơn hàng
-- quản lý người dùng
-- quản lý danh mục
-- quản lý thương hiệu
-- quản lý voucher
+---
+
+## 1) Project summary
+
+Ananas Fashion backend là API cho hệ thống e-commerce thời trang, xây bằng Laravel 12, theo kiến trúc:
+
+- MVC
+- Service layer
+- Repository pattern
+- FormRequest validation
+- API Resource transformation
+
+---
+
+## 2) Current backend capability (implemented)
+
+### Customer/Public side
+- Auth (register/login/logout/profile/password)
+- Product public API (list/detail/filter/sort)
+- Cart (guest + user + merge)
+- Voucher check
+- Checkout:
+  - guest checkout
+  - authenticated checkout
+  - COD flow
+- Order management cho customer (list/detail/cancel)
+- Public order lookup (order code + contact verify)
+- Wishlist (user-only)
+- Reviews (delivered-order based review flow)
+
+### Admin side
+- Category CRUD
+- Brand CRUD
+- Product CRUD + restore + status toggle
+- Product variant CRUD
+- Product image CRUD + Cloudinary
+- Voucher CRUD
+- Order management + status transitions
+- Dashboard stats
+
+### Cross-cutting
+- Payment Foundation (COD-only, payment status convention)
+- Route hardening for out-of-scope endpoints (controlled 501)
+- Pricing consistency across product/cart/voucher/checkout
+- Voucher rule centralization for check + checkout
+- Partial API response contract standardization (admin + stubs + selected modules)
+
+---
+
+## 3) Current maturity
+
+Backend hiện đã có đủ **core e-commerce flow** cho:
+
+- Browse product
+- Cart
+- Voucher validation
+- Checkout
+- Order lifecycle cơ bản
+- User-generated review
+- Admin catalog + order ops + high-level stats
+
+Phần chưa trong scope hiện tại chủ yếu là payment gateway online, một số public modules và deployment hardening.
+
+---
+
+## 4) Next phase đề xuất
+
+### A. Deployment preparation
+- Production config checklist
+- Queue/cache/session strategy
+- Observability + error monitoring
+- CI/CD + release checklist
+
+### B. Public response contract migration
+- Chuẩn hóa dần toàn bộ public endpoints sang envelope thống nhất
+- Giữ backward compatibility theo từng phase
+
+### C. VNPay integration
+- Payment checkout request + callback verification
+- Idempotent callback processing
+- Payment/order state reconciliation
+
+### D. MoMo integration
+- Tương tự VNPay: create payment + callback + reconciliation
+- Test strategy cho callback and failure flows
+
