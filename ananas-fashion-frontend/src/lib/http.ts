@@ -1,5 +1,5 @@
 import axios, { AxiosHeaders } from 'axios'
-import { ensureGuestToken, getAccessToken } from '@/lib/storage'
+import { ensureGuestToken, getAccessToken, setGuestToken } from '@/lib/storage'
 
 const guestTokenPaths = ['/cart', '/checkout/guest']
 
@@ -30,4 +30,14 @@ http.interceptors.request.use((config) => {
   config.headers = headers
 
   return config
+})
+
+http.interceptors.response.use((response) => {
+  const guestToken = response.headers['x-guest-token']
+
+  if (typeof guestToken === 'string' && guestToken.trim().length > 0) {
+    setGuestToken(guestToken)
+  }
+
+  return response
 })

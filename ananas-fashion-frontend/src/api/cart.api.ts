@@ -1,6 +1,7 @@
 import { http } from '@/lib/http'
 import { getGuestToken } from '@/lib/storage'
-import type { ApiSuccessEnvelope } from '@/types/api'
+import { extractResponseData } from '@/lib/api-helpers'
+import type { Cart, CartItem } from '@/types/cart'
 
 export type CartItemPayload = {
   product_variant_id: number
@@ -8,28 +9,37 @@ export type CartItemPayload = {
 }
 
 export const cartApi = {
-  getCart() {
-    return http.get<ApiSuccessEnvelope<unknown>>('/cart')
+  async getCart(): Promise<Cart> {
+    const response = await http.get('/cart')
+    return extractResponseData<Cart>(response.data)
   },
 
-  addItem(payload: CartItemPayload) {
-    return http.post<ApiSuccessEnvelope<unknown>>('/cart/items', payload)
+  async addItem(payload: CartItemPayload): Promise<CartItem> {
+    const response = await http.post('/cart/items', payload)
+    return extractResponseData<CartItem>(response.data)
   },
 
-  updateItem(itemId: number, payload: { quantity: number }) {
-    return http.put<ApiSuccessEnvelope<unknown>>(`/cart/items/${itemId}`, payload)
+  async updateItem(itemId: number, payload: { quantity: number }): Promise<CartItem | null> {
+    const response = await http.put(`/cart/items/${itemId}`, payload)
+    const data = response.data as Record<string, unknown>
+
+    if (data?.message === 'Removed') {
+      return null
+    }
+
+    return extractResponseData<CartItem>(data)
   },
 
-  removeItem(itemId: number) {
-    return http.delete<ApiSuccessEnvelope<unknown>>(`/cart/items/${itemId}`)
+  async removeItem(itemId: number) {
+    await http.delete(`/cart/items/${itemId}`)
   },
 
-  clearCart() {
-    return http.delete<ApiSuccessEnvelope<unknown>>('/cart')
+  async clearCart() {
+    await http.delete('/cart')
   },
 
-  mergeGuestCart() {
-    return http.post<ApiSuccessEnvelope<unknown>>(
+  async mergeGuestCart() {
+    const response = await http.post(
       '/cart/merge',
       {},
       {
@@ -38,5 +48,10 @@ export const cartApi = {
         },
       },
     )
+
+    return response.data as {
+      warnings?: string[]
+      data?: Cart | null
+    }
   },
 }

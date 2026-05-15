@@ -1,15 +1,88 @@
-import { Link } from 'react-router-dom'
-import { PagePlaceholder } from '@/components/PagePlaceholder'
+import { useState, type FormEvent } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useAuth } from '@/app/AuthContext'
+import { Button } from '@/components/ui/Button'
+import { ErrorState } from '@/components/ui/ErrorState'
+import { Input } from '@/components/ui/Input'
+import { formatFieldError, getApiErrorInfo } from '@/lib/api-helpers'
 
 export function LoginPage() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { login } = useAuth()
+
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]> | null>(null)
+
+  const redirectPath = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? '/'
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setIsSubmitting(true)
+    setFormError(null)
+    setFieldErrors(null)
+
+    try {
+      await login({
+        email,
+        password,
+        device_name: 'web',
+      })
+
+      navigate(redirectPath, { replace: true })
+    } catch (error) {
+      const apiError = getApiErrorInfo(error)
+      setFormError(apiError.message)
+      setFieldErrors(apiError.errors)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
-    <PagePlaceholder
-      title="Login Page"
-      description="Placeholder for Sanctum token login flow. Token will be stored in localStorage and used in Authorization Bearer header."
-    >
-      <Link className="text-sm font-medium text-slate-900 underline" to="/auth/register">
-        Need an account? Register
-      </Link>
-    </PagePlaceholder>
+    <form className="space-y-4" onSubmit={handleSubmit}>
+      <div className="space-y-1">
+        <h2 className="text-lg font-semibold text-slate-900">Login</h2>
+        <p className="text-sm text-slate-600">Use your account credentials to continue.</p>
+      </div>
+
+      {formError ? <ErrorState message={formError} /> : null}
+
+      <Input
+        label="Email"
+        name="email"
+        type="email"
+        autoComplete="email"
+        value={email}
+        onChange={(event) => setEmail(event.target.value)}
+        error={formatFieldError(fieldErrors, 'email')}
+        required
+      />
+
+      <Input
+        label="Password"
+        name="password"
+        type="password"
+        autoComplete="current-password"
+        value={password}
+        onChange={(event) => setPassword(event.target.value)}
+        error={formatFieldError(fieldErrors, 'password')}
+        required
+      />
+
+      <Button type="submit" isLoading={isSubmitting} className="w-full">
+        Login
+      </Button>
+
+      <p className="text-sm text-slate-600">
+        Need an account?{' '}
+        <Link className="font-medium text-slate-900 underline" to="/register">
+          Register
+        </Link>
+      </p>
+    </form>
   )
 }

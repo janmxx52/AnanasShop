@@ -1,0 +1,35 @@
+import type { ButtonHTMLAttributes, ReactNode } from 'react'
+
+type ButtonVariant = 'primary' | 'secondary' | 'danger'
+
+type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: ButtonVariant
+  isLoading?: boolean
+  children: ReactNode
+}
+
+const variantClassNames: Record<ButtonVariant, string> = {
+  primary: 'bg-slate-900 text-white hover:bg-slate-800',
+  secondary: 'bg-slate-200 text-slate-900 hover:bg-slate-300',
+  danger: 'bg-red-600 text-white hover:bg-red-500',
+}
+
+export function Button({
+  variant = 'primary',
+  isLoading = false,
+  className = '',
+  disabled,
+  children,
+  ...props
+}: ButtonProps) {
+  return (
+    <button
+      type="button"
+      className={`rounded px-4 py-2 text-sm font-medium transition ${variantClassNames[variant]} disabled:cursor-not-allowed disabled:opacity-60 ${className}`}
+      disabled={disabled || isLoading}
+      {...props}
+    >
+      {isLoading ? 'Processing...' : children}
+    </button>
+  )
+}

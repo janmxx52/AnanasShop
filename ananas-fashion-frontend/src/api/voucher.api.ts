@@ -1,12 +1,14 @@
 import { http } from '@/lib/http'
-import type { ApiSuccessEnvelope } from '@/types/api'
+import { extractResponseData } from '@/lib/api-helpers'
+import type { VoucherCheckResult } from '@/types/voucher'
 
 export type VoucherCheckPayload = {
-  voucher_code: string
+  code: string
 }
 
 export const voucherApi = {
-  check(payload: VoucherCheckPayload) {
-    return http.post<ApiSuccessEnvelope<unknown>>('/vouchers/check', payload)
+  async checkVoucher(payload: VoucherCheckPayload): Promise<VoucherCheckResult> {
+    const response = await http.post('/vouchers/check', payload)
+    return extractResponseData<VoucherCheckResult>(response.data)
   },
 }

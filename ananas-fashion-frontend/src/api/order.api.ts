@@ -1,22 +1,12 @@
 import { http } from '@/lib/http'
-import type { ApiPaginatedEnvelope, ApiSuccessEnvelope } from '@/types/api'
-
-export type GuestCheckoutPayload = {
-  full_name: string
-  email: string
-  phone: string
-  shipping_address: string
-  voucher_code?: string
-  payment_method: 'cod'
-}
-
-export type UserCheckoutPayload = {
-  shipping_name: string
-  shipping_phone: string
-  shipping_address: string
-  voucher_code?: string
-  payment_method: 'cod'
-}
+import { extractResponseData } from '@/lib/api-helpers'
+import type {
+  CheckoutResult,
+  GuestCheckoutPayload,
+  OrderSummary,
+  UserCheckoutPayload,
+} from '@/types/order'
+import type { PaginatedResult } from '@/types/pagination'
 
 export type OrderLookupPayload = {
   order_code: string
@@ -25,27 +15,45 @@ export type OrderLookupPayload = {
 }
 
 export const orderApi = {
-  guestCheckout(payload: GuestCheckoutPayload) {
-    return http.post<ApiSuccessEnvelope<unknown>>('/checkout/guest', payload)
+  async guestCheckout(payload: GuestCheckoutPayload): Promise<CheckoutResult> {
+    const response = await http.post('/checkout/guest', payload)
+    return extractResponseData<CheckoutResult>(response.data)
   },
 
-  userCheckout(payload: UserCheckoutPayload) {
-    return http.post<ApiSuccessEnvelope<unknown>>('/orders', payload)
+  async userCheckout(payload: UserCheckoutPayload): Promise<CheckoutResult> {
+    const response = await http.post('/orders', payload)
+    return extractResponseData<CheckoutResult>(response.data)
   },
 
-  list() {
-    return http.get<ApiPaginatedEnvelope<unknown>>('/orders')
+  async list(params?: { page?: number; per_page?: number }): Promise<PaginatedResult<OrderSummary>> {
+    const response = await http.get('/orders', { params })
+    const payload = response.data as {
+      data?: OrderSummary[]
+      meta?: PaginatedResult<OrderSummary>['meta']
+    }
+
+    return {
+      data: payload.data ?? [],
+      meta: payload.meta ?? {
+        current_page: 1,
+        per_page: 15,
+        total: 0,
+        last_page: 1,
+      },
+    }
   },
 
-  detail(orderCode: string) {
-    return http.get<ApiSuccessEnvelope<unknown>>(`/orders/${orderCode}`)
+  async detail(orderCode: string): Promise<OrderSummary> {
+    const response = await http.get(`/orders/${orderCode}`)
+    return extractResponseData<OrderSummary>(response.data)
   },
 
-  cancel(orderCode: string) {
-    return http.post<ApiSuccessEnvelope<unknown>>(`/orders/${orderCode}/cancel`)
+  async cancel(orderCode: string): Promise<OrderSummary> {
+    const response = await http.post(`/orders/${orderCode}/cancel`)
+    return extractResponseData<OrderSummary>(response.data)
   },
 
   lookup(payload: OrderLookupPayload) {
-    return http.post<ApiSuccessEnvelope<unknown>>('/orders/lookup', payload)
+    return http.post('/orders/lookup', payload)
   },
 }

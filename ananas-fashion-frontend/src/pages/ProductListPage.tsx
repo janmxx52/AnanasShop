@@ -1,10 +1,203 @@
-import { PagePlaceholder } from '@/components/PagePlaceholder'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { productApi, type ProductQuery } from '@/api/product.api'
+import { ProductCard } from '@/components/product/ProductCard'
+import { Button } from '@/components/ui/Button'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { ErrorState } from '@/components/ui/ErrorState'
+import { Input } from '@/components/ui/Input'
+import { LoadingState } from '@/components/ui/LoadingState'
+import { getApiErrorInfo } from '@/lib/api-helpers'
+import type { PaginationMeta } from '@/types/pagination'
+import type { ProductLite } from '@/types/product'
+
+type ProductFilterState = {
+  search: string
+  category: string
+  brand: string
+  min_price: string
+  max_price: string
+  sort: string
+}
+
+const DEFAULT_FILTERS: ProductFilterState = {
+  search: '',
+  category: '',
+  brand: '',
+  min_price: '',
+  max_price: '',
+  sort: 'featured',
+}
+
+const EMPTY_META: PaginationMeta = {
+  current_page: 1,
+  per_page: 12,
+  total: 0,
+  last_page: 1,
+}
+
+function buildQuery(filters: ProductFilterState, page: number): ProductQuery {
+  return {
+    q: filters.search || undefined,
+    category: filters.category || undefined,
+    brand: filters.brand || undefined,
+    min_price: filters.min_price ? Number(filters.min_price) : undefined,
+    max_price: filters.max_price ? Number(filters.max_price) : undefined,
+    sort: filters.sort || undefined,
+    page,
+    per_page: 12,
+  }
+}
 
 export function ProductListPage() {
+  const [products, setProducts] = useState<ProductLite[]>([])
+  const [meta, setMeta] = useState<PaginationMeta>(EMPTY_META)
+  const [filters, setFilters] = useState<ProductFilterState>(DEFAULT_FILTERS)
+  const [appliedFilters, setAppliedFilters] = useState<ProductFilterState>(DEFAULT_FILTERS)
+  const [page, setPage] = useState(1)
+  const [isLoading, setIsLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+
+  const query = useMemo(() => buildQuery(appliedFilters, page), [appliedFilters, page])
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setIsLoading(true)
+      setErrorMessage(null)
+
+      try {
+        const response = await productApi.list(query)
+        setProducts(response.data)
+        setMeta(response.meta)
+      } catch (error) {
+        const apiError = getApiErrorInfo(error)
+        setErrorMessage(apiError.message)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    void fetchProducts()
+  }, [query])
+
+  const handleFilterSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setPage(1)
+    setAppliedFilters(filters)
+  }
+
+  const hasPagination = meta.last_page > 1
+
   return (
-    <PagePlaceholder
-      title="Product List Page"
-      description="Placeholder for product listing, search, filter, sort, and pagination."
-    />
+    <section className="space-y-6">
+      <header className="space-y-1">
+        <h1 className="text-2xl font-semibold text-slate-900">Products</h1>
+        <p className="text-sm text-slate-600">Search and browse active products from backend API.</p>
+      </header>
+
+      <form className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-3" onSubmit={handleFilterSubmit}>
+        <Input
+          label="Search"
+          placeholder="Product name..."
+          value={filters.search}
+          onChange={(event) => setFilters((prev) => ({ ...prev, search: event.target.value }))}
+        />
+        <Input
+          label="Category (slug)"
+          placeholder="e.g. sneaker"
+          value={filters.category}
+          onChange={(event) => setFilters((prev) => ({ ...prev, category: event.target.value }))}
+        />
+        <Input
+          label="Brand (slug)"
+          placeholder="e.g. ananas"
+          value={filters.brand}
+          onChange={(event) => setFilters((prev) => ({ ...prev, brand: event.target.value }))}
+        />
+        <Input
+          label="Min price"
+          type="number"
+          min={0}
+          value={filters.min_price}
+          onChange={(event) => setFilters((prev) => ({ ...prev, min_price: event.target.value }))}
+        />
+        <Input
+          label="Max price"
+          type="number"
+          min={0}
+          value={filters.max_price}
+          onChange={(event) => setFilters((prev) => ({ ...prev, max_price: event.target.value }))}
+        />
+        <label className="space-y-1">
+          <span className="block text-sm font-medium text-slate-700">Sort</span>
+          <select
+            className="w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+            value={filters.sort}
+            onChange={(event) => setFilters((prev) => ({ ...prev, sort: event.target.value }))}
+          >
+            <option value="featured">Featured</option>
+            <option value="newest">Newest</option>
+            <option value="price_asc">Price: Low to High</option>
+            <option value="price_desc">Price: High to Low</option>
+          </select>
+        </label>
+
+        <div className="flex items-end gap-2 md:col-span-3">
+          <Button type="submit">Apply filters</Button>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => {
+              setFilters(DEFAULT_FILTERS)
+              setAppliedFilters(DEFAULT_FILTERS)
+              setPage(1)
+            }}
+          >
+            Reset
+          </Button>
+        </div>
+      </form>
+
+      {isLoading ? <LoadingState message="Loading products..." /> : null}
+      {!isLoading && errorMessage ? <ErrorState message={errorMessage} /> : null}
+      {!isLoading && !errorMessage && products.length === 0 ? (
+        <EmptyState title="No products found" description="Try adjusting search or filters." />
+      ) : null}
+
+      {!isLoading && !errorMessage && products.length > 0 ? (
+        <>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+
+          {hasPagination ? (
+            <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-4">
+              <p className="text-sm text-slate-600">
+                Page {meta.current_page} / {meta.last_page} • Total {meta.total}
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={meta.current_page <= 1}
+                  onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                >
+                  Previous
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={meta.current_page >= meta.last_page}
+                  onClick={() => setPage((prev) => Math.min(meta.last_page, prev + 1))}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          ) : null}
+        </>
+      ) : null}
+    </section>
   )
 }

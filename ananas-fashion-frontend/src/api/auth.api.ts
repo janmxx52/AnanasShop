@@ -1,20 +1,6 @@
 import { http } from '@/lib/http'
-import type { ApiSuccessEnvelope } from '@/types/api'
-
-export type RegisterPayload = {
-  name: string
-  email: string
-  password: string
-  password_confirmation: string
-  phone?: string
-  device_name?: string
-}
-
-export type LoginPayload = {
-  email: string
-  password: string
-  device_name?: string
-}
+import { extractResponseData } from '@/lib/api-helpers'
+import type { AuthSession, AuthUser, LoginPayload, RegisterPayload } from '@/types/auth'
 
 export type ChangePasswordPayload = {
   current_password: string
@@ -23,31 +9,35 @@ export type ChangePasswordPayload = {
 }
 
 export const authApi = {
-  register(payload: RegisterPayload) {
-    return http.post<ApiSuccessEnvelope<unknown>>('/auth/register', payload)
+  async register(payload: RegisterPayload): Promise<AuthSession> {
+    const response = await http.post('/auth/register', payload)
+    return extractResponseData<AuthSession>(response.data)
   },
 
-  login(payload: LoginPayload) {
-    return http.post<ApiSuccessEnvelope<{ token: string }>>('/auth/login', payload)
+  async login(payload: LoginPayload): Promise<AuthSession> {
+    const response = await http.post('/auth/login', payload)
+    return extractResponseData<AuthSession>(response.data)
   },
 
-  logout() {
-    return http.post<ApiSuccessEnvelope<null>>('/auth/logout')
+  async logout() {
+    await http.post('/auth/logout')
   },
 
-  logoutAll() {
-    return http.post<ApiSuccessEnvelope<null>>('/auth/logout-all')
+  async logoutAll() {
+    await http.post('/auth/logout-all')
   },
 
-  me() {
-    return http.get<ApiSuccessEnvelope<unknown>>('/auth/me')
+  async me(): Promise<AuthUser> {
+    const response = await http.get('/auth/me')
+    return extractResponseData<AuthUser>(response.data)
   },
 
-  updateProfile(payload: FormData | Record<string, unknown>) {
-    return http.put<ApiSuccessEnvelope<unknown>>('/auth/me', payload)
+  async updateProfile(payload: FormData | Record<string, unknown>): Promise<AuthUser> {
+    const response = await http.put('/auth/me', payload)
+    return extractResponseData<AuthUser>(response.data)
   },
 
-  changePassword(payload: ChangePasswordPayload) {
-    return http.put<ApiSuccessEnvelope<null>>('/auth/me/password', payload)
+  async changePassword(payload: ChangePasswordPayload) {
+    await http.put('/auth/me/password', payload)
   },
 }
