@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
-import { getProductListCardPrice } from '@/lib/pricing'
 import { PriceText } from '@/components/ui/PriceText'
+import { WishlistButton } from '@/components/wishlist/WishlistButton'
+import { getProductListCardPrice } from '@/lib/pricing'
 import type { ProductLite } from '@/types/product'
 
 type ProductCardProps = {
@@ -31,9 +32,7 @@ export function ProductCard({ product }: ProductCardProps) {
               loading="lazy"
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-sm text-slate-500">
-              No image
-            </div>
+            <div className="flex h-full items-center justify-center text-sm text-slate-500">No image</div>
           )}
         </div>
       </Link>
@@ -49,6 +48,8 @@ export function ProductCard({ product }: ProductCardProps) {
             {product.rating_avg ?? 0} ★ ({product.review_count ?? 0})
           </span>
         </div>
+
+        <WishlistButton productId={product.id} />
       </div>
     </article>
   )

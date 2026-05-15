@@ -1,16 +1,30 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { cartApi } from '@/api/cart.api'
 import { productApi } from '@/api/product.api'
+import { reviewApi } from '@/api/review.api'
+import { useAuth } from '@/app/AuthContext'
+import { ReviewForm } from '@/components/review/ReviewForm'
+import { ReviewList } from '@/components/review/ReviewList'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { Input } from '@/components/ui/Input'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { PriceText } from '@/components/ui/PriceText'
+import { WishlistButton } from '@/components/wishlist/WishlistButton'
 import { getApiErrorInfo } from '@/lib/api-helpers'
 import { getVariantDisplayPrice } from '@/lib/pricing'
+import type { PaginationMeta } from '@/types/pagination'
 import type { ProductLite, ProductVariant } from '@/types/product'
+import type { CreateReviewPayload, ReviewItem } from '@/types/review'
+
+const DEFAULT_REVIEW_META: PaginationMeta = {
+  current_page: 1,
+  per_page: 10,
+  total: 0,
+  last_page: 1,
+}
 
 function getPrimaryImage(product: ProductLite) {
   if (!product.images || product.images.length === 0) {
@@ -22,40 +36,82 @@ function getPrimaryImage(product: ProductLite) {
 
 export function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>()
+  const { isAuthenticated, user } = useAuth()
+
   const [product, setProduct] = useState<ProductLite | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [isLoadingProduct, setIsLoadingProduct] = useState(true)
+  const [productErrorMessage, setProductErrorMessage] = useState<string | null>(null)
+
   const [selectedVariantId, setSelectedVariantId] = useState<number | null>(null)
   const [quantity, setQuantity] = useState(1)
   const [isAdding, setIsAdding] = useState(false)
   const [actionMessage, setActionMessage] = useState<string | null>(null)
 
-  useEffect(() => {
-    const fetchProduct = async () => {
-      if (!slug) {
-        setErrorMessage('Product slug is missing.')
-        setIsLoading(false)
-        return
-      }
+  const [reviews, setReviews] = useState<ReviewItem[]>([])
+  const [reviewMeta, setReviewMeta] = useState<PaginationMeta>(DEFAULT_REVIEW_META)
+  const [reviewPage, setReviewPage] = useState(1)
+  const [isLoadingReviews, setIsLoadingReviews] = useState(true)
+  const [reviewErrorMessage, setReviewErrorMessage] = useState<string | null>(null)
+  const [isCreatingReview, setIsCreatingReview] = useState(false)
+  const [isDeletingReviewId, setIsDeletingReviewId] = useState<number | null>(null)
+  const [reviewSubmitMessage, setReviewSubmitMessage] = useState<string | null>(null)
+  const [reviewFieldErrors, setReviewFieldErrors] = useState<Record<string, string[]> | null>(null)
 
-      setIsLoading(true)
-      setErrorMessage(null)
-
-      try {
-        const response = await productApi.detail(slug)
-        setProduct(response)
-
-        const firstInStockVariant = response.variants?.find((variant) => variant.stock > 0) ?? response.variants?.[0]
-        setSelectedVariantId(firstInStockVariant?.id ?? null)
-      } catch (error) {
-        const apiError = getApiErrorInfo(error)
-        setErrorMessage(apiError.message)
-      } finally {
-        setIsLoading(false)
-      }
+  const fetchProduct = useCallback(async () => {
+    if (!slug) {
+      setProductErrorMessage('Product slug is missing.')
+      setIsLoadingProduct(false)
+      return
     }
 
+    setIsLoadingProduct(true)
+    setProductErrorMessage(null)
+
+    try {
+      const response = await productApi.detail(slug)
+      setProduct(response)
+      const firstInStockVariant = response.variants?.find((variant) => variant.stock > 0) ?? response.variants?.[0]
+      setSelectedVariantId(firstInStockVariant?.id ?? null)
+    } catch (error) {
+      const apiError = getApiErrorInfo(error)
+      setProductErrorMessage(apiError.message)
+    } finally {
+      setIsLoadingProduct(false)
+    }
+  }, [slug])
+
+  const fetchReviews = useCallback(async () => {
+    if (!slug) {
+      return
+    }
+
+    setIsLoadingReviews(true)
+    setReviewErrorMessage(null)
+
+    try {
+      const response = await reviewApi.listByProduct(slug, { page: reviewPage, per_page: 10 })
+      setReviews(response.data)
+      setReviewMeta(response.meta)
+    } catch (error) {
+      const apiError = getApiErrorInfo(error)
+      setReviewErrorMessage(apiError.message)
+    } finally {
+      setIsLoadingReviews(false)
+    }
+  }, [reviewPage, slug])
+
+  useEffect(() => {
     void fetchProduct()
+  }, [fetchProduct])
+
+  useEffect(() => {
+    void fetchReviews()
+  }, [fetchReviews])
+
+  useEffect(() => {
+    setReviewPage(1)
+    setReviewSubmitMessage(null)
+    setReviewFieldErrors(null)
   }, [slug])
 
   const selectedVariant: ProductVariant | null = useMemo(() => {
@@ -71,7 +127,7 @@ export function ProductDetailPage() {
       return
     }
 
-    setQuantity((prev) => Math.min(Math.max(prev, 1), Math.max(selectedVariant.stock, 1)))
+    setQuantity((previous) => Math.min(Math.max(previous, 1), Math.max(selectedVariant.stock, 1)))
   }, [selectedVariant])
 
   const handleAddToCart = async () => {
@@ -88,7 +144,6 @@ export function ProductDetailPage() {
         product_variant_id: selectedVariant.id,
         quantity,
       })
-
       setActionMessage('Added to cart successfully.')
     } catch (error) {
       const apiError = getApiErrorInfo(error)
@@ -98,12 +153,68 @@ export function ProductDetailPage() {
     }
   }
 
-  if (isLoading) {
+  const handleCreateReview = async (payload: CreateReviewPayload): Promise<boolean> => {
+    if (!slug) {
+      return false
+    }
+
+    setIsCreatingReview(true)
+    setReviewSubmitMessage(null)
+    setReviewFieldErrors(null)
+
+    const formData = new FormData()
+    formData.append('order_item_id', String(payload.order_item_id))
+    formData.append('rating', String(payload.rating))
+    if (payload.comment) {
+      formData.append('comment', payload.comment)
+    }
+    payload.images?.forEach((file) => {
+      formData.append('images[]', file)
+    })
+
+    try {
+      await reviewApi.createForProduct(slug, formData)
+      setReviewSubmitMessage('Review submitted successfully.')
+
+      if (reviewPage !== 1) {
+        setReviewPage(1)
+      } else {
+        await fetchReviews()
+      }
+
+      return true
+    } catch (error) {
+      const apiError = getApiErrorInfo(error)
+      setReviewSubmitMessage(apiError.message)
+      setReviewFieldErrors(apiError.errors)
+      return false
+    } finally {
+      setIsCreatingReview(false)
+    }
+  }
+
+  const handleDeleteReview = async (reviewId: number) => {
+    setIsDeletingReviewId(reviewId)
+    setReviewSubmitMessage(null)
+
+    try {
+      const result = await reviewApi.remove(reviewId)
+      setReviewSubmitMessage(result.message)
+      await fetchReviews()
+    } catch (error) {
+      const apiError = getApiErrorInfo(error)
+      setReviewSubmitMessage(apiError.message)
+    } finally {
+      setIsDeletingReviewId(null)
+    }
+  }
+
+  if (isLoadingProduct) {
     return <LoadingState message="Loading product..." />
   }
 
-  if (errorMessage) {
-    return <ErrorState message={errorMessage} />
+  if (productErrorMessage) {
+    return <ErrorState message={productErrorMessage} />
   }
 
   if (!product) {
@@ -135,10 +246,7 @@ export function ProductDetailPage() {
 
           <div className="rounded border border-slate-200 bg-slate-50 p-3">
             <p className="text-sm text-slate-600">Price</p>
-            <PriceText
-              value={getVariantDisplayPrice(product, selectedVariantId)}
-              className="text-lg font-semibold text-slate-900"
-            />
+            <PriceText value={getVariantDisplayPrice(product, selectedVariantId)} className="text-lg font-semibold text-slate-900" />
           </div>
 
           <div className="space-y-2">
@@ -174,24 +282,78 @@ export function ProductDetailPage() {
             onChange={(event) => setQuantity(Math.max(1, Number(event.target.value) || 1))}
           />
 
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={() => void handleAddToCart()}
-              isLoading={isAdding}
-              disabled={!selectedVariant || selectedVariant.stock < 1}
-            >
+          <div className="flex flex-wrap items-start gap-2">
+            <Button onClick={() => void handleAddToCart()} isLoading={isAdding} disabled={!selectedVariant || selectedVariant.stock < 1}>
               Add to cart
             </Button>
-            <Link to="/cart" className="text-sm font-medium text-slate-900 underline">
+            <WishlistButton productId={product.id} />
+            <Link to="/cart" className="rounded bg-slate-200 px-4 py-2 text-sm font-medium text-slate-900">
               Go to cart
             </Link>
           </div>
 
-          {actionMessage ? (
-            <p className="text-sm text-slate-700">{actionMessage}</p>
-          ) : null}
+          {actionMessage ? <p className="text-sm text-slate-700">{actionMessage}</p> : null}
         </div>
       </div>
+
+      <section className="space-y-4">
+        <header className="space-y-1">
+          <h2 className="text-xl font-semibold text-slate-900">Product reviews</h2>
+          <p className="text-sm text-slate-600">
+            Average rating: {product.rating_avg ?? 0} / 5 ({product.review_count ?? 0} reviews)
+          </p>
+        </header>
+
+        {isAuthenticated ? (
+          <ReviewForm
+            isSubmitting={isCreatingReview}
+            submitMessage={reviewSubmitMessage}
+            fieldErrors={reviewFieldErrors}
+            onSubmit={handleCreateReview}
+          />
+        ) : (
+          <div className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-700">
+            Please <Link to="/login" className="font-medium underline">login</Link> to write a review.
+          </div>
+        )}
+
+        {!isAuthenticated && reviewSubmitMessage ? <p className="text-sm text-slate-700">{reviewSubmitMessage}</p> : null}
+
+        <ReviewList
+          reviews={reviews}
+          isLoading={isLoadingReviews}
+          errorMessage={reviewErrorMessage}
+          currentUserId={user?.id}
+          deletingReviewId={isDeletingReviewId}
+          onDelete={handleDeleteReview}
+        />
+
+        {reviewMeta.last_page > 1 ? (
+          <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-4">
+            <p className="text-sm text-slate-600">
+              Page {reviewMeta.current_page} / {reviewMeta.last_page}
+            </p>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={reviewMeta.current_page <= 1}
+                onClick={() => setReviewPage((previous) => Math.max(previous - 1, 1))}
+              >
+                Previous
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={reviewMeta.current_page >= reviewMeta.last_page}
+                onClick={() => setReviewPage((previous) => Math.min(previous + 1, reviewMeta.last_page))}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        ) : null}
+      </section>
     </section>
   )
 }

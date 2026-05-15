@@ -16,6 +16,7 @@ import { ProductListPage } from '@/pages/ProductListPage'
 import { RegisterPage } from '@/pages/RegisterPage'
 import { UserOrderDetailPage } from '@/pages/UserOrderDetailPage'
 import { UserOrdersPage } from '@/pages/UserOrdersPage'
+import { WishlistPage } from '@/pages/WishlistPage'
 
 export const router = createBrowserRouter([
   {
@@ -42,6 +43,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <UserOrderDetailPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'wishlist',
+        element: (
+          <ProtectedRoute>
+            <WishlistPage />
           </ProtectedRoute>
         ),
       },

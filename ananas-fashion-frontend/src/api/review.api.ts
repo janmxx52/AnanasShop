@@ -1,23 +1,37 @@
 import { http } from '@/lib/http'
-import type { ApiPaginatedEnvelope, ApiSuccessEnvelope } from '@/types/api'
-
-export type CreateReviewPayload = {
-  order_item_id: number
-  rating: number
-  comment?: string
-  images?: File[]
-}
+import { extractResponseData } from '@/lib/api-helpers'
+import type { CreateReviewPayload, ReviewItem, ReviewListResult } from '@/types/review'
 
 export const reviewApi = {
-  listByProduct(slug: string, params?: { page?: number; per_page?: number }) {
-    return http.get<ApiPaginatedEnvelope<unknown>>(`/products/${slug}/reviews`, { params })
+  async listByProduct(slug: string, params?: { page?: number; per_page?: number }): Promise<ReviewListResult> {
+    const response = await http.get(`/products/${slug}/reviews`, { params })
+    const payload = response.data as {
+      data?: ReviewItem[]
+      meta?: ReviewListResult['meta']
+    }
+
+    return {
+      data: payload.data ?? [],
+      meta: payload.meta ?? {
+        current_page: 1,
+        per_page: params?.per_page ?? 10,
+        total: 0,
+        last_page: 1,
+      },
+    }
   },
 
-  createForProduct(slug: string, payload: FormData | CreateReviewPayload) {
-    return http.post<ApiSuccessEnvelope<unknown>>(`/products/${slug}/reviews`, payload)
+  async createForProduct(slug: string, payload: FormData | CreateReviewPayload): Promise<ReviewItem> {
+    const response = await http.post(`/products/${slug}/reviews`, payload)
+    return extractResponseData<ReviewItem>(response.data)
   },
 
-  remove(reviewId: number) {
-    return http.delete<ApiSuccessEnvelope<unknown>>(`/reviews/${reviewId}`)
+  async remove(reviewId: number): Promise<{ message: string }> {
+    const response = await http.delete(`/reviews/${reviewId}`)
+    const data = response.data as { message?: string }
+
+    return {
+      message: data.message ?? 'Review deleted',
+    }
   },
 }
