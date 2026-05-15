@@ -119,6 +119,7 @@
 - [x] Pricing consistency fix (display price + variant final price unified)
 - [x] Voucher rule centralization (`VoucherCalculator` shared by voucher check + checkout)
 - [x] API documentation generated (`.ai/api/api-documentation.md`, `.ai/api/postman-notes.md`)
+- [x] Postman E2E smoke test completed (`.ai/api/postman-test-report.md`)
 
 ---
 
@@ -150,4 +151,3 @@
 ### Platform
 - [ ] Deployment automation and rollout playbook
 - [ ] Service-level/unit tests expansion for critical services
-
