@@ -112,6 +112,9 @@ export function CheckoutPage() {
   const discountAmount = voucherResult?.discount ?? 0
   const estimatedShippingFee = subtotal >= 500000 ? 0 : 30000
   const estimatedTotal = Math.max(0, subtotal - discountAmount + estimatedShippingFee)
+  const cartErrorMessage = fieldErrors?.cart?.[0] ?? null
+  const cartItemsErrorMessage = fieldErrors?.cart_items?.[0] ?? null
+  const voucherErrorMessage = fieldErrors?.voucher_code?.[0] ?? null
 
   const handleCheckoutSuccess = async (order: CheckoutResult) => {
     setCheckoutSuccessOrder(order)
@@ -190,11 +193,16 @@ export function CheckoutPage() {
 
       <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
         <div className="space-y-4">
-          {submitMessage ? <ErrorState message={submitMessage} /> : null}
+          {submitMessage &&
+          submitMessage !== cartErrorMessage &&
+          submitMessage !== cartItemsErrorMessage &&
+          submitMessage !== voucherErrorMessage ? (
+            <ErrorState message={submitMessage} />
+          ) : null}
 
-          {fieldErrors?.cart?.[0] ? <ErrorState message={fieldErrors.cart[0]} /> : null}
-          {fieldErrors?.cart_items?.[0] ? <ErrorState message={fieldErrors.cart_items[0]} /> : null}
-          {fieldErrors?.voucher_code?.[0] ? <ErrorState message={fieldErrors.voucher_code[0]} /> : null}
+          {cartErrorMessage ? <ErrorState message={cartErrorMessage} /> : null}
+          {cartItemsErrorMessage ? <ErrorState message={cartItemsErrorMessage} /> : null}
+          {voucherErrorMessage ? <ErrorState message={voucherErrorMessage} /> : null}
 
           {!isAuthenticated ? (
             <section className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">

@@ -13,6 +13,7 @@ class VoucherService
     public function checkVoucherByCode(Request $request, string $code): array
     {
         [$cart] = $this->resolveCartFromRequest($request);
+        $user = $request->user('sanctum') ?? $request->user();
 
         $items = $cart ? $cart->items()->with(['variant.product'])->get() : collect([]);
         $subtotal = $items->reduce(function ($carry, $item) {
@@ -25,7 +26,7 @@ class VoucherService
         [$voucher, $discount] = $this->voucherCalculator->resolveByCode(
             code: $code,
             subtotal: round($subtotal, 2),
-            userId: $request->user()?->id,
+            userId: $user?->id,
             guestToken: $request->header('X-Guest-Token'),
             errorField: 'code',
             lockForUpdate: false

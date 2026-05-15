@@ -28,6 +28,11 @@ export function MainLayout() {
             <NavLink to="/orders/lookup" className={navLinkClass}>
               Order Lookup
             </NavLink>
+            {isAuthenticated ? (
+              <NavLink to="/orders" className={navLinkClass}>
+                My Orders
+              </NavLink>
+            ) : null}
             {isAdmin ? (
               <NavLink to="/admin/dashboard" className={navLinkClass}>
                 Admin

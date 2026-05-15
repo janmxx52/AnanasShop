@@ -42,6 +42,24 @@ export type OrderSummary = {
 
 export type CheckoutResult = OrderSummary
 
+export type OrderTimelineItem = {
+  status: OrderStatus
+  state: 'reached' | 'current' | 'pending'
+}
+
+export type OrderLookupResult = {
+  order_code: string
+  order_status: OrderStatus
+  order_date: string
+  order_items: OrderItem[]
+  quantity: number
+  total: number
+  payment_method: 'cod' | string
+  payment_status: PaymentStatus
+  shipping_address: string
+  status_timeline: OrderTimelineItem[]
+}
+
 export type GuestCheckoutPayload = {
   full_name: string
   email: string

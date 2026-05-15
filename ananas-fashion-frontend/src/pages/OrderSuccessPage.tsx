@@ -31,10 +31,7 @@ export function OrderSuccessPage() {
 
   if (!order) {
     return (
-      <EmptyState
-        title="No checkout result found"
-        description="Please complete checkout first."
-      />
+      <EmptyState title="No checkout result found" description="Please complete checkout first." />
     )
   }
 
@@ -75,16 +72,13 @@ export function OrderSuccessPage() {
         </Link>
         {isAuthenticated ? (
           <Link
-            to={`/orders/lookup?order_code=${order.code}`}
+            to={`/orders/${order.code}`}
             className="rounded bg-slate-200 px-4 py-2 text-sm font-medium text-slate-900"
           >
             Xem đơn hàng của tôi
           </Link>
         ) : null}
-        <Link
-          to="/products"
-          className="rounded bg-slate-200 px-4 py-2 text-sm font-medium text-slate-900"
-        >
+        <Link to="/products" className="rounded bg-slate-200 px-4 py-2 text-sm font-medium text-slate-900">
           Tiếp tục mua hàng
         </Link>
       </div>

@@ -1,8 +1,10 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { authApi } from '@/api/auth.api'
+import { cartApi } from '@/api/cart.api'
 import {
   clearAccessToken,
   clearRoleToken,
+  getGuestToken,
   getAccessToken,
   setAuthTokenByRole,
 } from '@/lib/storage'
@@ -41,6 +43,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [token, setToken] = useState<string | null>(getAccessToken())
   const [isLoading, setIsLoading] = useState(true)
 
+  const mergeGuestCartAfterAuth = useCallback(async () => {
+    if (!getGuestToken()) {
+      return
+    }
+
+    try {
+      await cartApi.mergeGuestCart()
+    } catch {
+      // ignore merge failure and keep login/register success flow
+    }
+  }, [])
+
   useEffect(() => {
     const bootstrap = async () => {
       const storedToken = getAccessToken()
@@ -54,6 +68,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       try {
         const profile = await authApi.me()
+        await mergeGuestCartAfterAuth()
         setUser(profile)
         setToken(storedToken)
       } catch {
@@ -66,23 +81,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     void bootstrap()
-  }, [])
+  }, [mergeGuestCartAfterAuth])
 
   const login = useCallback(async (payload: LoginPayload) => {
     const session = await authApi.login(payload)
     applySession(session)
+    await mergeGuestCartAfterAuth()
     setUser(session.user)
     setToken(session.token)
     return session.user
-  }, [])
+  }, [mergeGuestCartAfterAuth])
 
   const register = useCallback(async (payload: RegisterPayload) => {
     const session = await authApi.register(payload)
     applySession(session)
+    await mergeGuestCartAfterAuth()
     setUser(session.user)
     setToken(session.token)
     return session.user
-  }, [])
+  }, [mergeGuestCartAfterAuth])
 
   const logout = useCallback(async () => {
     try {

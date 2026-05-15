@@ -1,5 +1,5 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom'
-import { AdminRoute, GuestRoute } from '@/components/routing/RouteGuards'
+import { AdminRoute, GuestRoute, ProtectedRoute } from '@/components/routing/RouteGuards'
 import { AdminLayout } from '@/layouts/AdminLayout'
 import { AuthLayout } from '@/layouts/AuthLayout'
 import { MainLayout } from '@/layouts/MainLayout'
@@ -14,6 +14,8 @@ import { OrderLookupPage } from '@/pages/OrderLookupPage'
 import { ProductDetailPage } from '@/pages/ProductDetailPage'
 import { ProductListPage } from '@/pages/ProductListPage'
 import { RegisterPage } from '@/pages/RegisterPage'
+import { UserOrderDetailPage } from '@/pages/UserOrderDetailPage'
+import { UserOrdersPage } from '@/pages/UserOrdersPage'
 
 export const router = createBrowserRouter([
   {
@@ -27,6 +29,22 @@ export const router = createBrowserRouter([
       { path: 'checkout', element: <CheckoutPage /> },
       { path: 'checkout/success', element: <OrderSuccessPage /> },
       { path: 'orders/lookup', element: <OrderLookupPage /> },
+      {
+        path: 'orders',
+        element: (
+          <ProtectedRoute>
+            <UserOrdersPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'orders/:orderCode',
+        element: (
+          <ProtectedRoute>
+            <UserOrderDetailPage />
+          </ProtectedRoute>
+        ),
+      },
     ],
   },
   {

@@ -58,6 +58,43 @@ class CartTest extends TestCase
         $this->assertDatabaseMissing('cart_items', ['id' => $itemId]);
     }
 
+    public function test_bearer_token_on_public_cart_routes_resolves_user_cart()
+    {
+        $user = User::factory()->create();
+        $token = $user->createToken('cart-test')->plainTextToken;
+
+        $guestToken = (string) Str::uuid();
+        $guestCart = Cart::create(['guest_token' => $guestToken]);
+
+        $product = Product::factory()->create(['is_active' => true]);
+        $variant = ProductVariant::factory()->for($product)->create(['stock' => 10]);
+
+        $guestCart->items()->create([
+            'product_variant_id' => $variant->id,
+            'quantity' => 1,
+        ]);
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson('/api/cart/items', ['product_variant_id' => $variant->id, 'quantity' => 2])
+            ->assertStatus(201);
+
+        $cartResponse = $this
+            ->withHeaders([
+                'Authorization' => "Bearer {$token}",
+                'X-Guest-Token' => $guestToken,
+            ])
+            ->getJson('/api/cart');
+
+        $cartResponse->assertStatus(200);
+        $cartResponse->assertJsonPath('owner.type', 'user');
+        $cartResponse->assertJsonPath('owner.user_id', $user->id);
+        $cartResponse->assertJsonPath('items.0.quantity', 2);
+
+        $this->assertDatabaseHas('carts', ['user_id' => $user->id]);
+        $this->assertDatabaseHas('carts', ['guest_token' => $guestToken]);
+        $this->assertDatabaseHas('cart_items', ['cart_id' => $guestCart->id, 'quantity' => 1]);
+    }
+
     public function test_add_twice_sums_and_respects_stock()
     {
         $user = User::factory()->create();

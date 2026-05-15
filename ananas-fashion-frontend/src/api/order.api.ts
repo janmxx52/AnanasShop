@@ -3,6 +3,7 @@ import { extractResponseData } from '@/lib/api-helpers'
 import type {
   CheckoutResult,
   GuestCheckoutPayload,
+  OrderLookupResult,
   OrderSummary,
   UserCheckoutPayload,
 } from '@/types/order'
@@ -53,7 +54,8 @@ export const orderApi = {
     return extractResponseData<OrderSummary>(response.data)
   },
 
-  lookup(payload: OrderLookupPayload) {
-    return http.post('/orders/lookup', payload)
+  async lookupOrder(payload: OrderLookupPayload): Promise<OrderLookupResult> {
+    const response = await http.post('/orders/lookup', payload)
+    return extractResponseData<OrderLookupResult>(response.data)
   },
 }
