@@ -1,6 +1,8 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom'
 import { AdminRoute, GuestRoute, ProtectedRoute } from '@/components/routing/RouteGuards'
 import { AdminLayout } from '@/layouts/AdminLayout'
+import { AdminBrandsPage } from '@/pages/AdminBrandsPage'
+import { AdminCategoriesPage } from '@/pages/AdminCategoriesPage'
 import { AuthLayout } from '@/layouts/AuthLayout'
 import { MainLayout } from '@/layouts/MainLayout'
 import { AdminDashboardPage } from '@/pages/AdminDashboardPage'
@@ -96,7 +98,11 @@ export const router = createBrowserRouter([
         <AdminLayout />
       </AdminRoute>
     ),
-    children: [{ path: 'dashboard', element: <AdminDashboardPage /> }],
+    children: [
+      { path: 'dashboard', element: <AdminDashboardPage /> },
+      { path: 'categories', element: <AdminCategoriesPage /> },
+      { path: 'brands', element: <AdminBrandsPage /> },
+    ],
   },
   {
     path: '*',

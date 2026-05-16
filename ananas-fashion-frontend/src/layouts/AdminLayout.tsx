@@ -7,11 +7,17 @@ export function AdminLayout() {
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-4 md:flex-row md:items-center md:justify-between">
           <h1 className="text-lg font-semibold text-slate-900">Khu vực quản trị</h1>
-          <nav className="flex items-center gap-2">
+          <nav className="flex flex-wrap items-center gap-2">
             <NavLink to="/admin/dashboard" className={navLinkClass}>
-              Bảng điều khiển
+              Tổng quan
+            </NavLink>
+            <NavLink to="/admin/categories" className={navLinkClass}>
+              Danh mục
+            </NavLink>
+            <NavLink to="/admin/brands" className={navLinkClass}>
+              Thương hiệu
             </NavLink>
           </nav>
         </div>
