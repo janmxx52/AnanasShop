@@ -6,8 +6,11 @@ import { AdminCategoriesPage } from '@/pages/AdminCategoriesPage'
 import { AuthLayout } from '@/layouts/AuthLayout'
 import { MainLayout } from '@/layouts/MainLayout'
 import { AdminDashboardPage } from '@/pages/AdminDashboardPage'
+import { AdminOrderDetailPage } from '@/pages/AdminOrderDetailPage'
+import { AdminOrdersPage } from '@/pages/AdminOrdersPage'
 import { AdminProductManagePage } from '@/pages/AdminProductManagePage'
 import { AdminProductsPage } from '@/pages/AdminProductsPage'
+import { AdminVouchersPage } from '@/pages/AdminVouchersPage'
 import { CartPage } from '@/pages/CartPage'
 import { CheckoutPage } from '@/pages/CheckoutPage'
 import { HomePage } from '@/pages/HomePage'
@@ -106,6 +109,9 @@ export const router = createBrowserRouter([
       { path: 'brands', element: <AdminBrandsPage /> },
       { path: 'products', element: <AdminProductsPage /> },
       { path: 'products/:productId/manage', element: <AdminProductManagePage /> },
+      { path: 'vouchers', element: <AdminVouchersPage /> },
+      { path: 'orders', element: <AdminOrdersPage /> },
+      { path: 'orders/:orderCode', element: <AdminOrderDetailPage /> },
     ],
   },
   {

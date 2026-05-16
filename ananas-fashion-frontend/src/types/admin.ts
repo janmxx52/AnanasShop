@@ -129,6 +129,99 @@ export type AdminProductImageUploadPayload = {
   sort_order?: number
 }
 
+export type AdminVoucherType = 'percent' | 'fixed'
+
+export type AdminVoucher = {
+  id: number
+  code: string
+  type: AdminVoucherType
+  value: number
+  min_order_amount: number | null
+  max_discount: number | null
+  usage_limit: number | null
+  usage_per_user: number | null
+  used_count: number
+  starts_at: string | null
+  expires_at: string | null
+  is_active: boolean
+  created_at: string | null
+  updated_at: string | null
+}
+
+export type AdminVoucherPayload = {
+  code: string
+  type: AdminVoucherType
+  value: number
+  min_order_amount?: number | null
+  max_discount?: number | null
+  usage_limit?: number | null
+  usage_per_user?: number | null
+  starts_at?: string | null
+  expires_at?: string | null
+  is_active?: boolean
+}
+
+export type AdminVoucherListParams = {
+  page?: number
+  per_page?: number
+}
+
+export type AdminVoucherPaginatedResult = PaginatedResult<AdminVoucher>
+
+export type AdminOrderItem = {
+  id: number
+  product_id: number | null
+  product_variant_id: number | null
+  product_name: string
+  variant_name: string
+  sku: string
+  image_url: string | null
+  unit_price: number
+  quantity: number
+  line_total: number
+  variant_info: Record<string, unknown> | null
+}
+
+export type AdminOrder = {
+  id: number
+  code: string
+  status: OrderStatus
+  subtotal: number
+  discount_amount: number
+  shipping_fee: number
+  total: number
+  payment_method: string
+  payment_status: PaymentStatus
+  voucher_code: string | null
+  customer: {
+    user_id: number | null
+    guest_name: string | null
+    guest_email: string | null
+  }
+  shipping: {
+    name: string
+    phone: string
+    address: string
+  }
+  note: string | null
+  items?: AdminOrderItem[]
+  created_at: string
+}
+
+export type AdminOrderListParams = {
+  page?: number
+  per_page?: number
+  q?: string
+  status?: OrderStatus
+  payment_status?: PaymentStatus
+}
+
+export type AdminOrderStatusUpdatePayload = {
+  status: OrderStatus
+}
+
+export type AdminOrderPaginatedResult = PaginatedResult<AdminOrder>
+
 export type DashboardRecentOrder = {
   order_code: string
   status: OrderStatus

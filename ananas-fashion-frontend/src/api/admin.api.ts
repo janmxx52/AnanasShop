@@ -8,15 +8,23 @@ import type {
   AdminBrandPayload,
   AdminCategory,
   AdminCategoryListResult,
+  AdminCategoryPayload,
+  AdminOrder,
+  AdminOrderListParams,
+  AdminOrderPaginatedResult,
+  AdminOrderStatusUpdatePayload,
+  AdminProduct,
   AdminProductImage,
   AdminProductImageUploadPayload,
-  AdminCategoryPayload,
-  AdminProduct,
   AdminProductListParams,
   AdminProductPaginatedResult,
   AdminProductPayload,
   AdminProductVariant,
   AdminProductVariantPayload,
+  AdminVoucher,
+  AdminVoucherListParams,
+  AdminVoucherPaginatedResult,
+  AdminVoucherPayload,
   DashboardStats,
 } from '@/types/admin'
 
@@ -198,6 +206,57 @@ export const adminApi = {
     return extractResponseData<AdminProductImage>(response.data)
   },
 
+  async listVouchers(params?: AdminVoucherListParams): Promise<AdminVoucherPaginatedResult> {
+    const response = await http.get<ApiPaginatedEnvelope<AdminVoucher>>('/admin/vouchers', { params })
+    return extractPaginatedData<AdminVoucher>(response.data)
+  },
+
+  async getVoucher(id: number): Promise<AdminVoucher> {
+    const response = await http.get<ApiSuccessEnvelope<AdminVoucher>>(`/admin/vouchers/${id}`)
+    return extractResponseData<AdminVoucher>(response.data)
+  },
+
+  async createVoucher(payload: AdminVoucherPayload): Promise<AdminVoucher> {
+    const response = await http.post<ApiSuccessEnvelope<AdminVoucher>>('/admin/vouchers', payload)
+    return extractResponseData<AdminVoucher>(response.data)
+  },
+
+  async updateVoucher(id: number, payload: Partial<AdminVoucherPayload>): Promise<AdminVoucher> {
+    const response = await http.put<ApiSuccessEnvelope<AdminVoucher>>(`/admin/vouchers/${id}`, payload)
+    return extractResponseData<AdminVoucher>(response.data)
+  },
+
+  async deleteVoucher(id: number): Promise<void> {
+    await http.delete<ApiSuccessEnvelope<null>>(`/admin/vouchers/${id}`)
+  },
+
+  async listOrders(params?: AdminOrderListParams): Promise<AdminOrderPaginatedResult> {
+    const response = await http.get<ApiPaginatedEnvelope<AdminOrder>>('/admin/orders', {
+      params: {
+        page: params?.page,
+        per_page: params?.per_page,
+      },
+    })
+    return extractPaginatedData<AdminOrder>(response.data)
+  },
+
+  async getOrder(orderCode: string): Promise<AdminOrder> {
+    const response = await http.get<ApiSuccessEnvelope<AdminOrder>>(`/admin/orders/${orderCode}`)
+    return extractResponseData<AdminOrder>(response.data)
+  },
+
+  async updateOrderStatus(orderCode: string, payload: AdminOrderStatusUpdatePayload): Promise<AdminOrder> {
+    const response = await http.patch<ApiSuccessEnvelope<AdminOrder>>(`/admin/orders/${orderCode}/status`, payload)
+    return extractResponseData<AdminOrder>(response.data)
+  },
+
+  async cancelOrder(orderCode: string): Promise<AdminOrder> {
+    const response = await http.patch<ApiSuccessEnvelope<AdminOrder>>(`/admin/orders/${orderCode}/status`, {
+      status: 'cancelled',
+    })
+    return extractResponseData<AdminOrder>(response.data)
+  },
+
   categories(params?: { page?: number; per_page?: number }) {
     return http.get<ApiPaginatedEnvelope<unknown>>('/admin/categories', { params })
   },
@@ -224,10 +283,6 @@ export const adminApi = {
 
   orderDetail(orderCode: string) {
     return http.get<ApiSuccessEnvelope<unknown>>(`/admin/orders/${orderCode}`)
-  },
-
-  updateOrderStatus(orderCode: string, status: string) {
-    return http.patch<ApiSuccessEnvelope<unknown>>(`/admin/orders/${orderCode}/status`, { status })
   },
 
   vouchers(params?: { page?: number; per_page?: number }) {
