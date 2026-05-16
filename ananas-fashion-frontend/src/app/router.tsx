@@ -6,6 +6,7 @@ import { AdminCategoriesPage } from '@/pages/AdminCategoriesPage'
 import { AuthLayout } from '@/layouts/AuthLayout'
 import { MainLayout } from '@/layouts/MainLayout'
 import { AdminDashboardPage } from '@/pages/AdminDashboardPage'
+import { AdminProductManagePage } from '@/pages/AdminProductManagePage'
 import { AdminProductsPage } from '@/pages/AdminProductsPage'
 import { CartPage } from '@/pages/CartPage'
 import { CheckoutPage } from '@/pages/CheckoutPage'
@@ -104,6 +105,7 @@ export const router = createBrowserRouter([
       { path: 'categories', element: <AdminCategoriesPage /> },
       { path: 'brands', element: <AdminBrandsPage /> },
       { path: 'products', element: <AdminProductsPage /> },
+      { path: 'products/:productId/manage', element: <AdminProductManagePage /> },
     ],
   },
   {

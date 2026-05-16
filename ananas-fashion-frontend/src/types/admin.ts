@@ -91,6 +91,44 @@ export type AdminProductListParams = {
 
 export type AdminProductPaginatedResult = PaginatedResult<AdminProduct>
 
+export type AdminProductVariant = {
+  id: number
+  product_id: number
+  size: string
+  color: string
+  color_hex: string | null
+  sku: string | null
+  stock: number
+  price_adjustment: number | null
+  created_at: string | null
+  updated_at: string | null
+}
+
+export type AdminProductVariantPayload = {
+  size: string
+  color: string
+  color_hex?: string | null
+  sku?: string | null
+  stock: number
+  price_adjustment?: number | null
+}
+
+export type AdminProductImage = {
+  id: number
+  image_url: string
+  public_id: string | null
+  sort_order: number
+  is_primary: boolean
+  created_at: string | null
+  updated_at: string | null
+}
+
+export type AdminProductImageUploadPayload = {
+  file: File
+  is_primary?: boolean
+  sort_order?: number
+}
+
 export type DashboardRecentOrder = {
   order_code: string
   status: OrderStatus

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { adminApi } from '@/api/admin.api'
 import { useToast } from '@/app/ToastContext'
 import { Button } from '@/components/ui/Button'
@@ -77,6 +78,7 @@ function mapProductToForm(product: AdminProduct): ProductFormState {
 
 export function AdminProductsPage() {
   const toast = useToast()
+  const navigate = useNavigate()
 
   const [products, setProducts] = useState<AdminProduct[]>([])
   const [meta, setMeta] = useState<PaginationMeta>(EMPTY_META)
@@ -563,6 +565,14 @@ export function AdminProductsPage() {
                       <td className="px-3 py-2 text-slate-700">{isDeleted ? 'Đã xóa mềm' : '—'}</td>
                       <td className="px-3 py-2">
                         <div className="flex flex-wrap gap-2">
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            disabled={isSubmitting || deletingId === product.id}
+                            onClick={() => navigate(`/admin/products/${product.id}/manage`)}
+                          >
+                            Quản lý biến thể/ảnh
+                          </Button>
                           <Button
                             type="button"
                             variant="secondary"

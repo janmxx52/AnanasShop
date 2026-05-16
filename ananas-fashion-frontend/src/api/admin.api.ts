@@ -8,11 +8,15 @@ import type {
   AdminBrandPayload,
   AdminCategory,
   AdminCategoryListResult,
+  AdminProductImage,
+  AdminProductImageUploadPayload,
   AdminCategoryPayload,
   AdminProduct,
   AdminProductListParams,
   AdminProductPaginatedResult,
   AdminProductPayload,
+  AdminProductVariant,
+  AdminProductVariantPayload,
   DashboardStats,
 } from '@/types/admin'
 
@@ -121,6 +125,77 @@ export const adminApi = {
       is_active: isActive,
     })
     return extractResponseData<AdminProduct>(response.data)
+  },
+
+  async listProductVariants(
+    productId: number,
+    params?: { page?: number; per_page?: number },
+  ): Promise<{ data: AdminProductVariant[]; meta: PaginationMeta }> {
+    const response = await http.get<ApiPaginatedEnvelope<AdminProductVariant>>(
+      `/admin/products/${productId}/variants`,
+      { params },
+    )
+    return extractPaginatedData<AdminProductVariant>(response.data)
+  },
+
+  async createProductVariant(productId: number, payload: AdminProductVariantPayload): Promise<AdminProductVariant> {
+    const response = await http.post<ApiSuccessEnvelope<AdminProductVariant>>(
+      `/admin/products/${productId}/variants`,
+      payload,
+    )
+    return extractResponseData<AdminProductVariant>(response.data)
+  },
+
+  async updateProductVariant(
+    productId: number,
+    variantId: number,
+    payload: Partial<AdminProductVariantPayload>,
+  ): Promise<AdminProductVariant> {
+    const response = await http.put<ApiSuccessEnvelope<AdminProductVariant>>(
+      `/admin/products/${productId}/variants/${variantId}`,
+      payload,
+    )
+    return extractResponseData<AdminProductVariant>(response.data)
+  },
+
+  async deleteProductVariant(productId: number, variantId: number): Promise<void> {
+    await http.delete<ApiSuccessEnvelope<null>>(`/admin/products/${productId}/variants/${variantId}`)
+  },
+
+  async listProductImages(productId: number): Promise<AdminProductImage[]> {
+    const response = await http.get<ApiSuccessEnvelope<AdminProductImage[]>>(`/admin/products/${productId}/images`)
+    return extractResponseData<AdminProductImage[]>(response.data)
+  },
+
+  async uploadProductImage(productId: number, payload: AdminProductImageUploadPayload): Promise<AdminProductImage> {
+    const formData = new FormData()
+    formData.append('file', payload.file)
+
+    if (typeof payload.sort_order === 'number') {
+      formData.append('sort_order', String(payload.sort_order))
+    }
+
+    if (typeof payload.is_primary === 'boolean') {
+      formData.append('is_primary', payload.is_primary ? '1' : '0')
+    }
+
+    const response = await http.post<ApiSuccessEnvelope<AdminProductImage>>(
+      `/admin/products/${productId}/images`,
+      formData,
+    )
+
+    return extractResponseData<AdminProductImage>(response.data)
+  },
+
+  async deleteProductImage(productId: number, imageId: number): Promise<void> {
+    await http.delete<ApiSuccessEnvelope<null>>(`/admin/products/${productId}/images/${imageId}`)
+  },
+
+  async setPrimaryProductImage(productId: number, imageId: number): Promise<AdminProductImage> {
+    const response = await http.patch<ApiSuccessEnvelope<AdminProductImage>>(
+      `/admin/products/${productId}/images/${imageId}/primary`,
+    )
+    return extractResponseData<AdminProductImage>(response.data)
   },
 
   categories(params?: { page?: number; per_page?: number }) {
