@@ -29,7 +29,7 @@ export function Button({
       disabled={disabled || isLoading}
       {...props}
     >
-      {isLoading ? 'Processing...' : children}
+      {isLoading ? 'Đang xử lý...' : children}
     </button>
   )
 }

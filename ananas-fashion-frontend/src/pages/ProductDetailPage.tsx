@@ -4,6 +4,7 @@ import { cartApi } from '@/api/cart.api'
 import { productApi } from '@/api/product.api'
 import { reviewApi } from '@/api/review.api'
 import { useAuth } from '@/app/AuthContext'
+import { useToast } from '@/app/ToastContext'
 import { ReviewForm } from '@/components/review/ReviewForm'
 import { ReviewList } from '@/components/review/ReviewList'
 import { Button } from '@/components/ui/Button'
@@ -13,7 +14,7 @@ import { Input } from '@/components/ui/Input'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { PriceText } from '@/components/ui/PriceText'
 import { WishlistButton } from '@/components/wishlist/WishlistButton'
-import { getApiErrorInfo } from '@/lib/api-helpers'
+import { parseApiError } from '@/lib/api-helpers'
 import { getVariantDisplayPrice } from '@/lib/pricing'
 import type { PaginationMeta } from '@/types/pagination'
 import type { ProductLite, ProductVariant } from '@/types/product'
@@ -37,6 +38,7 @@ function getPrimaryImage(product: ProductLite) {
 export function ProductDetailPage() {
   const { slug } = useParams<{ slug: string }>()
   const { isAuthenticated, user } = useAuth()
+  const toast = useToast()
 
   const [product, setProduct] = useState<ProductLite | null>(null)
   const [isLoadingProduct, setIsLoadingProduct] = useState(true)
@@ -45,7 +47,7 @@ export function ProductDetailPage() {
   const [selectedVariantId, setSelectedVariantId] = useState<number | null>(null)
   const [quantity, setQuantity] = useState(1)
   const [isAdding, setIsAdding] = useState(false)
-  const [actionMessage, setActionMessage] = useState<string | null>(null)
+  const [showCartActions, setShowCartActions] = useState(false)
 
   const [reviews, setReviews] = useState<ReviewItem[]>([])
   const [reviewMeta, setReviewMeta] = useState<PaginationMeta>(DEFAULT_REVIEW_META)
@@ -59,7 +61,7 @@ export function ProductDetailPage() {
 
   const fetchProduct = useCallback(async () => {
     if (!slug) {
-      setProductErrorMessage('Product slug is missing.')
+      setProductErrorMessage('Thiếu slug sản phẩm.')
       setIsLoadingProduct(false)
       return
     }
@@ -73,7 +75,7 @@ export function ProductDetailPage() {
       const firstInStockVariant = response.variants?.find((variant) => variant.stock > 0) ?? response.variants?.[0]
       setSelectedVariantId(firstInStockVariant?.id ?? null)
     } catch (error) {
-      const apiError = getApiErrorInfo(error)
+      const apiError = parseApiError(error)
       setProductErrorMessage(apiError.message)
     } finally {
       setIsLoadingProduct(false)
@@ -93,7 +95,7 @@ export function ProductDetailPage() {
       setReviews(response.data)
       setReviewMeta(response.meta)
     } catch (error) {
-      const apiError = getApiErrorInfo(error)
+      const apiError = parseApiError(error)
       setReviewErrorMessage(apiError.message)
     } finally {
       setIsLoadingReviews(false)
@@ -132,22 +134,22 @@ export function ProductDetailPage() {
 
   const handleAddToCart = async () => {
     if (!selectedVariant) {
-      setActionMessage('Please select a variant.')
+      toast.info('Vui lòng chọn phân loại.')
       return
     }
 
     setIsAdding(true)
-    setActionMessage(null)
 
     try {
       await cartApi.addItem({
         product_variant_id: selectedVariant.id,
         quantity,
       })
-      setActionMessage('Added to cart successfully.')
+      setShowCartActions(true)
+      toast.success('Đã thêm vào giỏ hàng.')
     } catch (error) {
-      const apiError = getApiErrorInfo(error)
-      setActionMessage(apiError.message)
+      const apiError = parseApiError(error)
+      toast.error(apiError.message)
     } finally {
       setIsAdding(false)
     }
@@ -174,7 +176,9 @@ export function ProductDetailPage() {
 
     try {
       await reviewApi.createForProduct(slug, formData)
-      setReviewSubmitMessage('Review submitted successfully.')
+      setReviewSubmitMessage(null)
+      setReviewFieldErrors(null)
+      toast.success('Gửi đánh giá thành công.')
 
       if (reviewPage !== 1) {
         setReviewPage(1)
@@ -184,7 +188,8 @@ export function ProductDetailPage() {
 
       return true
     } catch (error) {
-      const apiError = getApiErrorInfo(error)
+      const apiError = parseApiError(error)
+      toast.error(apiError.message)
       setReviewSubmitMessage(apiError.message)
       setReviewFieldErrors(apiError.errors)
       return false
@@ -195,22 +200,21 @@ export function ProductDetailPage() {
 
   const handleDeleteReview = async (reviewId: number) => {
     setIsDeletingReviewId(reviewId)
-    setReviewSubmitMessage(null)
 
     try {
       const result = await reviewApi.remove(reviewId)
-      setReviewSubmitMessage(result.message)
+      toast.success(result.message)
       await fetchReviews()
     } catch (error) {
-      const apiError = getApiErrorInfo(error)
-      setReviewSubmitMessage(apiError.message)
+      const apiError = parseApiError(error)
+      toast.error(apiError.message)
     } finally {
       setIsDeletingReviewId(null)
     }
   }
 
   if (isLoadingProduct) {
-    return <LoadingState message="Loading product..." />
+    return <LoadingState message="Đang tải sản phẩm..." />
   }
 
   if (productErrorMessage) {
@@ -218,7 +222,7 @@ export function ProductDetailPage() {
   }
 
   if (!product) {
-    return <EmptyState title="Product not found" />
+    return <EmptyState title="Không tìm thấy sản phẩm" />
   }
 
   const primaryImage = getPrimaryImage(product)
@@ -226,7 +230,7 @@ export function ProductDetailPage() {
   return (
     <section className="space-y-6">
       <Link to="/products" className="text-sm text-slate-600 hover:text-slate-900">
-        ← Back to products
+        Quay lại danh sách sản phẩm
       </Link>
 
       <div className="grid gap-6 rounded-lg border border-slate-200 bg-white p-6 lg:grid-cols-2">
@@ -235,22 +239,22 @@ export function ProductDetailPage() {
             {primaryImage ? (
               <img src={primaryImage.url} alt={product.name} className="h-full w-full object-cover" />
             ) : (
-              <div className="flex h-full items-center justify-center text-sm text-slate-500">No image</div>
+              <div className="flex h-full items-center justify-center text-sm text-slate-500">Không có ảnh</div>
             )}
           </div>
         </div>
 
         <div className="space-y-4">
           <h1 className="text-2xl font-semibold text-slate-900">{product.name}</h1>
-          <p className="text-sm text-slate-600">{product.description ?? 'No description.'}</p>
+          <p className="text-sm text-slate-600">{product.description ?? 'Chưa có mô tả.'}</p>
 
           <div className="rounded border border-slate-200 bg-slate-50 p-3">
-            <p className="text-sm text-slate-600">Price</p>
+            <p className="text-sm text-slate-600">Giá</p>
             <PriceText value={getVariantDisplayPrice(product, selectedVariantId)} className="text-lg font-semibold text-slate-900" />
           </div>
 
           <div className="space-y-2">
-            <p className="text-sm font-medium text-slate-700">Variants</p>
+            <p className="text-sm font-medium text-slate-700">Phân loại</p>
             <div className="flex flex-wrap gap-2">
               {product.variants && product.variants.length > 0 ? (
                 product.variants.map((variant) => (
@@ -264,17 +268,17 @@ export function ProductDetailPage() {
                     }`}
                     onClick={() => setSelectedVariantId(variant.id)}
                   >
-                    {variant.size} / {variant.color} • stock {variant.stock}
+                    {variant.size} / {variant.color} • tồn kho {variant.stock}
                   </button>
                 ))
               ) : (
-                <p className="text-sm text-slate-500">No variants.</p>
+                <p className="text-sm text-slate-500">Chưa có phân loại.</p>
               )}
             </div>
           </div>
 
           <Input
-            label="Quantity"
+            label="Số lượng"
             type="number"
             min={1}
             max={selectedVariant?.stock || undefined}
@@ -284,23 +288,30 @@ export function ProductDetailPage() {
 
           <div className="flex flex-wrap items-start gap-2">
             <Button onClick={() => void handleAddToCart()} isLoading={isAdding} disabled={!selectedVariant || selectedVariant.stock < 1}>
-              Add to cart
+              Thêm vào giỏ hàng
             </Button>
             <WishlistButton productId={product.id} />
-            <Link to="/cart" className="rounded bg-slate-200 px-4 py-2 text-sm font-medium text-slate-900">
-              Go to cart
-            </Link>
           </div>
 
-          {actionMessage ? <p className="text-sm text-slate-700">{actionMessage}</p> : null}
+          {showCartActions ? (
+            <div className="flex flex-wrap items-center gap-2 rounded border border-slate-200 bg-slate-50 p-3 text-sm">
+              <span className="text-slate-700">Sản phẩm đã được thêm vào giỏ hàng.</span>
+              <Button type="button" variant="secondary" onClick={() => setShowCartActions(false)}>
+                Tiếp tục mua hàng
+              </Button>
+              <Link to="/cart" className="rounded bg-slate-900 px-4 py-2 text-sm font-medium text-white">
+                Đi tới giỏ hàng
+              </Link>
+            </div>
+          ) : null}
         </div>
       </div>
 
       <section className="space-y-4">
         <header className="space-y-1">
-          <h2 className="text-xl font-semibold text-slate-900">Product reviews</h2>
+          <h2 className="text-xl font-semibold text-slate-900">Đánh giá sản phẩm</h2>
           <p className="text-sm text-slate-600">
-            Average rating: {product.rating_avg ?? 0} / 5 ({product.review_count ?? 0} reviews)
+            Điểm trung bình: {product.rating_avg ?? 0} / 5 ({product.review_count ?? 0} đánh giá)
           </p>
         </header>
 
@@ -313,7 +324,7 @@ export function ProductDetailPage() {
           />
         ) : (
           <div className="rounded-lg border border-slate-200 bg-white p-4 text-sm text-slate-700">
-            Please <Link to="/login" className="font-medium underline">login</Link> to write a review.
+            Vui lòng <Link to="/login" className="font-medium underline">đăng nhập</Link> để viết đánh giá.
           </div>
         )}
 
@@ -331,7 +342,7 @@ export function ProductDetailPage() {
         {reviewMeta.last_page > 1 ? (
           <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-4">
             <p className="text-sm text-slate-600">
-              Page {reviewMeta.current_page} / {reviewMeta.last_page}
+              Trang {reviewMeta.current_page} / {reviewMeta.last_page}
             </p>
             <div className="flex gap-2">
               <Button
@@ -340,7 +351,7 @@ export function ProductDetailPage() {
                 disabled={reviewMeta.current_page <= 1}
                 onClick={() => setReviewPage((previous) => Math.max(previous - 1, 1))}
               >
-                Previous
+                Trước
               </Button>
               <Button
                 type="button"
@@ -348,7 +359,7 @@ export function ProductDetailPage() {
                 disabled={reviewMeta.current_page >= reviewMeta.last_page}
                 onClick={() => setReviewPage((previous) => Math.min(previous + 1, reviewMeta.last_page))}
               >
-                Next
+                Sau
               </Button>
             </div>
           </div>

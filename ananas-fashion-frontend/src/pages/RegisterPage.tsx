@@ -1,14 +1,16 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/app/AuthContext'
+import { useToast } from '@/app/ToastContext'
 import { Button } from '@/components/ui/Button'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { Input } from '@/components/ui/Input'
-import { formatFieldError, getApiErrorInfo } from '@/lib/api-helpers'
+import { formatFieldError, parseApiError } from '@/lib/api-helpers'
 
 export function RegisterPage() {
   const navigate = useNavigate()
   const { register } = useAuth()
+  const toast = useToast()
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -35,9 +37,11 @@ export function RegisterPage() {
         device_name: 'web',
       })
 
+      toast.success('Đăng ký thành công.')
       navigate('/', { replace: true })
     } catch (error) {
-      const apiError = getApiErrorInfo(error)
+      const apiError = parseApiError(error)
+      toast.error(apiError.message)
       setFormError(apiError.message)
       setFieldErrors(apiError.errors)
     } finally {
@@ -48,14 +52,14 @@ export function RegisterPage() {
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
       <div className="space-y-1">
-        <h2 className="text-lg font-semibold text-slate-900">Register</h2>
-        <p className="text-sm text-slate-600">Create a customer account to continue.</p>
+        <h2 className="text-lg font-semibold text-slate-900">Đăng ký</h2>
+        <p className="text-sm text-slate-600">Tạo tài khoản khách hàng để tiếp tục.</p>
       </div>
 
       {formError ? <ErrorState message={formError} /> : null}
 
       <Input
-        label="Name"
+        label="Họ và tên"
         name="name"
         value={name}
         onChange={(event) => setName(event.target.value)}
@@ -75,7 +79,7 @@ export function RegisterPage() {
       />
 
       <Input
-        label="Phone"
+        label="Số điện thoại"
         name="phone"
         value={phone}
         onChange={(event) => setPhone(event.target.value)}
@@ -83,7 +87,7 @@ export function RegisterPage() {
       />
 
       <Input
-        label="Password"
+        label="Mật khẩu"
         name="password"
         type="password"
         autoComplete="new-password"
@@ -94,7 +98,7 @@ export function RegisterPage() {
       />
 
       <Input
-        label="Confirm password"
+        label="Xác nhận mật khẩu"
         name="password_confirmation"
         type="password"
         autoComplete="new-password"
@@ -105,13 +109,13 @@ export function RegisterPage() {
       />
 
       <Button type="submit" isLoading={isSubmitting} className="w-full">
-        Register
+        Đăng ký
       </Button>
 
       <p className="text-sm text-slate-600">
-        Already have an account?{' '}
+        Đã có tài khoản?{' '}
         <Link className="font-medium text-slate-900 underline" to="/login">
-          Login
+          Đăng nhập
         </Link>
       </p>
     </form>

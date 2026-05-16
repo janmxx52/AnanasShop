@@ -12,15 +12,15 @@ export function OrderItemsTable({ items }: OrderItemsTableProps) {
 
   return (
     <div className="overflow-x-auto rounded border border-slate-200">
-      <table className="min-w-full bg-white text-sm">
+      <table className="min-w-[720px] bg-white text-sm">
         <thead className="bg-slate-50 text-left text-slate-600">
           <tr>
-            <th className="px-3 py-2">Product</th>
-            <th className="px-3 py-2">Variant</th>
+            <th className="px-3 py-2">Sản phẩm</th>
+            <th className="px-3 py-2">Phân loại</th>
             <th className="px-3 py-2">SKU</th>
-            <th className="px-3 py-2">Price</th>
-            <th className="px-3 py-2">Qty</th>
-            <th className="px-3 py-2">Line total</th>
+            <th className="px-3 py-2">Đơn giá</th>
+            <th className="px-3 py-2">Số lượng</th>
+            <th className="px-3 py-2">Thành tiền</th>
           </tr>
         </thead>
         <tbody>

@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { voucherApi } from '@/api/voucher.api'
+import { useToast } from '@/app/ToastContext'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { PriceText } from '@/components/ui/PriceText'
-import { getApiErrorInfo } from '@/lib/api-helpers'
+import { parseApiError } from '@/lib/api-helpers'
 import type { VoucherCheckResult } from '@/types/voucher'
 
 type VoucherBoxProps = {
@@ -19,6 +20,7 @@ export function VoucherBox({
   onVoucherChecked,
   disabled = false,
 }: VoucherBoxProps) {
+  const toast = useToast()
   const [result, setResult] = useState<VoucherCheckResult | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isChecking, setIsChecking] = useState(false)
@@ -27,7 +29,9 @@ export function VoucherBox({
     const code = voucherCode.trim()
 
     if (!code) {
-      setErrorMessage('Please enter voucher code.')
+      const message = 'Vui lòng nhập mã giảm giá.'
+      setErrorMessage(message)
+      toast.info(message)
       setResult(null)
       onVoucherChecked(null)
       return
@@ -40,8 +44,10 @@ export function VoucherBox({
       const response = await voucherApi.checkVoucher({ code })
       setResult(response)
       onVoucherChecked(response)
+      toast.success('Đã áp dụng mã giảm giá để xem trước.')
     } catch (error) {
-      const apiError = getApiErrorInfo(error)
+      const apiError = parseApiError(error)
+      toast.error(apiError.message)
       setErrorMessage(apiError.message)
       setResult(null)
       onVoucherChecked(null)
@@ -59,12 +65,12 @@ export function VoucherBox({
 
   return (
     <section className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
-      <h2 className="text-base font-semibold text-slate-900">Voucher</h2>
+      <h2 className="text-base font-semibold text-slate-900">Mã giảm giá</h2>
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
         <Input
-          label="Voucher code"
-          placeholder="e.g. SALE10"
+          label="Mã giảm giá"
+          placeholder="Ví dụ: SALE10"
           value={voucherCode}
           onChange={(event) => {
             onVoucherCodeChange(event.target.value)
@@ -76,10 +82,10 @@ export function VoucherBox({
         />
         <div className="flex gap-2">
           <Button type="button" onClick={() => void handleCheckVoucher()} isLoading={isChecking} disabled={disabled}>
-            Check
+            Kiểm tra
           </Button>
           <Button type="button" variant="secondary" onClick={clearVoucher} disabled={disabled}>
-            Clear
+            Xóa
           </Button>
         </div>
       </div>
@@ -89,13 +95,13 @@ export function VoucherBox({
       {result ? (
         <div className="grid grid-cols-1 gap-2 rounded border border-slate-200 bg-slate-50 p-3 text-sm sm:grid-cols-3">
           <p>
-            <span className="text-slate-600">Subtotal:</span> <PriceText value={result.subtotal} />
+            <span className="text-slate-600">Tạm tính:</span> <PriceText value={result.subtotal} />
           </p>
           <p>
-            <span className="text-slate-600">Discount:</span> <PriceText value={result.discount} />
+            <span className="text-slate-600">Giảm giá:</span> <PriceText value={result.discount} />
           </p>
           <p>
-            <span className="text-slate-600">After voucher:</span> <PriceText value={result.total_after} />
+            <span className="text-slate-600">Sau giảm giá:</span> <PriceText value={result.total_after} />
           </p>
         </div>
       ) : null}

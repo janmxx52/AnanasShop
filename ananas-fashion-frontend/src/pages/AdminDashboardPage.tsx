@@ -3,8 +3,8 @@ import { PagePlaceholder } from '@/components/PagePlaceholder'
 export function AdminDashboardPage() {
   return (
     <PagePlaceholder
-      title="Admin Dashboard Page"
-      description="Placeholder for dashboard stats endpoint integration."
+      title="Bảng điều khiển quản trị"
+      description="Trang này dùng để tích hợp dữ liệu thống kê dashboard từ API quản trị."
     />
   )
 }

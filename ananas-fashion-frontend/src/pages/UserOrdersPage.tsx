@@ -8,7 +8,8 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { PriceText } from '@/components/ui/PriceText'
-import { getApiErrorInfo } from '@/lib/api-helpers'
+import { parseApiError } from '@/lib/api-helpers'
+import { getPaymentMethodLabel } from '@/lib/display-labels'
 import type { OrderSummary } from '@/types/order'
 import type { PaginationMeta } from '@/types/pagination'
 
@@ -36,7 +37,7 @@ export function UserOrdersPage() {
         setOrders(response.data)
         setMeta(response.meta)
       } catch (error) {
-        const apiError = getApiErrorInfo(error)
+        const apiError = parseApiError(error)
         setErrorMessage(apiError.message)
       } finally {
         setIsLoading(false)
@@ -47,7 +48,7 @@ export function UserOrdersPage() {
   }, [page])
 
   if (isLoading) {
-    return <LoadingState message="Loading your orders..." />
+    return <LoadingState message="Đang tải đơn hàng của bạn..." />
   }
 
   if (errorMessage) {
@@ -55,14 +56,14 @@ export function UserOrdersPage() {
   }
 
   if (orders.length === 0) {
-    return <EmptyState title="No orders yet" description="You have not placed any order." />
+    return <EmptyState title="Chưa có đơn hàng" description="Bạn chưa đặt đơn hàng nào." />
   }
 
   return (
     <section className="space-y-4">
       <header className="space-y-1">
-        <h1 className="text-2xl font-semibold text-slate-900">My Orders</h1>
-        <p className="text-sm text-slate-600">View and track your order history.</p>
+        <h1 className="text-2xl font-semibold text-slate-900">Đơn hàng của tôi</h1>
+        <p className="text-sm text-slate-600">Xem và theo dõi lịch sử đơn hàng của bạn.</p>
       </header>
 
       <div className="space-y-3">
@@ -70,7 +71,7 @@ export function UserOrdersPage() {
           <article key={order.id} className="space-y-2 rounded-lg border border-slate-200 bg-white p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="space-y-1">
-                <p className="text-sm text-slate-600">Order code</p>
+                <p className="text-sm text-slate-600">Mã đơn hàng</p>
                 <p className="text-base font-semibold text-slate-900">{order.code}</p>
               </div>
               <div className="flex items-center gap-2">
@@ -80,13 +81,13 @@ export function UserOrdersPage() {
             </div>
 
             <div className="grid gap-1 text-sm text-slate-700 sm:grid-cols-3">
-              <p>Total: <PriceText value={order.total} /></p>
-              <p>Payment: {order.payment_method}</p>
-              <p>Date: {new Date(order.created_at).toLocaleString('vi-VN')}</p>
+              <p>Tổng tiền: <PriceText value={order.total} /></p>
+              <p>Thanh toán: {getPaymentMethodLabel(order.payment_method)}</p>
+              <p>Ngày đặt: {new Date(order.created_at).toLocaleString('vi-VN')}</p>
             </div>
 
             <Link to={`/orders/${order.code}`} className="inline-block text-sm font-medium text-slate-900 underline">
-              View detail
+              Xem chi tiết
             </Link>
           </article>
         ))}
@@ -95,7 +96,7 @@ export function UserOrdersPage() {
       {meta.last_page > 1 ? (
         <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-4">
           <p className="text-sm text-slate-600">
-            Page {meta.current_page} / {meta.last_page}
+            Trang {meta.current_page} / {meta.last_page}
           </p>
           <div className="flex gap-2">
             <Button
@@ -104,7 +105,7 @@ export function UserOrdersPage() {
               disabled={meta.current_page <= 1}
               onClick={() => setPage((previous) => Math.max(previous - 1, 1))}
             >
-              Previous
+              Trước
             </Button>
             <Button
               type="button"
@@ -112,7 +113,7 @@ export function UserOrdersPage() {
               disabled={meta.current_page >= meta.last_page}
               onClick={() => setPage((previous) => Math.min(previous + 1, meta.last_page))}
             >
-              Next
+              Sau
             </Button>
           </div>
         </div>

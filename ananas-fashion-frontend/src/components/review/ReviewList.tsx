@@ -22,7 +22,7 @@ export function ReviewList({
   onDelete,
 }: ReviewListProps) {
   if (isLoading) {
-    return <LoadingState message="Loading reviews..." />
+    return <LoadingState message="Đang tải đánh giá..." />
   }
 
   if (errorMessage) {
@@ -30,7 +30,7 @@ export function ReviewList({
   }
 
   if (reviews.length === 0) {
-    return <EmptyState title="No reviews yet" description="Be the first to share your feedback for this product." />
+    return <EmptyState title="Chưa có đánh giá" description="Hãy là người đầu tiên chia sẻ trải nghiệm về sản phẩm này." />
   }
 
   return (

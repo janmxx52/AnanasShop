@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/app/AuthContext'
+import { useToast } from '@/app/ToastContext'
 import { cartApi } from '@/api/cart.api'
 import { orderApi } from '@/api/order.api'
 import { VoucherBox } from '@/components/checkout/VoucherBox'
@@ -10,7 +11,7 @@ import { ErrorState } from '@/components/ui/ErrorState'
 import { Input } from '@/components/ui/Input'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { PriceText } from '@/components/ui/PriceText'
-import { formatFieldError, getApiErrorInfo } from '@/lib/api-helpers'
+import { formatFieldError, parseApiError } from '@/lib/api-helpers'
 import { setCheckoutSuccessOrder } from '@/lib/checkout-success'
 import type { Cart } from '@/types/cart'
 import type { CheckoutResult } from '@/types/order'
@@ -49,6 +50,7 @@ const EMPTY_USER_FORM: UserCheckoutForm = {
 export function CheckoutPage() {
   const navigate = useNavigate()
   const { isAuthenticated, token, user } = useAuth()
+  const toast = useToast()
 
   const [cart, setCart] = useState<Cart | null>(null)
   const [isLoadingCart, setIsLoadingCart] = useState(true)
@@ -71,7 +73,7 @@ export function CheckoutPage() {
       const response = await cartApi.getCart()
       setCart(response)
     } catch (error) {
-      const apiError = getApiErrorInfo(error)
+      const apiError = parseApiError(error)
       setCartError(apiError.message)
     } finally {
       setIsLoadingCart(false)
@@ -117,6 +119,7 @@ export function CheckoutPage() {
   const voucherErrorMessage = fieldErrors?.voucher_code?.[0] ?? null
 
   const handleCheckoutSuccess = async (order: CheckoutResult) => {
+    toast.success('Đặt hàng thành công.')
     setCheckoutSuccessOrder(order)
     await loadCart()
     navigate('/checkout/success', {
@@ -157,7 +160,8 @@ export function CheckoutPage() {
 
       await handleCheckoutSuccess(order)
     } catch (error) {
-      const apiError = getApiErrorInfo(error)
+      const apiError = parseApiError(error)
+      toast.error(apiError.message)
       setSubmitMessage(apiError.message)
       setFieldErrors(apiError.errors)
     } finally {
@@ -166,7 +170,7 @@ export function CheckoutPage() {
   }
 
   if (isLoadingCart) {
-    return <LoadingState message="Loading checkout data..." />
+    return <LoadingState message="Đang tải dữ liệu thanh toán..." />
   }
 
   if (cartError) {
@@ -176,9 +180,9 @@ export function CheckoutPage() {
   if (!cart || cart.items.length === 0) {
     return (
       <div className="space-y-3">
-        <EmptyState title="Cart is empty" description="Add at least one product before checkout." />
+        <EmptyState title="Giỏ hàng đang trống" description="Vui lòng thêm ít nhất một sản phẩm trước khi thanh toán." />
         <Link to="/products" className="inline-block rounded bg-slate-900 px-4 py-2 text-sm font-medium text-white">
-          Go to products
+          Đi tới danh sách sản phẩm
         </Link>
       </div>
     )
@@ -187,8 +191,8 @@ export function CheckoutPage() {
   return (
     <section className="space-y-6">
       <header className="space-y-1">
-        <h1 className="text-2xl font-semibold text-slate-900">Checkout</h1>
-        <p className="text-sm text-slate-600">COD only in current phase.</p>
+        <h1 className="text-2xl font-semibold text-slate-900">Thanh toán</h1>
+        <p className="text-sm text-slate-600">Giai đoạn hiện tại chỉ hỗ trợ COD.</p>
       </header>
 
       <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
@@ -206,9 +210,9 @@ export function CheckoutPage() {
 
           {!isAuthenticated ? (
             <section className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
-              <h2 className="text-base font-semibold text-slate-900">Guest information</h2>
+              <h2 className="text-base font-semibold text-slate-900">Thông tin khách mua</h2>
               <Input
-                label="Full name"
+                label="Họ và tên"
                 value={guestForm.full_name}
                 onChange={(event) =>
                   setGuestForm((previous) => ({ ...previous, full_name: event.target.value }))
@@ -227,7 +231,7 @@ export function CheckoutPage() {
                 required
               />
               <Input
-                label="Phone"
+                label="Số điện thoại"
                 value={guestForm.phone}
                 onChange={(event) =>
                   setGuestForm((previous) => ({ ...previous, phone: event.target.value }))
@@ -238,9 +242,9 @@ export function CheckoutPage() {
             </section>
           ) : (
             <section className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
-              <h2 className="text-base font-semibold text-slate-900">Shipping information</h2>
+              <h2 className="text-base font-semibold text-slate-900">Thông tin giao hàng</h2>
               <Input
-                label="Shipping name"
+                label="Tên người nhận"
                 value={userForm.shipping_name}
                 onChange={(event) =>
                   setUserForm((previous) => ({ ...previous, shipping_name: event.target.value }))
@@ -249,7 +253,7 @@ export function CheckoutPage() {
                 required
               />
               <Input
-                label="Shipping phone"
+                label="Số điện thoại nhận hàng"
                 value={userForm.shipping_phone}
                 onChange={(event) =>
                   setUserForm((previous) => ({ ...previous, shipping_phone: event.target.value }))
@@ -257,13 +261,13 @@ export function CheckoutPage() {
                 error={formatFieldError(fieldErrors, 'shipping_phone')}
                 required
               />
-              <Input label="Account email" value={user?.email ?? ''} disabled />
+              <Input label="Email tài khoản" value={user?.email ?? ''} disabled />
             </section>
           )}
 
           <section className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
             <Input
-              label="Shipping address"
+              label="Địa chỉ giao hàng"
               value={isAuthenticated ? userForm.shipping_address : guestForm.shipping_address}
               onChange={(event) => {
                 if (isAuthenticated) {
@@ -284,7 +288,7 @@ export function CheckoutPage() {
             />
 
             <Input
-              label="Note (optional)"
+              label="Ghi chú (tùy chọn)"
               value={isAuthenticated ? userForm.note : guestForm.note}
               onChange={(event) => {
                 if (isAuthenticated) {
@@ -296,7 +300,7 @@ export function CheckoutPage() {
               }}
             />
 
-            <Input label="Payment method" value="cod" disabled />
+            <Input label="Phương thức thanh toán" value="Thanh toán khi nhận hàng (COD)" disabled />
           </section>
 
           <VoucherBox
@@ -308,34 +312,34 @@ export function CheckoutPage() {
 
           <div className="flex flex-wrap gap-2">
             <Button type="button" onClick={() => void submitCheckout()} isLoading={isSubmitting}>
-              Place order
+              Đặt hàng
             </Button>
             <Link className="rounded bg-slate-200 px-4 py-2 text-sm font-medium text-slate-900" to="/cart">
-              Back to cart
+              Quay lại giỏ hàng
             </Link>
           </div>
         </div>
 
-        <aside className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
-          <h2 className="text-base font-semibold text-slate-900">Order summary</h2>
+        <aside className="space-y-3 rounded-lg border border-slate-200 bg-white p-4 lg:sticky lg:top-20 lg:self-start">
+          <h2 className="text-base font-semibold text-slate-900">Tóm tắt đơn hàng</h2>
           <p className="text-sm text-slate-700">
-            Items: <strong>{cart.items.length}</strong>
+            Số sản phẩm: <strong>{cart.items.length}</strong>
           </p>
           <p className="text-sm text-slate-700">
-            Subtotal: <PriceText value={subtotal} />
+            Tạm tính: <PriceText value={subtotal} />
           </p>
           <p className="text-sm text-slate-700">
-            Discount: <PriceText value={discountAmount} />
+            Giảm giá: <PriceText value={discountAmount} />
           </p>
           <p className="text-sm text-slate-700">
-            Shipping fee: <PriceText value={estimatedShippingFee} />
+            Phí vận chuyển: <PriceText value={estimatedShippingFee} />
           </p>
           <hr className="border-slate-200" />
           <p className="text-lg font-semibold text-slate-900">
-            Estimated total: <PriceText value={estimatedTotal} />
+            Tổng dự kiến: <PriceText value={estimatedTotal} />
           </p>
           <p className="text-xs text-slate-500">
-            Shipping fee rule: subtotal {'<'} 500,000 VND = 30,000 VND, otherwise free.
+            Quy tắc phí vận chuyển: tạm tính {'<'} 500.000 VND tính 30.000 VND, từ 500.000 VND trở lên miễn phí.
           </p>
         </aside>
       </div>

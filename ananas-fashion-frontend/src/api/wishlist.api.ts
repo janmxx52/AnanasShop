@@ -34,7 +34,7 @@ export const wishlistApi = {
 
     return {
       action: data.action ?? 'added',
-      message: data.message ?? 'Wishlist updated',
+      message: data.message ?? 'Đã cập nhật danh sách yêu thích',
       data: data.data ?? { product_id: payload.product_id },
     }
   },
@@ -44,7 +44,7 @@ export const wishlistApi = {
     const data = response.data as { message?: string }
 
     return {
-      message: data.message ?? 'Wishlist item removed',
+      message: data.message ?? 'Đã xóa sản phẩm khỏi danh sách yêu thích',
     }
   },
 }

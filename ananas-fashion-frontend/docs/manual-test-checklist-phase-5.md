@@ -1,76 +1,76 @@
-# Manual Test Checklist â€” Phase 5 (Wishlist + Reviews)
+# Checklist kiểm thử thủ công Frontend — Giai đoạn 5 (Yêu thích + Đánh giá)
 
-## Preconditions
-- Run backend API server and frontend dev server.
-- Prepare at least:
-  - 1 guest session
-  - 1 customer account
-  - Products with active variants
-  - Delivered order item data for review creation tests
+## Điều kiện trước khi test
+- Chạy backend API và frontend dev server.
+- Chuẩn bị tối thiểu:
+  - 1 phiên guest
+  - 1 tài khoản khách hàng
+  - Sản phẩm có biến thể đang hoạt động
+  - Dữ liệu order item đã giao để test tạo đánh giá
 
-## 1) Wishlist
+## 1) Danh sách yêu thích
 
-### 1.1 Guest cannot wishlist
-- Open product list/detail as guest.
-- Click `Add wishlist`.
-- Expected:
-  - Redirect to `/login` (or login required flow).
-  - No wishlist mutation without login.
+### 1.1 Guest không thể thêm yêu thích
+- Mở trang danh sách/chi tiết sản phẩm ở chế độ guest.
+- Bấm `Thêm vào yêu thích`.
+- Kỳ vọng:
+  - Chuyển hướng đến `/login` (hoặc luồng yêu cầu đăng nhập).
+  - Không có thay đổi wishlist khi chưa đăng nhập.
 
-### 1.2 User toggle wishlist
-- Login as customer.
-- From product list/detail, click `Add wishlist`.
-- Expected:
-  - Success message shown.
-  - Button changes to `Remove wishlist`.
-- Click again.
-- Expected:
-  - Product removed from wishlist.
-  - Button changes back to `Add wishlist`.
+### 1.2 User toggle yêu thích
+- Đăng nhập tài khoản khách hàng.
+- Từ danh sách/chi tiết sản phẩm, bấm `Thêm vào yêu thích`.
+- Kỳ vọng:
+  - Hiển thị thông báo thành công.
+  - Nút đổi thành `Xóa khỏi yêu thích`.
+- Bấm lại lần nữa.
+- Kỳ vọng:
+  - Sản phẩm bị xóa khỏi wishlist.
+  - Nút đổi về `Thêm vào yêu thích`.
 
-### 1.3 Wishlist list/remove
-- Open `/wishlist`.
-- Expected:
-  - Only current user's wishlist items.
-  - Pagination works when many items.
-- Click `Remove` on an item.
-- Expected:
-  - Item disappears after reload/refetch.
+### 1.3 Danh sách yêu thích và xóa
+- Mở `/wishlist`.
+- Kỳ vọng:
+  - Chỉ hiển thị sản phẩm yêu thích của user hiện tại.
+  - Phân trang hoạt động đúng khi có nhiều sản phẩm.
+- Bấm `Xóa` trên một sản phẩm.
+- Kỳ vọng:
+  - Sản phẩm biến mất sau khi reload/refetch.
 
-## 2) Reviews (public + authenticated actions)
+## 2) Đánh giá (public + thao tác user)
 
-### 2.1 Public review list
-- Open product detail as guest.
-- Expected:
-  - Review list visible (public).
-  - Loading/error/empty states render correctly.
+### 2.1 Danh sách đánh giá public
+- Mở chi tiết sản phẩm ở chế độ guest.
+- Kỳ vọng:
+  - Danh sách đánh giá hiển thị công khai.
+  - Trạng thái đang tải/lỗi/rỗng hiển thị đúng.
 
-### 2.2 Create review with delivered order item
-- Login as customer.
-- Open product detail.
-- Fill review form:
-  - `order_item_id` from delivered order item of current user
+### 2.2 Tạo đánh giá với order item đã giao
+- Đăng nhập tài khoản khách hàng.
+- Mở chi tiết sản phẩm.
+- Nhập form đánh giá:
+  - `order_item_id` thuộc đơn đã giao của chính user
   - rating 1-5
-  - optional comment
-- Submit.
-- Expected:
-  - Success message.
-  - Review list refetches and includes new review.
+  - comment tùy chọn
+- Gửi form.
+- Kỳ vọng:
+  - Hiển thị thông báo thành công.
+  - Danh sách đánh giá được tải lại và có đánh giá mới.
 
-### 2.3 Rating invalid
-- Submit rating outside range (or force invalid payload).
-- Expected:
-  - Validation error shown for `rating`.
+### 2.3 Rating không hợp lệ
+- Gửi rating ngoài khoảng cho phép (hoặc ép payload không hợp lệ).
+- Kỳ vọng:
+  - Hiển thị lỗi validate cho trường `rating`.
 
-### 2.4 Max 3 images
-- Attach 4+ images in review form.
-- Expected:
-  - Frontend keeps max 3 selected.
-  - Backend validation errors shown if payload still invalid.
+### 2.4 Tối đa 3 ảnh
+- Đính kèm 4+ ảnh trong form đánh giá.
+- Kỳ vọng:
+  - Frontend chỉ giữ tối đa 3 ảnh.
+  - Nếu payload vẫn sai, backend trả lỗi và UI hiển thị lỗi đúng.
 
-### 2.5 Delete own review
-- On own review item, click `Delete`.
-- Expected:
-  - API delete success.
-  - Review list refetches and removed review no longer appears.
-- Verify cannot delete other users' review (button hidden / API rejects).
+### 2.5 Xóa đánh giá của chính mình
+- Trên đánh giá do mình tạo, bấm `Xóa`.
+- Kỳ vọng:
+  - API xóa thành công.
+  - Danh sách đánh giá tải lại và không còn đánh giá vừa xóa.
+- Kiểm tra không thể xóa đánh giá của user khác (ẩn nút hoặc API từ chối).

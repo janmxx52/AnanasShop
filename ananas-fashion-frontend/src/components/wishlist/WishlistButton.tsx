@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { wishlistApi } from '@/api/wishlist.api'
 import { useAuth } from '@/app/AuthContext'
+import { useToast } from '@/app/ToastContext'
 import { Button } from '@/components/ui/Button'
-import { getApiErrorInfo } from '@/lib/api-helpers'
+import { parseApiError } from '@/lib/api-helpers'
 
 type WishlistButtonProps = {
   productId: number
@@ -19,11 +20,11 @@ export function WishlistButton({
   className = '',
 }: WishlistButtonProps) {
   const { isAuthenticated } = useAuth()
+  const toast = useToast()
   const navigate = useNavigate()
   const location = useLocation()
   const [isInWishlist, setIsInWishlist] = useState(initialInWishlist)
   const [isProcessing, setIsProcessing] = useState(false)
-  const [message, setMessage] = useState<string | null>(null)
 
   useEffect(() => {
     setIsInWishlist(initialInWishlist)
@@ -31,33 +32,32 @@ export function WishlistButton({
 
   const handleToggle = async () => {
     if (!isAuthenticated) {
+      toast.info('Vui lòng đăng nhập để dùng danh sách yêu thích.')
       navigate('/login', { state: { from: location } })
       return
     }
 
     setIsProcessing(true)
-    setMessage(null)
 
     try {
       const result = await wishlistApi.toggle({ product_id: productId })
       const nextState = result.action === 'added'
       setIsInWishlist(nextState)
-      setMessage(result.message)
+      toast.success(result.message)
       onChanged?.(nextState)
     } catch (error) {
-      const apiError = getApiErrorInfo(error)
-      setMessage(apiError.message)
+      const apiError = parseApiError(error)
+      toast.error(apiError.message)
     } finally {
       setIsProcessing(false)
     }
   }
 
   return (
-    <div className={`space-y-1 ${className}`}>
+    <div className={className}>
       <Button type="button" variant="secondary" isLoading={isProcessing} onClick={() => void handleToggle()}>
-        {isInWishlist ? 'Remove wishlist' : 'Add wishlist'}
+        {isInWishlist ? 'Xóa khỏi yêu thích' : 'Thêm vào yêu thích'}
       </Button>
-      {message ? <p className="text-xs text-slate-600">{message}</p> : null}
     </div>
   )
 }

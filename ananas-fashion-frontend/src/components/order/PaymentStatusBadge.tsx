@@ -1,4 +1,5 @@
 import type { PaymentStatus } from '@/types/order-status'
+import { getPaymentStatusLabel } from '@/lib/display-labels'
 
 type PaymentStatusBadgeProps = {
   status: PaymentStatus
@@ -15,7 +16,7 @@ const statusClassMap: Record<PaymentStatus, string> = {
 export function PaymentStatusBadge({ status }: PaymentStatusBadgeProps) {
   return (
     <span className={`inline-flex rounded px-2 py-1 text-xs font-medium ${statusClassMap[status]}`}>
-      {status}
+      {getPaymentStatusLabel(status)}
     </span>
   )
 }

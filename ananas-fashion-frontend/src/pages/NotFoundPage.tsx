@@ -3,9 +3,9 @@ import { PagePlaceholder } from '@/components/PagePlaceholder'
 
 export function NotFoundPage() {
   return (
-    <PagePlaceholder title="404 - Not Found" description="The route does not exist in this scaffold.">
+    <PagePlaceholder title="404 - Không tìm thấy trang" description="Đường dẫn bạn truy cập không tồn tại trong ứng dụng.">
       <Link className="text-sm font-medium text-slate-900 underline" to="/">
-        Back to home
+        Quay lại trang chủ
       </Link>
     </PagePlaceholder>
   )

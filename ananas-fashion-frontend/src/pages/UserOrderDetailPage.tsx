@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { orderApi } from '@/api/order.api'
+import { useToast } from '@/app/ToastContext'
 import { OrderItemsTable } from '@/components/order/OrderItemsTable'
 import { OrderStatusBadge } from '@/components/order/OrderStatusBadge'
 import { OrderTimeline } from '@/components/order/OrderTimeline'
@@ -9,7 +10,8 @@ import { Button } from '@/components/ui/Button'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { PriceText } from '@/components/ui/PriceText'
-import { getApiErrorInfo } from '@/lib/api-helpers'
+import { parseApiError } from '@/lib/api-helpers'
+import { getPaymentMethodLabel } from '@/lib/display-labels'
 import { buildOrderTimeline } from '@/lib/order-timeline'
 import type { OrderSummary } from '@/types/order'
 
@@ -19,17 +21,17 @@ function canCancelOrder(status: OrderSummary['status']) {
 
 export function UserOrderDetailPage() {
   const { orderCode } = useParams<{ orderCode: string }>()
+  const toast = useToast()
 
   const [order, setOrder] = useState<OrderSummary | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [actionMessage, setActionMessage] = useState<string | null>(null)
   const [isCancelling, setIsCancelling] = useState(false)
 
   useEffect(() => {
     const fetchOrder = async () => {
       if (!orderCode) {
-        setErrorMessage('Order code is missing.')
+        setErrorMessage('Thiếu mã đơn hàng.')
         setIsLoading(false)
         return
       }
@@ -41,7 +43,7 @@ export function UserOrderDetailPage() {
         const response = await orderApi.detail(orderCode)
         setOrder(response)
       } catch (error) {
-        const apiError = getApiErrorInfo(error)
+        const apiError = parseApiError(error)
         setErrorMessage(apiError.message)
       } finally {
         setIsLoading(false)
@@ -65,23 +67,22 @@ export function UserOrderDetailPage() {
     }
 
     setIsCancelling(true)
-    setActionMessage(null)
 
     try {
       await orderApi.cancel(order.code)
       const refreshedOrder = await orderApi.detail(order.code)
       setOrder(refreshedOrder)
-      setActionMessage('Order cancelled successfully.')
+      toast.success('Hủy đơn hàng thành công.')
     } catch (error) {
-      const apiError = getApiErrorInfo(error)
-      setActionMessage(apiError.message)
+      const apiError = parseApiError(error)
+      toast.error(apiError.message)
     } finally {
       setIsCancelling(false)
     }
   }
 
   if (isLoading) {
-    return <LoadingState message="Loading order detail..." />
+    return <LoadingState message="Đang tải chi tiết đơn hàng..." />
   }
 
   if (errorMessage) {
@@ -89,7 +90,7 @@ export function UserOrderDetailPage() {
   }
 
   if (!order) {
-    return <ErrorState message="Order not found." />
+    return <ErrorState message="Không tìm thấy đơn hàng." />
   }
 
   return (
@@ -97,9 +98,9 @@ export function UserOrderDetailPage() {
       <header className="flex flex-wrap items-center justify-between gap-2">
         <div className="space-y-1">
           <Link to="/orders" className="text-sm text-slate-600 hover:text-slate-900">
-            ← Back to orders
+            Quay lại danh sách đơn hàng
           </Link>
-          <h1 className="text-2xl font-semibold text-slate-900">Order {order.code}</h1>
+          <h1 className="text-2xl font-semibold text-slate-900">Đơn hàng {order.code}</h1>
         </div>
 
         {canCancelOrder(order.status) ? (
@@ -109,50 +110,46 @@ export function UserOrderDetailPage() {
             isLoading={isCancelling}
             onClick={() => void handleCancel()}
           >
-            Cancel order
+            Hủy đơn hàng
           </Button>
         ) : null}
       </header>
 
-      {actionMessage ? (
-        <p className="rounded border border-slate-200 bg-white p-3 text-sm text-slate-700">{actionMessage}</p>
-      ) : null}
-
       <section className="grid gap-2 rounded-lg border border-slate-200 bg-white p-4 text-sm sm:grid-cols-2">
         <p>
-          <span className="text-slate-600">Order status:</span> <OrderStatusBadge status={order.status} />
+          <span className="text-slate-600">Trạng thái đơn hàng:</span> <OrderStatusBadge status={order.status} />
         </p>
         <p>
-          <span className="text-slate-600">Payment status:</span>{' '}
+          <span className="text-slate-600">Trạng thái thanh toán:</span>{' '}
           <PaymentStatusBadge status={order.payment_status} />
         </p>
         <p>
-          <span className="text-slate-600">Payment method:</span> {order.payment_method}
+          <span className="text-slate-600">Phương thức thanh toán:</span> {getPaymentMethodLabel(order.payment_method)}
         </p>
         <p>
-          <span className="text-slate-600">Date:</span>{' '}
+          <span className="text-slate-600">Ngày đặt:</span>{' '}
           {new Date(order.created_at).toLocaleString('vi-VN')}
         </p>
         <p>
-          <span className="text-slate-600">Subtotal:</span> <PriceText value={order.subtotal} />
+          <span className="text-slate-600">Tạm tính:</span> <PriceText value={order.subtotal} />
         </p>
         <p>
-          <span className="text-slate-600">Discount:</span> <PriceText value={order.discount_amount} />
+          <span className="text-slate-600">Giảm giá:</span> <PriceText value={order.discount_amount} />
         </p>
         <p>
-          <span className="text-slate-600">Shipping fee:</span> <PriceText value={order.shipping_fee} />
+          <span className="text-slate-600">Phí vận chuyển:</span> <PriceText value={order.shipping_fee} />
         </p>
         <p>
-          <span className="text-slate-600">Total:</span> <PriceText value={order.total} />
+          <span className="text-slate-600">Tổng tiền:</span> <PriceText value={order.total} />
         </p>
         <p>
-          <span className="text-slate-600">Shipping name:</span> {order.shipping.name}
+          <span className="text-slate-600">Người nhận:</span> {order.shipping.name}
         </p>
         <p>
-          <span className="text-slate-600">Shipping phone:</span> {order.shipping.phone}
+          <span className="text-slate-600">Số điện thoại nhận hàng:</span> {order.shipping.phone}
         </p>
         <p className="sm:col-span-2">
-          <span className="text-slate-600">Shipping address:</span> {order.shipping.address}
+          <span className="text-slate-600">Địa chỉ giao hàng:</span> {order.shipping.address}
         </p>
       </section>
 

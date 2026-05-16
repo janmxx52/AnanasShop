@@ -50,12 +50,12 @@ export function ReviewForm({ isSubmitting, submitMessage, fieldErrors, onSubmit 
 
   return (
     <section className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
-      <h2 className="text-base font-semibold text-slate-900">Write a review</h2>
-      <p className="text-xs text-slate-600">You can only review delivered order items that belong to this product.</p>
+      <h2 className="text-base font-semibold text-slate-900">Viết đánh giá</h2>
+      <p className="text-xs text-slate-600">Bạn chỉ có thể đánh giá các sản phẩm đã giao thuộc đơn hàng của mình.</p>
 
       <form className="space-y-3" onSubmit={handleSubmit}>
         <Input
-          label="Order item ID"
+          label="ID sản phẩm trong đơn"
           type="number"
           min={1}
           value={orderItemId}
@@ -65,17 +65,17 @@ export function ReviewForm({ isSubmitting, submitMessage, fieldErrors, onSubmit 
         />
 
         <label className="block space-y-1">
-          <span className="block text-sm font-medium text-slate-700">Rating</span>
+          <span className="block text-sm font-medium text-slate-700">Số sao</span>
           <select
             className="w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
             value={rating}
             onChange={(event) => setRating(Number(event.target.value))}
           >
-            <option value={5}>5 - Excellent</option>
-            <option value={4}>4 - Good</option>
-            <option value={3}>3 - Average</option>
-            <option value={2}>2 - Poor</option>
-            <option value={1}>1 - Bad</option>
+            <option value={5}>5 - Tuyệt vời</option>
+            <option value={4}>4 - Tốt</option>
+            <option value={3}>3 - Trung bình</option>
+            <option value={2}>2 - Kém</option>
+            <option value={1}>1 - Rất tệ</option>
           </select>
           {formatFieldError(fieldErrors, 'rating') ? (
             <span className="text-xs text-red-600">{formatFieldError(fieldErrors, 'rating')}</span>
@@ -83,12 +83,12 @@ export function ReviewForm({ isSubmitting, submitMessage, fieldErrors, onSubmit 
         </label>
 
         <label className="block space-y-1">
-          <span className="block text-sm font-medium text-slate-700">Comment (optional)</span>
+          <span className="block text-sm font-medium text-slate-700">Nhận xét (tùy chọn)</span>
           <textarea
             className="min-h-24 w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
             value={comment}
             onChange={(event) => setComment(event.target.value)}
-            placeholder="Share your experience..."
+            placeholder="Chia sẻ trải nghiệm của bạn..."
           />
           {formatFieldError(fieldErrors, 'comment') ? (
             <span className="text-xs text-red-600">{formatFieldError(fieldErrors, 'comment')}</span>
@@ -96,7 +96,7 @@ export function ReviewForm({ isSubmitting, submitMessage, fieldErrors, onSubmit 
         </label>
 
         <label className="block space-y-1">
-          <span className="block text-sm font-medium text-slate-700">Images (max 3)</span>
+          <span className="block text-sm font-medium text-slate-700">Hình ảnh (tối đa 3)</span>
           <input
             type="file"
             accept="image/*"
@@ -114,7 +114,7 @@ export function ReviewForm({ isSubmitting, submitMessage, fieldErrors, onSubmit 
         </label>
 
         <Button type="submit" isLoading={isSubmitting}>
-          Submit review
+          Gửi đánh giá
         </Button>
 
         {submitMessage ? <p className="text-sm text-slate-700">{submitMessage}</p> : null}

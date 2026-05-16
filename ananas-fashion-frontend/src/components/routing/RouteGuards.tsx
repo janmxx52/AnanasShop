@@ -12,7 +12,7 @@ export function ProtectedRoute({ children }: GuardProps) {
   const location = useLocation()
 
   if (isLoading) {
-    return <LoadingState message="Checking session..." />
+    return <LoadingState message="Đang kiểm tra phiên đăng nhập..." />
   }
 
   if (!isAuthenticated) {
@@ -27,7 +27,7 @@ export function AdminRoute({ children }: GuardProps) {
   const location = useLocation()
 
   if (isLoading) {
-    return <LoadingState message="Checking permissions..." />
+    return <LoadingState message="Đang kiểm tra quyền truy cập..." />
   }
 
   if (!isAuthenticated) {
@@ -45,7 +45,7 @@ export function GuestRoute({ children }: GuardProps) {
   const { isAuthenticated, isLoading } = useAuth()
 
   if (isLoading) {
-    return <LoadingState message="Checking session..." />
+    return <LoadingState message="Đang kiểm tra phiên đăng nhập..." />
   }
 
   if (isAuthenticated) {

@@ -17,46 +17,46 @@ export function MainLayout() {
           </NavLink>
           <nav className="flex flex-wrap items-center gap-2">
             <NavLink to="/products" className={navLinkClass}>
-              Products
+              Sản phẩm
             </NavLink>
             <NavLink to="/cart" className={navLinkClass}>
-              Cart
+              Giỏ hàng
             </NavLink>
             <NavLink to="/checkout" className={navLinkClass}>
-              Checkout
+              Thanh toán
             </NavLink>
             <NavLink to="/orders/lookup" className={navLinkClass}>
-              Order Lookup
+              Tra cứu đơn hàng
             </NavLink>
             {isAuthenticated ? (
               <>
                 <NavLink to="/orders" className={navLinkClass}>
-                  My Orders
+                  Đơn hàng của tôi
                 </NavLink>
                 <NavLink to="/wishlist" className={navLinkClass}>
-                  Wishlist
+                  Sản phẩm yêu thích
                 </NavLink>
               </>
             ) : null}
             {isAdmin ? (
               <NavLink to="/admin/dashboard" className={navLinkClass}>
-                Admin
+                Quản trị
               </NavLink>
             ) : null}
             {!isAuthenticated ? (
               <>
                 <NavLink to="/login" className={navLinkClass}>
-                  Login
+                  Đăng nhập
                 </NavLink>
                 <NavLink to="/register" className={navLinkClass}>
-                  Register
+                  Đăng ký
                 </NavLink>
               </>
             ) : (
               <div className="flex items-center gap-2">
                 <span className="text-sm text-slate-600">{user?.name}</span>
                 <Button onClick={() => void logout()} variant="secondary">
-                  Logout
+                  Đăng xuất
                 </Button>
               </div>
             )}

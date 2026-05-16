@@ -32,7 +32,7 @@ export function ProductCard({ product }: ProductCardProps) {
               loading="lazy"
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-sm text-slate-500">No image</div>
+            <div className="flex h-full items-center justify-center text-sm text-slate-500">Không có ảnh</div>
           )}
         </div>
       </Link>

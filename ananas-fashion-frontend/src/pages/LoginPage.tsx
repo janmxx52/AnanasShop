@@ -1,15 +1,17 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/app/AuthContext'
+import { useToast } from '@/app/ToastContext'
 import { Button } from '@/components/ui/Button'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { Input } from '@/components/ui/Input'
-import { formatFieldError, getApiErrorInfo } from '@/lib/api-helpers'
+import { formatFieldError, parseApiError } from '@/lib/api-helpers'
 
 export function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { login } = useAuth()
+  const toast = useToast()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -32,9 +34,11 @@ export function LoginPage() {
         device_name: 'web',
       })
 
+      toast.success('Đăng nhập thành công.')
       navigate(redirectPath, { replace: true })
     } catch (error) {
-      const apiError = getApiErrorInfo(error)
+      const apiError = parseApiError(error)
+      toast.error(apiError.message)
       setFormError(apiError.message)
       setFieldErrors(apiError.errors)
     } finally {
@@ -45,8 +49,8 @@ export function LoginPage() {
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
       <div className="space-y-1">
-        <h2 className="text-lg font-semibold text-slate-900">Login</h2>
-        <p className="text-sm text-slate-600">Use your account credentials to continue.</p>
+        <h2 className="text-lg font-semibold text-slate-900">Đăng nhập</h2>
+        <p className="text-sm text-slate-600">Sử dụng thông tin tài khoản để tiếp tục.</p>
       </div>
 
       {formError ? <ErrorState message={formError} /> : null}
@@ -63,7 +67,7 @@ export function LoginPage() {
       />
 
       <Input
-        label="Password"
+        label="Mật khẩu"
         name="password"
         type="password"
         autoComplete="current-password"
@@ -74,13 +78,13 @@ export function LoginPage() {
       />
 
       <Button type="submit" isLoading={isSubmitting} className="w-full">
-        Login
+        Đăng nhập
       </Button>
 
       <p className="text-sm text-slate-600">
-        Need an account?{' '}
+        Chưa có tài khoản?{' '}
         <Link className="font-medium text-slate-900 underline" to="/register">
-          Register
+          Đăng ký
         </Link>
       </p>
     </form>

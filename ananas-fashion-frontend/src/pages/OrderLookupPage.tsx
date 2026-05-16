@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { orderApi } from '@/api/order.api'
 import { OrderItemsTable } from '@/components/order/OrderItemsTable'
@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/Button'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { Input } from '@/components/ui/Input'
 import { PriceText } from '@/components/ui/PriceText'
-import { getApiErrorInfo } from '@/lib/api-helpers'
+import { parseApiError } from '@/lib/api-helpers'
+import { getPaymentMethodLabel } from '@/lib/display-labels'
 import type { OrderLookupResult } from '@/types/order'
 
 const GENERIC_NOT_FOUND_MESSAGE = 'Không tìm thấy đơn hàng'
@@ -39,7 +40,7 @@ export function OrderLookupPage() {
     }
   }, [searchParams])
 
-  const handleLookup = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleLookup = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setErrorMessage(null)
     setResult(null)
@@ -49,12 +50,12 @@ export function OrderLookupPage() {
     const normalizedPhone = phone.trim()
 
     if (!normalizedOrderCode) {
-      setErrorMessage('Order code is required.')
+      setErrorMessage('Vui lòng nhập mã đơn hàng.')
       return
     }
 
     if (!normalizedEmail && !normalizedPhone) {
-      setErrorMessage('Please provide email or phone to lookup order.')
+      setErrorMessage('Vui lòng nhập email hoặc số điện thoại để tra cứu.')
       return
     }
 
@@ -69,7 +70,7 @@ export function OrderLookupPage() {
 
       setResult(response)
     } catch (error) {
-      const apiError = getApiErrorInfo(error)
+      const apiError = parseApiError(error)
       if (apiError.status === 404) {
         setErrorMessage(GENERIC_NOT_FOUND_MESSAGE)
       } else {
@@ -83,34 +84,34 @@ export function OrderLookupPage() {
   return (
     <section className="space-y-6">
       <header className="space-y-1">
-        <h1 className="text-2xl font-semibold text-slate-900">Order lookup</h1>
+        <h1 className="text-2xl font-semibold text-slate-900">Tra cứu đơn hàng</h1>
         <p className="text-sm text-slate-600">
-          Lookup with order code + email or phone.
+          Nhập mã đơn hàng kèm email hoặc số điện thoại để tra cứu.
         </p>
       </header>
 
       <form onSubmit={handleLookup} className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-2">
         <Input
-          label="Order code"
+          label="Mã đơn hàng"
           value={orderCode}
           onChange={(event) => setOrderCode(event.target.value)}
           required
         />
         <Input
-          label="Email (optional)"
+          label="Email (tùy chọn)"
           type="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
         />
         <Input
-          label="Phone (optional)"
+          label="Số điện thoại (tùy chọn)"
           value={phone}
           onChange={(event) => setPhone(event.target.value)}
         />
 
         <div className="flex items-end gap-2">
           <Button type="submit" isLoading={isSubmitting}>
-            Lookup
+            Tra cứu
           </Button>
           <Button
             type="button"
@@ -123,7 +124,7 @@ export function OrderLookupPage() {
               setErrorMessage(null)
             }}
           >
-            Reset
+            Đặt lại
           </Button>
         </div>
       </form>
@@ -134,34 +135,34 @@ export function OrderLookupPage() {
         <section className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
           <div className="grid gap-2 text-sm sm:grid-cols-2">
             <p>
-              <span className="text-slate-600">Order code:</span> <strong>{result.order_code}</strong>
+              <span className="text-slate-600">Mã đơn hàng:</span> <strong>{result.order_code}</strong>
             </p>
             <p>
-              <span className="text-slate-600">Order status:</span>{' '}
+              <span className="text-slate-600">Trạng thái đơn hàng:</span>{' '}
               <OrderStatusBadge status={result.order_status} />
             </p>
             <p>
-              <span className="text-slate-600">Order date:</span>{' '}
+              <span className="text-slate-600">Ngày đặt:</span>{' '}
               {new Date(result.order_date).toLocaleString('vi-VN')}
             </p>
             <p>
-              <span className="text-slate-600">Payment method:</span> <strong>{result.payment_method}</strong>
+              <span className="text-slate-600">Phương thức thanh toán:</span> <strong>{getPaymentMethodLabel(result.payment_method)}</strong>
             </p>
             <p>
-              <span className="text-slate-600">Payment status:</span>{' '}
+              <span className="text-slate-600">Trạng thái thanh toán:</span>{' '}
               <PaymentStatusBadge status={result.payment_status} />
             </p>
             <p>
-              <span className="text-slate-600">Total:</span>{' '}
+              <span className="text-slate-600">Tổng tiền:</span>{' '}
               <strong>
                 <PriceText value={result.total} />
               </strong>
             </p>
             <p>
-              <span className="text-slate-600">Quantity:</span> <strong>{result.quantity}</strong>
+              <span className="text-slate-600">Số lượng:</span> <strong>{result.quantity}</strong>
             </p>
             <p className="sm:col-span-2">
-              <span className="text-slate-600">Shipping address:</span> {result.shipping_address}
+              <span className="text-slate-600">Địa chỉ giao hàng:</span> {result.shipping_address}
             </p>
           </div>
 

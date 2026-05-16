@@ -1,4 +1,5 @@
 import type { OrderTimelineItem } from '@/types/order'
+import { getOrderStatusLabel } from '@/lib/display-labels'
 
 type OrderTimelineProps = {
   items: OrderTimelineItem[]
@@ -23,14 +24,14 @@ export function OrderTimeline({ items }: OrderTimelineProps) {
 
   return (
     <section className="space-y-2">
-      <h3 className="text-sm font-semibold text-slate-900">Status timeline</h3>
+      <h3 className="text-sm font-semibold text-slate-900">Lịch sử trạng thái</h3>
       <div className="flex flex-wrap gap-2">
         {items.map((item) => (
           <span
             key={`${item.status}-${item.state}`}
             className={`inline-flex rounded border px-2 py-1 text-xs font-medium ${getStateClassName(item.state)}`}
           >
-            {item.status}
+            {getOrderStatusLabel(item.status)}
           </span>
         ))}
       </div>

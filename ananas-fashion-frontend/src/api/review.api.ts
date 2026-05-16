@@ -31,7 +31,7 @@ export const reviewApi = {
     const data = response.data as { message?: string }
 
     return {
-      message: data.message ?? 'Review deleted',
+      message: data.message ?? 'Đã xóa đánh giá',
     }
   },
 }

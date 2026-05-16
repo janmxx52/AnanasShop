@@ -8,10 +8,10 @@ export function AdminLayout() {
     <div className="min-h-screen bg-slate-50">
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4">
-          <h1 className="text-lg font-semibold text-slate-900">Admin Area</h1>
+          <h1 className="text-lg font-semibold text-slate-900">Khu vực quản trị</h1>
           <nav className="flex items-center gap-2">
             <NavLink to="/admin/dashboard" className={navLinkClass}>
-              Dashboard
+              Bảng điều khiển
             </NavLink>
           </nav>
         </div>

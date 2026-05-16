@@ -6,9 +6,9 @@ export function AuthLayout() {
       <div className="w-full max-w-lg space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
         <div className="space-y-1">
           <Link to="/" className="text-sm text-slate-600 hover:text-slate-900">
-            ← Back to home
+            Quay lại trang chủ
           </Link>
-          <h1 className="text-xl font-semibold text-slate-900">Authentication</h1>
+          <h1 className="text-xl font-semibold text-slate-900">Xác thực tài khoản</h1>
         </div>
 
         <Outlet />
