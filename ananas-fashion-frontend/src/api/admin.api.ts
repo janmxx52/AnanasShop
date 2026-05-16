@@ -1,9 +1,12 @@
 import { http } from '@/lib/http'
+import { extractResponseData } from '@/lib/api-helpers'
 import type { ApiPaginatedEnvelope, ApiSuccessEnvelope } from '@/types/api'
+import type { DashboardStats } from '@/types/admin'
 
 export const adminApi = {
-  dashboardStats() {
-    return http.get<ApiSuccessEnvelope<unknown>>('/admin/dashboard/stats')
+  async dashboardStats(): Promise<DashboardStats> {
+    const response = await http.get<ApiSuccessEnvelope<DashboardStats>>('/admin/dashboard/stats')
+    return extractResponseData<DashboardStats>(response.data)
   },
 
   categories(params?: { page?: number; per_page?: number }) {
