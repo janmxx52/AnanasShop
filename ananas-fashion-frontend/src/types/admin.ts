@@ -46,6 +46,51 @@ export type AdminBrandPayload = {
 export type AdminCategoryListResult = PaginatedResult<AdminCategory>
 export type AdminBrandListResult = PaginatedResult<AdminBrand>
 
+export type AdminProductRelation = {
+  id: number | null
+  name: string | null
+}
+
+export type AdminProduct = {
+  id: number
+  name: string
+  slug: string
+  description: string | null
+  base_price: number
+  sale_price: number | null
+  is_featured: boolean
+  is_active: boolean
+  category?: AdminProductRelation | null
+  brand?: AdminProductRelation | null
+  created_at: string | null
+  updated_at: string | null
+  deleted_at: string | null
+}
+
+export type AdminProductPayload = {
+  name: string
+  slug?: string | null
+  category_id: number
+  brand_id: number
+  description?: string | null
+  base_price: number
+  sale_price?: number | null
+  is_active?: boolean
+  is_featured?: boolean
+}
+
+export type AdminProductListParams = {
+  q?: string
+  category?: number | string
+  brand?: number | string
+  is_active?: boolean
+  with_trashed?: boolean
+  page?: number
+  per_page?: number
+}
+
+export type AdminProductPaginatedResult = PaginatedResult<AdminProduct>
+
 export type DashboardRecentOrder = {
   order_code: string
   status: OrderStatus

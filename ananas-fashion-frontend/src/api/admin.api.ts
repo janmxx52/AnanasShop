@@ -9,6 +9,10 @@ import type {
   AdminCategory,
   AdminCategoryListResult,
   AdminCategoryPayload,
+  AdminProduct,
+  AdminProductListParams,
+  AdminProductPaginatedResult,
+  AdminProductPayload,
   DashboardStats,
 } from '@/types/admin'
 
@@ -81,6 +85,42 @@ export const adminApi = {
 
   async deleteBrand(id: number): Promise<void> {
     await http.delete<ApiSuccessEnvelope<null>>(`/admin/brands/${id}`)
+  },
+
+  async listProducts(params?: AdminProductListParams): Promise<AdminProductPaginatedResult> {
+    const response = await http.get<ApiPaginatedEnvelope<AdminProduct>>('/admin/products', { params })
+    return extractPaginatedData<AdminProduct>(response.data)
+  },
+
+  async getProduct(id: number): Promise<AdminProduct> {
+    const response = await http.get<ApiSuccessEnvelope<AdminProduct>>(`/admin/products/${id}`)
+    return extractResponseData<AdminProduct>(response.data)
+  },
+
+  async createProduct(payload: AdminProductPayload): Promise<AdminProduct> {
+    const response = await http.post<ApiSuccessEnvelope<AdminProduct>>('/admin/products', payload)
+    return extractResponseData<AdminProduct>(response.data)
+  },
+
+  async updateProduct(id: number, payload: Partial<AdminProductPayload>): Promise<AdminProduct> {
+    const response = await http.put<ApiSuccessEnvelope<AdminProduct>>(`/admin/products/${id}`, payload)
+    return extractResponseData<AdminProduct>(response.data)
+  },
+
+  async deleteProduct(id: number): Promise<void> {
+    await http.delete<ApiSuccessEnvelope<null>>(`/admin/products/${id}`)
+  },
+
+  async restoreProduct(id: number): Promise<AdminProduct> {
+    const response = await http.post<ApiSuccessEnvelope<AdminProduct>>(`/admin/products/${id}/restore`)
+    return extractResponseData<AdminProduct>(response.data)
+  },
+
+  async updateProductStatus(id: number, isActive: boolean): Promise<AdminProduct> {
+    const response = await http.patch<ApiSuccessEnvelope<AdminProduct>>(`/admin/products/${id}/status`, {
+      is_active: isActive,
+    })
+    return extractResponseData<AdminProduct>(response.data)
   },
 
   categories(params?: { page?: number; per_page?: number }) {
