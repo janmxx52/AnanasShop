@@ -42,7 +42,7 @@ export function ProductCard({ product }: ProductCardProps) {
           {product.name}
         </Link>
 
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <PriceText value={displayPrice} className="text-sm font-semibold text-slate-900" />
           <span className="text-xs text-slate-600">
             {product.rating_avg ?? 0} ★ ({product.review_count ?? 0})

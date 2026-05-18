@@ -319,7 +319,7 @@ export function AdminCategoriesPage() {
         )}
 
         {meta.last_page > 1 ? (
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-sm text-slate-600">
               Trang {meta.current_page} / {meta.last_page} • Tổng {meta.total}
             </p>

@@ -69,7 +69,7 @@ export function AdminDashboardPage() {
   }, [stats])
 
   if (isLoading) {
-    return <LoadingState message="Đang tải thống kê dashboard..." />
+    return <LoadingState message="Đang tải thống kê bảng điều khiển..." />
   }
 
   if (errorMessage) {
@@ -77,14 +77,14 @@ export function AdminDashboardPage() {
   }
 
   if (!stats) {
-    return <EmptyState title="Chưa có dữ liệu dashboard" />
+    return <EmptyState title="Chưa có dữ liệu bảng điều khiển" />
   }
 
   return (
     <section className="space-y-6">
       <header className="flex flex-wrap items-center justify-between gap-2">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold text-slate-900">Dashboard quản trị</h1>
+          <h1 className="text-2xl font-semibold text-slate-900">Bảng điều khiển quản trị</h1>
           <p className="text-sm text-slate-600">Tổng quan nhanh tình trạng hệ thống theo dữ liệu API.</p>
         </div>
         <Button type="button" variant="secondary" onClick={() => void fetchStats()}>
@@ -119,7 +119,7 @@ export function AdminDashboardPage() {
                 {stats.recent_orders.map((order) => (
                   <tr key={order.order_code} className="border-t border-slate-100">
                     <td className="px-3 py-2 font-medium text-slate-900">{order.order_code}</td>
-                    <td className="px-3 py-2 text-slate-700">{order.customer_name || 'N/A'}</td>
+                    <td className="px-3 py-2 text-slate-700">{order.customer_name || 'Không có'}</td>
                     <td className="px-3 py-2">
                       <OrderStatusBadge status={order.status} />
                     </td>

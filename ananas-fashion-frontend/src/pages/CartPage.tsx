@@ -168,7 +168,7 @@ export function CartPage() {
               />
             </div>
 
-            <div className="flex items-end gap-2">
+            <div className="flex flex-wrap items-end gap-2 md:justify-end">
               <Button
                 type="button"
                 variant="secondary"

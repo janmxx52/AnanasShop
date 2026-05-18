@@ -109,7 +109,7 @@ export function OrderLookupPage() {
           onChange={(event) => setPhone(event.target.value)}
         />
 
-        <div className="flex items-end gap-2">
+        <div className="flex items-end gap-2 md:col-span-2">
           <Button type="submit" isLoading={isSubmitting}>
             Tra cứu
           </Button>

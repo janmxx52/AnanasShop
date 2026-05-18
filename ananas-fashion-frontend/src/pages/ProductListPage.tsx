@@ -172,7 +172,7 @@ export function ProductListPage() {
           </div>
 
           {hasPagination ? (
-            <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white p-4">
               <p className="text-sm text-slate-600">
                 Trang {meta.current_page} / {meta.last_page} • Tổng {meta.total}
               </p>

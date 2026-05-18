@@ -233,7 +233,7 @@ export function ProductDetailPage() {
         Quay lại danh sách sản phẩm
       </Link>
 
-      <div className="grid gap-6 rounded-lg border border-slate-200 bg-white p-6 lg:grid-cols-2">
+      <div className="grid gap-6 rounded-lg border border-slate-200 bg-white p-4 sm:p-6 lg:grid-cols-2">
         <div className="space-y-3">
           <div className="aspect-square overflow-hidden rounded bg-slate-100">
             {primaryImage ? (
@@ -340,7 +340,7 @@ export function ProductDetailPage() {
         />
 
         {reviewMeta.last_page > 1 ? (
-          <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white p-4">
             <p className="text-sm text-slate-600">
               Trang {reviewMeta.current_page} / {reviewMeta.last_page}
             </p>

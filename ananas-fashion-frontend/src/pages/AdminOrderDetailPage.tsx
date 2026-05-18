@@ -36,7 +36,7 @@ function getCustomerLabel(order: AdminOrder): string {
   }
 
   if (order.customer?.user_id) {
-    return `User #${order.customer.user_id}`
+    return `Thành viên #${order.customer.user_id}`
   }
 
   return 'Không xác định'

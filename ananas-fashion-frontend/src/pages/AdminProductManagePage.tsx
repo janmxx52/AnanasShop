@@ -494,7 +494,7 @@ export function AdminProductManagePage() {
             </div>
 
             {variantsMeta.last_page > 1 ? (
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="text-sm text-slate-600">
                   Trang {variantsMeta.current_page} / {variantsMeta.last_page} • Tổng {variantsMeta.total}
                 </p>
