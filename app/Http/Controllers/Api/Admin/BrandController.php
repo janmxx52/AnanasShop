@@ -18,7 +18,7 @@ class BrandController extends Controller
         $perPage = (int) $request->query('per_page', 20);
         $brands = Brand::orderBy('name', 'asc')->paginate($perPage);
 
-        return $this->paginated($brands, 'Brands fetched');
+        return $this->paginated($brands, 'Lấy danh sách thương hiệu thành công.');
     }
 
     public function store(BrandStoreRequest $request)
@@ -26,40 +26,40 @@ class BrandController extends Controller
         $data = $request->validated();
         $brand = Brand::create($data);
 
-        return $this->success($brand, 'Brand created', 201);
+        return $this->success($brand, 'Tạo thương hiệu thành công.', 201);
     }
 
     public function show($id)
     {
         $brand = Brand::find($id);
         if (!$brand) {
-            return $this->error('Not found', null, 404);
+            return $this->error('Không tìm thấy dữ liệu.', null, 404);
         }
 
-        return $this->success($brand, 'Brand fetched');
+        return $this->success($brand, 'Lấy thông tin thương hiệu thành công.');
     }
 
     public function update(BrandUpdateRequest $request, $id)
     {
         $brand = Brand::find($id);
         if (!$brand) {
-            return $this->error('Not found', null, 404);
+            return $this->error('Không tìm thấy dữ liệu.', null, 404);
         }
 
         $brand->update($request->validated());
 
-        return $this->success($brand, 'Brand updated');
+        return $this->success($brand, 'Cập nhật thương hiệu thành công.');
     }
 
     public function destroy($id)
     {
         $brand = Brand::find($id);
         if (!$brand) {
-            return $this->error('Not found', null, 404);
+            return $this->error('Không tìm thấy dữ liệu.', null, 404);
         }
 
         $brand->delete();
 
-        return $this->success(null, 'Brand deleted');
+        return $this->success(null, 'Xóa thương hiệu thành công.');
     }
 }

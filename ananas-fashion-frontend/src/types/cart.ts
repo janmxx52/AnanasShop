@@ -1,4 +1,4 @@
-export type CartOwner =
+﻿export type CartOwner =
   | {
       type: 'guest'
       guest_token: string
@@ -15,16 +15,24 @@ export type CartItem = {
   quantity: number
   unit_price: number | null
   subtotal: number | null
+  image_url?: string | null
   product: {
     id: number
     name: string
     slug: string
+    image_url?: string | null
+    primary_image?: string | null
+    images?: Array<{
+      url: string
+      is_primary?: boolean
+    }>
   } | null
   variant: {
     id: number
     size: string
     color: string
     sku: string
+    image_url?: string | null
   } | null
 }
 

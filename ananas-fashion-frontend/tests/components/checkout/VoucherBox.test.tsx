@@ -57,4 +57,31 @@ describe('VoucherBox', () => {
       expect(onVoucherChecked).toHaveBeenCalledWith(mockResult)
     })
   })
+
+  it('shows error message when voucher is invalid', async () => {
+    const onVoucherChecked = vi.fn()
+    vi.mocked(voucherApi.checkVoucher).mockRejectedValueOnce({
+      isAxiosError: true,
+      response: {
+        status: 422,
+        data: {
+          message: 'Phiếu giảm giá không hợp lệ',
+          errors: {
+            code: ['Voucher not found'],
+          },
+        },
+      },
+    })
+
+    renderWithProviders(
+      <VoucherBox voucherCode="INVALID" onVoucherCodeChange={vi.fn()} onVoucherChecked={onVoucherChecked} />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /ki/i }))
+
+    await waitFor(() => {
+      expect(onVoucherChecked).toHaveBeenCalledWith(null)
+      expect(screen.getAllByText('Phiếu giảm giá không hợp lệ').length).toBeGreaterThan(0)
+    })
+  })
 })

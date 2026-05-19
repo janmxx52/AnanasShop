@@ -23,7 +23,7 @@ class VoucherCalculator
 
         $voucher = $query->first();
         if (!$voucher) {
-            throw ValidationException::withMessages([$errorField => 'Voucher not found']);
+            throw ValidationException::withMessages([$errorField => 'Không tìm thấy mã giảm giá.']);
         }
 
         $discount = $this->calculateDiscount(
@@ -73,19 +73,19 @@ class VoucherCalculator
         string $errorField
     ): void {
         if (!$voucher->is_active) {
-            throw ValidationException::withMessages([$errorField => 'Voucher is inactive']);
+            throw ValidationException::withMessages([$errorField => 'Mã giảm giá đang tạm ngưng.']);
         }
 
         $now = now();
         if ($voucher->starts_at && $now->lt($voucher->starts_at)) {
-            throw ValidationException::withMessages([$errorField => 'Voucher not started']);
+            throw ValidationException::withMessages([$errorField => 'Mã giảm giá chưa đến thời gian áp dụng.']);
         }
         if ($voucher->expires_at && $now->gt($voucher->expires_at)) {
-            throw ValidationException::withMessages([$errorField => 'Voucher expired']);
+            throw ValidationException::withMessages([$errorField => 'Mã giảm giá đã hết hạn.']);
         }
 
         if ($subtotal < (float) $voucher->min_order_amount) {
-            throw ValidationException::withMessages([$errorField => 'Minimum order amount not met']);
+            throw ValidationException::withMessages([$errorField => 'Đơn hàng chưa đạt giá trị tối thiểu để áp dụng mã giảm giá.']);
         }
 
         $this->assertUsageLimit($voucher, $errorField);
@@ -100,7 +100,7 @@ class VoucherCalculator
             ->count();
 
         if ($voucher->usage_limit !== null && $totalUsed >= $voucher->usage_limit) {
-            throw ValidationException::withMessages([$errorField => 'Voucher usage limit reached']);
+            throw ValidationException::withMessages([$errorField => 'Mã giảm giá đã hết lượt sử dụng.']);
         }
     }
 
@@ -130,7 +130,7 @@ class VoucherCalculator
         }
 
         if ($usedByCurrent >= $voucher->usage_per_user) {
-            throw ValidationException::withMessages([$errorField => 'Voucher usage per user exceeded']);
+            throw ValidationException::withMessages([$errorField => 'Bạn đã dùng hết lượt áp dụng mã giảm giá này.']);
         }
     }
 }

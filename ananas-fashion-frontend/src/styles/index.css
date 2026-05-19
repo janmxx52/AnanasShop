@@ -2,15 +2,103 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --ananas-orange: #f15a24;
+  --ananas-black: #1f1f1f;
+  --ananas-gray: #f4f4f4;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
-  background-color: rgb(248 250 252);
-  color: rgb(15 23 42);
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: #f6f6f6;
+  color: #171717;
+  font-family: Arial, 'Helvetica Neue', Helvetica, 'Segoe UI', system-ui, sans-serif;
+  text-rendering: optimizeLegibility;
 }
 
 a {
   color: inherit;
   text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+@layer components {
+  .ananas-main-nav-link {
+    @apply inline-flex h-[76px] items-center px-2 text-[13px] font-bold tracking-[0.11em] uppercase transition;
+  }
+
+  .ananas-main-nav-link:hover {
+    color: var(--ananas-orange);
+  }
+
+  .ananas-section-title {
+    @apply text-2xl font-extrabold tracking-[0.08em] text-neutral-900 uppercase;
+  }
+
+  .ananas-promo-strip {
+    border-top: 1px solid #e5e5e5;
+    border-bottom: 1px solid #e5e5e5;
+    background-color: #f8f8f8;
+  }
+
+  .ananas-filter-panel {
+    @apply space-y-4 border border-neutral-200 bg-white p-4;
+  }
+
+  .ananas-filter-section {
+    @apply space-y-2 border-t border-neutral-100 pt-3;
+  }
+
+  .ananas-filter-section-title {
+    @apply text-xs font-black tracking-[0.12em] text-neutral-700 uppercase;
+  }
+
+  .ananas-filter-option {
+    @apply inline-flex w-full items-center border border-neutral-200 px-3 py-2 text-left text-xs font-semibold tracking-[0.03em] text-neutral-700 transition hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-900;
+  }
+
+  .ananas-filter-option.is-active {
+    @apply border-neutral-900 bg-neutral-900 text-white;
+  }
+
+  .ananas-color-swatch {
+    @apply inline-flex h-8 w-8 items-center justify-center rounded-full border border-neutral-300 bg-white transition hover:border-neutral-700;
+  }
+
+  .ananas-color-swatch.is-active {
+    @apply border-neutral-900 ring-1 ring-neutral-900;
+  }
+
+  .ananas-color-swatch-dot {
+    @apply h-5 w-5 rounded-full border border-black/10;
+  }
+
+  .ananas-pagination-button {
+    @apply inline-flex min-w-8 items-center justify-center border border-neutral-300 px-2.5 py-1.5 text-sm font-medium text-neutral-700 transition hover:border-neutral-900 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-45;
+  }
+
+  .ananas-pagination-button.is-active {
+    @apply border-neutral-900 bg-neutral-900 text-white hover:text-white;
+  }
+
+  .ananas-filter-chip {
+    @apply inline-flex items-center gap-1 rounded-full border border-neutral-300 bg-neutral-50 px-3 py-1.5 text-xs font-medium text-neutral-700 transition hover:border-neutral-500 hover:bg-neutral-100;
+  }
+
+  .admin-surface {
+    @apply border border-neutral-200 bg-white shadow-sm;
+  }
+
+  .admin-surface-soft {
+    @apply border border-neutral-200 bg-neutral-50;
+  }
+
+  .admin-title {
+    @apply text-2xl font-bold text-neutral-900;
+  }
 }

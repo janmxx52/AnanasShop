@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { adminApi } from '@/api/admin.api'
 import { useToast } from '@/app/ToastContext'
+import { AdminCard } from '@/components/admin/AdminCard'
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
+import { AdminStatusPill } from '@/components/admin/AdminStatusPill'
+import { AdminTable } from '@/components/admin/AdminTable'
+import { AdminToolbar } from '@/components/admin/AdminToolbar'
+import { ConfirmActionButton } from '@/components/admin/ConfirmActionButton'
+import { FormSection } from '@/components/admin/FormSection'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorState } from '@/components/ui/ErrorState'
@@ -57,32 +64,20 @@ const DEFAULT_FORM: VoucherFormState = {
 }
 
 function toInputDatetime(value: string | null): string {
-  if (!value) {
-    return ''
-  }
-
+  if (!value) return ''
   return value.replace(' ', 'T').slice(0, 16)
 }
 
 function toApiDatetime(value: string): string | null {
   const trimmed = value.trim()
-  if (!trimmed) {
-    return null
-  }
-
-  if (trimmed.includes('T')) {
-    return `${trimmed.replace('T', ' ')}:00`
-  }
-
+  if (!trimmed) return null
+  if (trimmed.includes('T')) return `${trimmed.replace('T', ' ')}:00`
   return trimmed
 }
 
 function toNullableNumber(value: string): number | null {
   const trimmed = value.trim()
-  if (!trimmed) {
-    return null
-  }
-
+  if (!trimmed) return null
   return Number(trimmed)
 }
 
@@ -142,9 +137,7 @@ export function AdminVouchersPage() {
       const matchesQuery = filters.q.trim()
         ? voucher.code.toLowerCase().includes(filters.q.trim().toLowerCase())
         : true
-
       const matchesType = filters.type === 'all' ? true : voucher.type === filters.type
-
       const matchesActive =
         filters.active === 'all'
           ? true
@@ -178,37 +171,21 @@ export function AdminVouchersPage() {
 
   const validateForm = () => {
     const normalizedValue = Number(formState.value)
-    if (!formState.code.trim()) {
-      return 'Vui lòng nhập mã voucher.'
-    }
-
-    if (!Number.isFinite(normalizedValue) || normalizedValue <= 0) {
-      return 'Giá trị voucher phải lớn hơn 0.'
-    }
-
-    if (formState.type === 'percent' && normalizedValue > 100) {
-      return 'Voucher phần trăm không được vượt quá 100%.'
-    }
+    if (!formState.code.trim()) return 'Vui lòng nhập mã voucher.'
+    if (!Number.isFinite(normalizedValue) || normalizedValue <= 0) return 'Giá trị voucher phải lớn hơn 0.'
+    if (formState.type === 'percent' && normalizedValue > 100) return 'Voucher phần trăm không được vượt quá 100%.'
 
     const minOrderAmount = toNullableNumber(formState.min_order_amount)
-    if (minOrderAmount !== null && minOrderAmount < 0) {
-      return 'Đơn tối thiểu không được âm.'
-    }
+    if (minOrderAmount !== null && minOrderAmount < 0) return 'Đơn tối thiểu không được âm.'
 
     const maxDiscount = toNullableNumber(formState.max_discount)
-    if (maxDiscount !== null && maxDiscount < 0) {
-      return 'Giảm tối đa không được âm.'
-    }
+    if (maxDiscount !== null && maxDiscount < 0) return 'Giảm tối đa không được âm.'
 
     const usageLimit = toNullableNumber(formState.usage_limit)
-    if (usageLimit !== null && usageLimit < 1) {
-      return 'Giới hạn sử dụng phải lớn hơn hoặc bằng 1.'
-    }
+    if (usageLimit !== null && usageLimit < 1) return 'Giới hạn sử dụng phải lớn hơn hoặc bằng 1.'
 
     const usagePerUser = toNullableNumber(formState.usage_per_user)
-    if (usagePerUser !== null && usagePerUser < 1) {
-      return 'Giới hạn mỗi người dùng phải lớn hơn hoặc bằng 1.'
-    }
+    if (usagePerUser !== null && usagePerUser < 1) return 'Giới hạn mỗi người dùng phải lớn hơn hoặc bằng 1.'
 
     const startsAt = formState.starts_at.trim()
     const expiresAt = formState.expires_at.trim()
@@ -269,10 +246,6 @@ export function AdminVouchersPage() {
   }
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('Bạn có chắc chắn muốn vô hiệu hóa mã giảm giá này?')) {
-      return
-    }
-
     setDeletingId(id)
 
     try {
@@ -301,118 +274,109 @@ export function AdminVouchersPage() {
   }
 
   return (
-    <section className="space-y-6">
-      <header className="space-y-1">
-        <h1 className="text-2xl font-semibold text-slate-900">Quản lý mã giảm giá</h1>
-        <p className="text-sm text-slate-600">Tạo, chỉnh sửa và vô hiệu hóa mã giảm giá.</p>
-      </header>
+    <section className="space-y-5">
+      <AdminPageHeader
+        title="Quản lý mã giảm giá"
+        description="Tạo, chỉnh sửa và vô hiệu hóa mã giảm giá."
+      />
 
-      <section className="rounded-lg border border-slate-200 bg-white p-4">
-        <h2 className="text-base font-semibold text-slate-900">
-          {editingId ? `Cập nhật mã giảm giá #${editingId}` : 'Tạo mã giảm giá mới'}
-        </h2>
+      <AdminCard title={editingId ? `Cập nhật mã giảm giá #${editingId}` : 'Tạo mã giảm giá mới'}>
+        <form className="grid gap-3" onSubmit={handleSubmit}>
+          <FormSection title="Thông tin voucher">
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+              <Input
+                label="Mã voucher"
+                value={formState.code}
+                onChange={(event) => setFormState((prev) => ({ ...prev, code: event.target.value.toUpperCase() }))}
+                error={formatFieldError(fieldErrors, 'code')}
+                required
+              />
 
-        <form className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-3" onSubmit={handleSubmit}>
-          <Input
-            label="Mã voucher"
-            value={formState.code}
-            onChange={(event) => setFormState((prev) => ({ ...prev, code: event.target.value.toUpperCase() }))}
-            error={formatFieldError(fieldErrors, 'code')}
-            required
-          />
+              <label className="block space-y-1">
+                <span className="block text-sm font-medium text-neutral-700">Loại voucher</span>
+                <select
+                  className="w-full border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-[#f15a24] focus:ring-2 focus:ring-orange-100"
+                  value={formState.type}
+                  onChange={(event) => setFormState((prev) => ({ ...prev, type: event.target.value as AdminVoucherType }))}
+                >
+                  <option value="percent">Phần trăm</option>
+                  <option value="fixed">Cố định</option>
+                </select>
+                {formatFieldError(fieldErrors, 'type') ? (
+                  <span className="text-xs text-red-600">{formatFieldError(fieldErrors, 'type')}</span>
+                ) : null}
+              </label>
 
-          <label className="block space-y-1">
-            <span className="block text-sm font-medium text-slate-700">Loại voucher</span>
-            <select
-              className="w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
-              value={formState.type}
-              onChange={(event) =>
-                setFormState((prev) => ({ ...prev, type: event.target.value as AdminVoucherType }))
-              }
-            >
-              <option value="percent">Phần trăm</option>
-              <option value="fixed">Cố định</option>
-            </select>
-            {formatFieldError(fieldErrors, 'type') ? (
-              <span className="text-xs text-red-600">{formatFieldError(fieldErrors, 'type')}</span>
-            ) : null}
-          </label>
+              <Input
+                label="Giá trị"
+                type="number"
+                min={0.01}
+                step="0.01"
+                value={formState.value}
+                onChange={(event) => setFormState((prev) => ({ ...prev, value: event.target.value }))}
+                error={formatFieldError(fieldErrors, 'value')}
+                required
+              />
+              <Input
+                label="Giảm tối đa"
+                type="number"
+                min={0}
+                step="0.01"
+                value={formState.max_discount}
+                onChange={(event) => setFormState((prev) => ({ ...prev, max_discount: event.target.value }))}
+                error={formatFieldError(fieldErrors, 'max_discount')}
+              />
+              <Input
+                label="Đơn tối thiểu"
+                type="number"
+                min={0}
+                step="0.01"
+                value={formState.min_order_amount}
+                onChange={(event) => setFormState((prev) => ({ ...prev, min_order_amount: event.target.value }))}
+                error={formatFieldError(fieldErrors, 'min_order_amount')}
+              />
+              <Input
+                label="Giới hạn tổng lượt dùng"
+                type="number"
+                min={1}
+                value={formState.usage_limit}
+                onChange={(event) => setFormState((prev) => ({ ...prev, usage_limit: event.target.value }))}
+                error={formatFieldError(fieldErrors, 'usage_limit')}
+              />
+              <Input
+                label="Giới hạn mỗi người dùng"
+                type="number"
+                min={1}
+                value={formState.usage_per_user}
+                onChange={(event) => setFormState((prev) => ({ ...prev, usage_per_user: event.target.value }))}
+                error={formatFieldError(fieldErrors, 'usage_per_user')}
+              />
+              <Input
+                label="Bắt đầu"
+                type="datetime-local"
+                value={formState.starts_at}
+                onChange={(event) => setFormState((prev) => ({ ...prev, starts_at: event.target.value }))}
+                error={formatFieldError(fieldErrors, 'starts_at')}
+              />
+              <Input
+                label="Kết thúc"
+                type="datetime-local"
+                value={formState.expires_at}
+                onChange={(event) => setFormState((prev) => ({ ...prev, expires_at: event.target.value }))}
+                error={formatFieldError(fieldErrors, 'expires_at')}
+              />
+              <label className="flex items-center gap-2 pt-7 text-sm text-neutral-700">
+                <input
+                  type="checkbox"
+                  checked={formState.is_active}
+                  onChange={(event) => setFormState((prev) => ({ ...prev, is_active: event.target.checked }))}
+                />
+                Kích hoạt voucher
+              </label>
+            </div>
+          </FormSection>
 
-          <Input
-            label="Giá trị"
-            type="number"
-            min={0.01}
-            step="0.01"
-            value={formState.value}
-            onChange={(event) => setFormState((prev) => ({ ...prev, value: event.target.value }))}
-            error={formatFieldError(fieldErrors, 'value')}
-            required
-          />
-
-          <Input
-            label="Giảm tối đa"
-            type="number"
-            min={0}
-            step="0.01"
-            value={formState.max_discount}
-            onChange={(event) => setFormState((prev) => ({ ...prev, max_discount: event.target.value }))}
-            error={formatFieldError(fieldErrors, 'max_discount')}
-          />
-
-          <Input
-            label="Đơn tối thiểu"
-            type="number"
-            min={0}
-            step="0.01"
-            value={formState.min_order_amount}
-            onChange={(event) => setFormState((prev) => ({ ...prev, min_order_amount: event.target.value }))}
-            error={formatFieldError(fieldErrors, 'min_order_amount')}
-          />
-
-          <Input
-            label="Giới hạn tổng lượt dùng"
-            type="number"
-            min={1}
-            value={formState.usage_limit}
-            onChange={(event) => setFormState((prev) => ({ ...prev, usage_limit: event.target.value }))}
-            error={formatFieldError(fieldErrors, 'usage_limit')}
-          />
-
-          <Input
-            label="Giới hạn mỗi người dùng"
-            type="number"
-            min={1}
-            value={formState.usage_per_user}
-            onChange={(event) => setFormState((prev) => ({ ...prev, usage_per_user: event.target.value }))}
-            error={formatFieldError(fieldErrors, 'usage_per_user')}
-          />
-
-          <Input
-            label="Bắt đầu"
-            type="datetime-local"
-            value={formState.starts_at}
-            onChange={(event) => setFormState((prev) => ({ ...prev, starts_at: event.target.value }))}
-            error={formatFieldError(fieldErrors, 'starts_at')}
-          />
-
-          <Input
-            label="Kết thúc"
-            type="datetime-local"
-            value={formState.expires_at}
-            onChange={(event) => setFormState((prev) => ({ ...prev, expires_at: event.target.value }))}
-            error={formatFieldError(fieldErrors, 'expires_at')}
-          />
-
-          <label className="flex items-center gap-2 text-sm text-slate-700 lg:pt-7">
-            <input
-              type="checkbox"
-              checked={formState.is_active}
-              onChange={(event) => setFormState((prev) => ({ ...prev, is_active: event.target.checked }))}
-            />
-            Kích hoạt voucher
-          </label>
-
-          <div className="flex flex-wrap gap-2 md:col-span-2 lg:col-span-3">
+          <div className="flex flex-wrap gap-2">
             <Button type="submit" isLoading={isSubmitting}>
               {editingId ? 'Lưu thay đổi' : 'Tạo mã giảm giá'}
             </Button>
@@ -423,11 +387,10 @@ export function AdminVouchersPage() {
             ) : null}
           </div>
         </form>
-      </section>
+      </AdminCard>
 
-      <section className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
-        <h2 className="text-base font-semibold text-slate-900">Bộ lọc voucher (trang hiện tại)</h2>
-        <div className="grid gap-3 md:grid-cols-3">
+      <AdminCard title="Bộ lọc voucher">
+        <AdminToolbar className="grid w-full gap-3 md:grid-cols-3">
           <Input
             label="Tìm theo mã"
             placeholder="Ví dụ: SALE10"
@@ -436,13 +399,11 @@ export function AdminVouchersPage() {
           />
 
           <label className="block space-y-1">
-            <span className="block text-sm font-medium text-slate-700">Loại voucher</span>
+            <span className="block text-sm font-medium text-neutral-700">Loại voucher</span>
             <select
-              className="w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+              className="w-full border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-[#f15a24] focus:ring-2 focus:ring-orange-100"
               value={filters.type}
-              onChange={(event) =>
-                setFilters((prev) => ({ ...prev, type: event.target.value as VoucherFilterState['type'] }))
-              }
+              onChange={(event) => setFilters((prev) => ({ ...prev, type: event.target.value as VoucherFilterState['type'] }))}
             >
               <option value="all">Tất cả</option>
               <option value="percent">Phần trăm</option>
@@ -451,25 +412,21 @@ export function AdminVouchersPage() {
           </label>
 
           <label className="block space-y-1">
-            <span className="block text-sm font-medium text-slate-700">Trạng thái</span>
+            <span className="block text-sm font-medium text-neutral-700">Trạng thái</span>
             <select
-              className="w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+              className="w-full border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-[#f15a24] focus:ring-2 focus:ring-orange-100"
               value={filters.active}
-              onChange={(event) =>
-                setFilters((prev) => ({ ...prev, active: event.target.value as VoucherFilterState['active'] }))
-              }
+              onChange={(event) => setFilters((prev) => ({ ...prev, active: event.target.value as VoucherFilterState['active'] }))}
             >
               <option value="all">Tất cả</option>
               <option value="active">Đang bật</option>
               <option value="inactive">Đang tắt</option>
             </select>
           </label>
-        </div>
-      </section>
+        </AdminToolbar>
+      </AdminCard>
 
-      <section className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
-        <h2 className="text-base font-semibold text-slate-900">Danh sách voucher</h2>
-
+      <AdminCard title="Danh sách voucher">
         {filteredVouchers.length === 0 ? (
           <EmptyState
             title={vouchers.length === 0 ? 'Chưa có voucher' : 'Không có voucher phù hợp'}
@@ -478,80 +435,82 @@ export function AdminVouchersPage() {
             }
           />
         ) : (
-          <div className="overflow-x-auto rounded border border-slate-200">
-            <table className="min-w-[1280px] bg-white text-sm">
-              <thead className="bg-slate-50 text-left text-slate-600">
-                <tr>
-                  <th className="px-3 py-2">Mã</th>
-                  <th className="px-3 py-2">Loại</th>
-                  <th className="px-3 py-2">Giá trị</th>
-                  <th className="px-3 py-2">Giảm tối đa</th>
-                  <th className="px-3 py-2">Đơn tối thiểu</th>
-                  <th className="px-3 py-2">Đã dùng</th>
-                  <th className="px-3 py-2">Giới hạn</th>
-                  <th className="px-3 py-2">Mỗi user</th>
-                  <th className="px-3 py-2">Hiệu lực</th>
-                  <th className="px-3 py-2">Trạng thái</th>
-                  <th className="px-3 py-2">Hành động</th>
+          <AdminTable minWidthClassName="min-w-[1280px]">
+            <thead className="bg-neutral-50 text-left text-neutral-600">
+              <tr>
+                <th className="px-3 py-2">Mã</th>
+                <th className="px-3 py-2">Loại</th>
+                <th className="px-3 py-2">Giá trị</th>
+                <th className="px-3 py-2">Giảm tối đa</th>
+                <th className="px-3 py-2">Đơn tối thiểu</th>
+                <th className="px-3 py-2">Đã dùng</th>
+                <th className="px-3 py-2">Giới hạn</th>
+                <th className="px-3 py-2">Mỗi user</th>
+                <th className="px-3 py-2">Hiệu lực</th>
+                <th className="px-3 py-2">Trạng thái</th>
+                <th className="px-3 py-2">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredVouchers.map((voucher) => (
+                <tr key={voucher.id} className="border-t border-neutral-100">
+                  <td className="px-3 py-2 font-medium text-neutral-900">{voucher.code}</td>
+                  <td className="px-3 py-2 text-neutral-700">{voucher.type === 'percent' ? 'Phần trăm' : 'Cố định'}</td>
+                  <td className="px-3 py-2 text-neutral-700">
+                    {voucher.type === 'percent' ? `${voucher.value}%` : <PriceText value={voucher.value} />}
+                  </td>
+                  <td className="px-3 py-2 text-neutral-700">
+                    <PriceText value={voucher.max_discount} />
+                  </td>
+                  <td className="px-3 py-2 text-neutral-700">
+                    <PriceText value={voucher.min_order_amount} />
+                  </td>
+                  <td className="px-3 py-2 text-neutral-700">{voucher.used_count}</td>
+                  <td className="px-3 py-2 text-neutral-700">{voucher.usage_limit ?? '-'}</td>
+                  <td className="px-3 py-2 text-neutral-700">{voucher.usage_per_user ?? '-'}</td>
+                  <td className="px-3 py-2 text-neutral-700">
+                    <div className="space-y-1">
+                      <p>Từ: {voucher.starts_at ? new Date(voucher.starts_at).toLocaleString('vi-VN') : '-'}</p>
+                      <p>Đến: {voucher.expires_at ? new Date(voucher.expires_at).toLocaleString('vi-VN') : '-'}</p>
+                    </div>
+                  </td>
+                  <td className="px-3 py-2">
+                    <AdminStatusPill
+                      label={voucher.is_active ? 'Đang bật' : 'Đang tắt'}
+                      tone={voucher.is_active ? 'success' : 'neutral'}
+                    />
+                  </td>
+                  <td className="px-3 py-2">
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        disabled={isSubmitting || deletingId === voucher.id}
+                        onClick={() => void startEdit(voucher.id)}
+                      >
+                        Sửa
+                      </Button>
+                      <ConfirmActionButton
+                        type="button"
+                        variant="danger"
+                        confirmMessage="Bạn có chắc chắn muốn vô hiệu hóa mã giảm giá này?"
+                        isLoading={deletingId === voucher.id}
+                        disabled={isSubmitting}
+                        onConfirm={() => handleDelete(voucher.id)}
+                      >
+                        Vô hiệu hóa
+                      </ConfirmActionButton>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {filteredVouchers.map((voucher) => (
-                  <tr key={voucher.id} className="border-t border-slate-100">
-                    <td className="px-3 py-2 font-medium text-slate-900">{voucher.code}</td>
-                    <td className="px-3 py-2 text-slate-700">
-                      {voucher.type === 'percent' ? 'Phần trăm' : 'Cố định'}
-                    </td>
-                    <td className="px-3 py-2 text-slate-700">
-                      {voucher.type === 'percent' ? `${voucher.value}%` : <PriceText value={voucher.value} />}
-                    </td>
-                    <td className="px-3 py-2 text-slate-700">
-                      <PriceText value={voucher.max_discount} />
-                    </td>
-                    <td className="px-3 py-2 text-slate-700">
-                      <PriceText value={voucher.min_order_amount} />
-                    </td>
-                    <td className="px-3 py-2 text-slate-700">{voucher.used_count}</td>
-                    <td className="px-3 py-2 text-slate-700">{voucher.usage_limit ?? '-'}</td>
-                    <td className="px-3 py-2 text-slate-700">{voucher.usage_per_user ?? '-'}</td>
-                    <td className="px-3 py-2 text-slate-700">
-                      <div className="space-y-1">
-                        <p>Từ: {voucher.starts_at ? new Date(voucher.starts_at).toLocaleString('vi-VN') : '-'}</p>
-                        <p>Đến: {voucher.expires_at ? new Date(voucher.expires_at).toLocaleString('vi-VN') : '-'}</p>
-                      </div>
-                    </td>
-                    <td className="px-3 py-2 text-slate-700">{voucher.is_active ? 'Đang bật' : 'Đang tắt'}</td>
-                    <td className="px-3 py-2">
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          disabled={isSubmitting || deletingId === voucher.id}
-                          onClick={() => void startEdit(voucher.id)}
-                        >
-                          Sửa
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="danger"
-                          isLoading={deletingId === voucher.id}
-                          disabled={isSubmitting}
-                          onClick={() => void handleDelete(voucher.id)}
-                        >
-                          Vô hiệu hóa
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </AdminTable>
         )}
 
         {meta.last_page > 1 ? (
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm text-slate-600">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm text-neutral-600">
               Trang {meta.current_page} / {meta.last_page} • Tổng {meta.total}
             </p>
             <div className="flex gap-2">
@@ -574,7 +533,7 @@ export function AdminVouchersPage() {
             </div>
           </div>
         ) : null}
-      </section>
+      </AdminCard>
     </section>
   )
 }

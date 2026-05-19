@@ -38,11 +38,14 @@ class DatabaseSeeder extends Seeder
         );
 
 
-        // Domain seeders
-        $this->call([
-            \Database\Seeders\CategorySeeder::class,
-            \Database\Seeders\BrandSeeder::class,
-            \Database\Seeders\ProductSeeder::class,
-        ]);
+        $seeders = [
+            \Database\Seeders\AnanasCatalogSeeder::class,
+        ];
+
+        if (class_exists(\Database\Seeders\VoucherSeeder::class)) {
+            $seeders[] = \Database\Seeders\VoucherSeeder::class;
+        }
+
+        $this->call($seeders);
     }
 }

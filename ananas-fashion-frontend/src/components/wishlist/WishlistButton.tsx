@@ -11,6 +11,7 @@ type WishlistButtonProps = {
   initialInWishlist?: boolean
   onChanged?: (inWishlist: boolean) => void
   className?: string
+  compact?: boolean
 }
 
 export function WishlistButton({
@@ -18,6 +19,7 @@ export function WishlistButton({
   initialInWishlist = false,
   onChanged,
   className = '',
+  compact = false,
 }: WishlistButtonProps) {
   const { isAuthenticated } = useAuth()
   const toast = useToast()
@@ -51,6 +53,20 @@ export function WishlistButton({
     } finally {
       setIsProcessing(false)
     }
+  }
+
+  if (compact) {
+    return (
+      <button
+        type="button"
+        aria-label={isInWishlist ? 'Bỏ yêu thích' : 'Thêm vào yêu thích'}
+        className={`inline-flex h-9 w-9 items-center justify-center rounded-full border border-neutral-300 bg-white text-lg text-neutral-900 transition hover:border-[#f15a24] hover:text-[#f15a24] disabled:cursor-not-allowed disabled:opacity-60 ${className}`}
+        disabled={isProcessing}
+        onClick={() => void handleToggle()}
+      >
+        {isInWishlist ? '♥' : '♡'}
+      </button>
+    )
   }
 
   return (

@@ -22,7 +22,7 @@ class ProductVariantController extends Controller
         $perPage = (int) $request->query('per_page', 20);
         $variants = $product->variants()->orderBy('id', 'asc')->paginate($perPage);
 
-        return $this->paginated(AdminProductVariantResource::collection($variants), 'Variants fetched');
+        return $this->paginated(AdminProductVariantResource::collection($variants), 'Lấy danh sách biến thể thành công.');
     }
 
     public function store(AdminProductVariantStoreRequest $request, Product $product)
@@ -33,28 +33,32 @@ class ProductVariantController extends Controller
         if (ProductVariant::where('product_id', $product->id)
             ->where('size', $data['size'])
             ->where('color', $data['color'])->exists()) {
-            return $this->error('Variant already exists for this product', ['variant' => ['Duplicate size+color for product']], 422);
+            return $this->error(
+                'Biến thể này đã tồn tại cho sản phẩm.',
+                ['variant' => ['Biến thể trùng tổ hợp size và màu.']],
+                422
+            );
         }
 
         $data['product_id'] = $product->id;
         $variant = ProductVariant::create($data);
 
-        return $this->success((new AdminProductVariantResource($variant))->resolve(), 'Variant created', 201);
+        return $this->success((new AdminProductVariantResource($variant))->resolve(), 'Tạo biến thể thành công.', 201);
     }
 
     public function show(Product $product, ProductVariant $variant)
     {
         if ($variant->product_id !== $product->id) {
-            return $this->error('Not found', null, 404);
+            return $this->error('Không tìm thấy dữ liệu.', null, 404);
         }
 
-        return $this->success((new AdminProductVariantResource($variant))->resolve(), 'Variant fetched');
+        return $this->success((new AdminProductVariantResource($variant))->resolve(), 'Lấy thông tin biến thể thành công.');
     }
 
     public function update(AdminProductVariantUpdateRequest $request, Product $product, ProductVariant $variant)
     {
         if ($variant->product_id !== $product->id) {
-            return $this->error('Not found', null, 404);
+            return $this->error('Không tìm thấy dữ liệu.', null, 404);
         }
 
         $data = $request->validated();
@@ -67,18 +71,22 @@ class ProductVariantController extends Controller
             ->where('color', $newColor)
             ->where('id', '!=', $variant->id)
             ->exists()) {
-            return $this->error('Variant already exists for this product', ['variant' => ['Duplicate size+color for product']], 422);
+            return $this->error(
+                'Biến thể này đã tồn tại cho sản phẩm.',
+                ['variant' => ['Biến thể trùng tổ hợp size và màu.']],
+                422
+            );
         }
 
         $variant->update($data);
 
-        return $this->success((new AdminProductVariantResource($variant))->resolve(), 'Variant updated');
+        return $this->success((new AdminProductVariantResource($variant))->resolve(), 'Cập nhật biến thể thành công.');
     }
 
     public function destroy(Product $product, ProductVariant $variant)
     {
         if ($variant->product_id !== $product->id) {
-            return $this->error('Not found', null, 404);
+            return $this->error('Không tìm thấy dữ liệu.', null, 404);
         }
 
         // If variant referenced in order_items, prevent deletion (no soft delete schema)
@@ -87,11 +95,11 @@ class ProductVariantController extends Controller
             $referenced = DB::table('order_items')->where('product_variant_id', $variant->id)->exists();
         }
         if ($referenced) {
-            return $this->error('Variant cannot be deleted because it is referenced in orders', null, 400);
+            return $this->error('Không thể xóa biến thể vì đã phát sinh trong đơn hàng.', null, 400);
         }
 
         $variant->delete();
 
-        return $this->success(null, 'Variant deleted');
+        return $this->success(null, 'Xóa biến thể thành công.');
     }
 }

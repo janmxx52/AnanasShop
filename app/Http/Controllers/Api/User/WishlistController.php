@@ -19,7 +19,7 @@ class WishlistController extends Controller
     {
         $user = $request->user();
         if (!$user) {
-            return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
+            return response()->json(['success' => false, 'message' => 'Bạn cần đăng nhập để thực hiện thao tác này.'], 401);
         }
 
         $perPage = max(1, min(50, (int) $request->input('per_page', 12)));
@@ -41,14 +41,14 @@ class WishlistController extends Controller
     {
         $user = $request->user();
         if (!$user) {
-            return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
+            return response()->json(['success' => false, 'message' => 'Bạn cần đăng nhập để thực hiện thao tác này.'], 401);
         }
 
         $result = $this->wishlistService->toggle($user, (int) $request->validated('product_id'));
 
         return response()->json([
             'success' => true,
-            'message' => $result['action'] === 'added' ? 'Added to wishlist' : 'Removed from wishlist',
+            'message' => $result['action'] === 'added' ? 'Đã thêm vào danh sách yêu thích.' : 'Đã xóa khỏi danh sách yêu thích.',
             'action' => $result['action'],
             'data' => isset($result['wishlist']) ? (new WishlistItemResource($result['wishlist']))->resolve() : [
                 'product_id' => $result['product_id'],
@@ -60,14 +60,14 @@ class WishlistController extends Controller
     {
         $user = $request->user();
         if (!$user) {
-            return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
+            return response()->json(['success' => false, 'message' => 'Bạn cần đăng nhập để thực hiện thao tác này.'], 401);
         }
 
         $this->wishlistService->remove($user, $product);
 
         return response()->json([
             'success' => true,
-            'message' => 'Wishlist item removed',
+            'message' => 'Đã xóa khỏi danh sách yêu thích.',
         ]);
     }
 }

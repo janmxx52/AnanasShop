@@ -58,7 +58,7 @@ class ProductController extends Controller
         $perPage = (int) $request->query('per_page', 20);
         $products = $query->orderBy('created_at', 'desc')->paginate($perPage);
 
-        return $this->paginated(AdminProductResource::collection($products), 'Products fetched');
+        return $this->paginated(AdminProductResource::collection($products), 'Lấy danh sách sản phẩm thành công.');
     }
 
     public function store(AdminProductStoreRequest $request)
@@ -75,24 +75,24 @@ class ProductController extends Controller
 
         $resource = (new AdminProductResource($product->load(['category', 'brand'])))->resolve();
 
-        return $this->success($resource, 'Product created', 201);
+        return $this->success($resource, 'Tạo sản phẩm thành công.', 201);
     }
 
     public function show($id)
     {
         $product = Product::with(['category', 'brand'])->withTrashed()->find($id);
         if (!$product) {
-            return $this->error('Not found', null, 404);
+            return $this->error('Không tìm thấy dữ liệu.', null, 404);
         }
 
-        return $this->success((new AdminProductResource($product))->resolve(), 'Product fetched');
+        return $this->success((new AdminProductResource($product))->resolve(), 'Lấy thông tin sản phẩm thành công.');
     }
 
     public function update(AdminProductUpdateRequest $request, $id)
     {
         $product = Product::find($id);
         if (!$product) {
-            return $this->error('Not found', null, 404);
+            return $this->error('Không tìm thấy dữ liệu.', null, 404);
         }
 
         $data = $request->validated();
@@ -109,50 +109,50 @@ class ProductController extends Controller
 
         $resource = (new AdminProductResource($product->load(['category', 'brand'])))->resolve();
 
-        return $this->success($resource, 'Product updated');
+        return $this->success($resource, 'Cập nhật sản phẩm thành công.');
     }
 
     public function destroy($id)
     {
         $product = Product::find($id);
         if (!$product) {
-            return $this->error('Not found', null, 404);
+            return $this->error('Không tìm thấy dữ liệu.', null, 404);
         }
 
         $product->delete();
 
-        return $this->success(null, 'Product deleted');
+        return $this->success(null, 'Xóa sản phẩm thành công.');
     }
 
     public function restore($id)
     {
         $product = Product::withTrashed()->find($id);
         if (!$product) {
-            return $this->error('Not found', null, 404);
+            return $this->error('Không tìm thấy dữ liệu.', null, 404);
         }
 
         if (!$product->trashed()) {
-            return $this->error('Not trashed', null, 400);
+            return $this->error('Sản phẩm chưa ở trạng thái đã xóa mềm.', null, 400);
         }
 
         $product->restore();
         $resource = (new AdminProductResource($product->load(['category', 'brand'])))->resolve();
 
-        return $this->success($resource, 'Product restored');
+        return $this->success($resource, 'Khôi phục sản phẩm thành công.');
     }
 
     public function status(AdminProductStatusRequest $request, $id)
     {
         $product = Product::find($id);
         if (!$product) {
-            return $this->error('Not found', null, 404);
+            return $this->error('Không tìm thấy dữ liệu.', null, 404);
         }
 
         $product->is_active = (bool) $request->input('is_active');
         $product->save();
         $resource = (new AdminProductResource($product->load(['category', 'brand'])))->resolve();
 
-        return $this->success($resource, 'Product status updated');
+        return $this->success($resource, 'Cập nhật trạng thái sản phẩm thành công.');
     }
 
     private function generateUniqueSlug(string $base, $ignoreId = null): string

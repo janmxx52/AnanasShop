@@ -38,18 +38,18 @@ class CartService
 
             $product = $variant->product;
             if (!$product || !$product->is_active) {
-                throw ValidationException::withMessages(['product_variant_id' => 'Product is inactive']);
+                throw ValidationException::withMessages(['product_variant_id' => 'Sản phẩm hiện không hoạt động.']);
             }
 
             if ($variant->stock <= 0) {
-                throw ValidationException::withMessages(['product_variant_id' => 'Variant is out of stock']);
+                throw ValidationException::withMessages(['product_variant_id' => 'Biến thể đã hết hàng.']);
             }
 
             $existing = CartItem::where('cart_id', $cart->id)->where('product_variant_id', $variantId)->first();
             $desired = ($existing ? $existing->quantity : 0) + $qty;
 
             if ($desired > $variant->stock) {
-                throw ValidationException::withMessages(['quantity' => 'Exceeds available stock']);
+                throw ValidationException::withMessages(['quantity' => 'Số lượng vượt quá tồn kho hiện tại.']);
             }
 
             if ($existing) {
@@ -82,14 +82,14 @@ class CartService
 
             $product = $variant->product;
             if (!$product || !$product->is_active) {
-                throw ValidationException::withMessages(['product_variant_id' => 'Product is inactive']);
+                throw ValidationException::withMessages(['product_variant_id' => 'Sản phẩm hiện không hoạt động.']);
             }
 
             if ($qty < 1) {
-                throw ValidationException::withMessages(['quantity' => 'Quantity must be at least 1']);
+                throw ValidationException::withMessages(['quantity' => 'Số lượng tối thiểu là 1.']);
             }
             if ($qty > $variant->stock) {
-                throw ValidationException::withMessages(['quantity' => 'Exceeds available stock']);
+                throw ValidationException::withMessages(['quantity' => 'Số lượng vượt quá tồn kho hiện tại.']);
             }
 
             $item->quantity = $qty;
@@ -122,13 +122,13 @@ class CartService
             foreach ($guestCart->items as $gItem) {
                 $variant = ProductVariant::find($gItem->product_variant_id);
                 if (!$variant || $variant->stock <= 0) {
-                    $warnings[] = "Variant {$gItem->product_variant_id} unavailable";
+                    $warnings[] = "Biến thể {$gItem->product_variant_id} không còn khả dụng";
                     continue;
                 }
 
                 $product = $variant->product;
                 if (!$product || !$product->is_active) {
-                    $warnings[] = "Variant {$gItem->product_variant_id} unavailable or product inactive";
+                    $warnings[] = "Biến thể {$gItem->product_variant_id} không còn khả dụng hoặc sản phẩm đã ngừng bán";
                     continue;
                 }
 
@@ -137,7 +137,7 @@ class CartService
                 $allowed = min($desired, $variant->stock);
 
                 if ($allowed <= 0) {
-                    $warnings[] = "Variant {$gItem->product_variant_id} out of stock";
+                    $warnings[] = "Biến thể {$gItem->product_variant_id} đã hết hàng";
                     continue;
                 }
 
@@ -152,7 +152,7 @@ class CartService
                 }
 
                 if ($allowed < $desired) {
-                    $warnings[] = "Quantity for variant {$gItem->product_variant_id} capped to {$allowed} due to stock";
+                    $warnings[] = "Số lượng biến thể {$gItem->product_variant_id} được điều chỉnh còn {$allowed} do giới hạn tồn kho";
                 }
             }
 

@@ -13,6 +13,10 @@ import type {
   AdminOrderListParams,
   AdminOrderPaginatedResult,
   AdminOrderStatusUpdatePayload,
+  AdminUser,
+  AdminUserListParams,
+  AdminUserPaginatedResult,
+  AdminUserPayload,
   AdminProduct,
   AdminProductImage,
   AdminProductImageUploadPayload,
@@ -49,6 +53,40 @@ export const adminApi = {
   async dashboardStats(): Promise<DashboardStats> {
     const response = await http.get<ApiSuccessEnvelope<DashboardStats>>('/admin/dashboard/stats')
     return extractResponseData<DashboardStats>(response.data)
+  },
+
+  async listUsers(params?: AdminUserListParams): Promise<AdminUserPaginatedResult> {
+    const response = await http.get<ApiPaginatedEnvelope<AdminUser>>('/admin/users', { params })
+    return extractPaginatedData<AdminUser>(response.data)
+  },
+
+  async getUser(id: number): Promise<AdminUser> {
+    const response = await http.get<ApiSuccessEnvelope<AdminUser>>(`/admin/users/${id}`)
+    return extractResponseData<AdminUser>(response.data)
+  },
+
+  async createUser(payload: AdminUserPayload): Promise<AdminUser> {
+    const response = await http.post<ApiSuccessEnvelope<AdminUser>>('/admin/users', payload)
+    return extractResponseData<AdminUser>(response.data)
+  },
+
+  async updateUser(id: number, payload: Partial<AdminUserPayload>): Promise<AdminUser> {
+    const response = await http.put<ApiSuccessEnvelope<AdminUser>>(`/admin/users/${id}`, payload)
+    return extractResponseData<AdminUser>(response.data)
+  },
+
+  async deleteUser(id: number): Promise<void> {
+    await http.delete<ApiSuccessEnvelope<null>>(`/admin/users/${id}`)
+  },
+
+  async banUser(id: number): Promise<AdminUser> {
+    const response = await http.patch<ApiSuccessEnvelope<AdminUser>>(`/admin/users/${id}/ban`)
+    return extractResponseData<AdminUser>(response.data)
+  },
+
+  async unbanUser(id: number): Promise<AdminUser> {
+    const response = await http.patch<ApiSuccessEnvelope<AdminUser>>(`/admin/users/${id}/unban`)
+    return extractResponseData<AdminUser>(response.data)
   },
 
   async listCategories(params?: { page?: number; per_page?: number }): Promise<AdminCategoryListResult> {

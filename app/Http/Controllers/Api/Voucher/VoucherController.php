@@ -26,7 +26,7 @@ class VoucherController extends Controller
                 'total_after' => $result['total_after'],
             ]]);
         } catch (ValidationException $e) {
-            return response()->json(['success' => false, 'message' => 'Invalid voucher', 'errors' => $e->errors()], 422);
+            return response()->json(['success' => false, 'message' => 'Mã giảm giá không hợp lệ.', 'errors' => $e->errors()], 422);
         }
     }
 

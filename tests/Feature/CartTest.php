@@ -165,7 +165,7 @@ class CartTest extends TestCase
 
         $warnings = $resp->json('warnings');
         $this->assertNotEmpty($warnings);
-        $this->assertContains("Variant {$variant->id} unavailable or product inactive", $warnings);
+        $this->assertContains("Biến thể {$variant->id} không còn khả dụng hoặc sản phẩm đã ngừng bán", $warnings);
 
         // ensure guest cart removed
         $this->assertDatabaseMissing('carts', ['guest_token' => $guestToken]);

@@ -25,7 +25,7 @@ class ProductImageController extends Controller
     {
         $images = $product->images()->orderByDesc('is_primary')->orderBy('sort_order')->get();
 
-        return $this->success(AdminProductImageResource::collection($images)->resolve(), 'Images fetched');
+        return $this->success(AdminProductImageResource::collection($images)->resolve(), 'Lấy danh sách ảnh sản phẩm thành công.');
     }
 
     public function store(AdminProductImageStoreRequest $request, Product $product): JsonResponse
@@ -38,7 +38,7 @@ class ProductImageController extends Controller
         $publicId = $uploaded['public_id'] ?? null;
 
         if (empty($url)) {
-            return $this->error('Upload failed', null, 500);
+            return $this->error('Tải ảnh lên thất bại.', null, 500);
         }
 
         // Use transaction to enforce max count and primary swap
@@ -63,43 +63,43 @@ class ProductImageController extends Controller
                 ]);
             });
 
-            return $this->success((new AdminProductImageResource($image))->resolve(), 'Image uploaded', 201);
+            return $this->success((new AdminProductImageResource($image))->resolve(), 'Tải ảnh lên thành công.', 201);
         } catch (\Exception $e) {
             // Try to clean up uploaded remote asset if exists
             if (!empty($publicId)) {
                 $this->cloudinary->delete($publicId);
             }
             if ($e->getMessage() === 'max_images') {
-                return $this->error('Max images reached', null, 422);
+                return $this->error('Đã đạt giới hạn số lượng ảnh tối đa cho sản phẩm.', null, 422);
             }
 
-            return $this->error('Failed to save image', null, 500);
+            return $this->error('Lưu ảnh thất bại.', null, 500);
         }
     }
 
     public function destroy(Product $product, ProductImage $image): JsonResponse
     {
         if ($image->product_id !== $product->id) {
-            return $this->error('Not found', null, 404);
+            return $this->error('Không tìm thấy dữ liệu.', null, 404);
         }
 
         // If public_id exists, delete remote first
         if (!empty($image->public_id)) {
             $ok = $this->cloudinary->delete($image->public_id);
             if (!$ok) {
-                return $this->error('Failed to delete remote image', null, 500);
+                return $this->error('Xóa ảnh trên hệ thống lưu trữ thất bại.', null, 500);
             }
         }
 
         $image->delete();
 
-        return $this->success(null, 'Image deleted');
+        return $this->success(null, 'Xóa ảnh thành công.');
     }
 
     public function setPrimary(Product $product, ProductImage $image): JsonResponse
     {
         if ($image->product_id !== $product->id) {
-            return $this->error('Not found', null, 404);
+            return $this->error('Không tìm thấy dữ liệu.', null, 404);
         }
 
         DB::transaction(function () use ($product, $image) {
@@ -108,6 +108,6 @@ class ProductImageController extends Controller
             $image->save();
         });
 
-        return $this->success((new AdminProductImageResource($image->fresh()))->resolve(), 'Primary image updated');
+        return $this->success((new AdminProductImageResource($image->fresh()))->resolve(), 'Cập nhật ảnh đại diện thành công.');
     }
 }

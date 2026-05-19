@@ -50,7 +50,7 @@ class CartController extends Controller
         $updated = $this->service->updateItem($cart, $item, $qty);
 
         if (is_null($updated)) {
-            return response()->json(['message' => 'Removed']);
+            return response()->json(['message' => 'Đã xóa sản phẩm khỏi giỏ hàng.']);
         }
 
         $resp = response()->json((new CartItemResource($updated))->resolve());
@@ -63,7 +63,7 @@ class CartController extends Controller
         [$cart, $guestToken] = $this->service->getOrCreateCartFromRequest($request);
         $item = CartItem::findOrFail($itemId);
         $this->service->removeItem($cart, $item);
-        $resp = response()->json(['message' => 'Deleted']);
+        $resp = response()->json(['message' => 'Đã xóa sản phẩm khỏi giỏ hàng.']);
         if ($guestToken) $resp->header('X-Guest-Token', $guestToken);
         return $resp;
     }
@@ -72,7 +72,7 @@ class CartController extends Controller
     {
         [$cart, $guestToken] = $this->service->getOrCreateCartFromRequest($request);
         $this->service->clearCart($cart);
-        $resp = response()->json(['message' => 'Cleared']);
+        $resp = response()->json(['message' => 'Đã xóa toàn bộ sản phẩm trong giỏ hàng.']);
         if ($guestToken) $resp->header('X-Guest-Token', $guestToken);
         return $resp;
     }
@@ -80,10 +80,10 @@ class CartController extends Controller
     public function merge(Request $request)
     {
         $user = $request->user();
-        if (!$user) return response()->json(['message' => 'Unauthenticated'], 401);
+        if (!$user) return response()->json(['message' => 'Bạn cần đăng nhập để thực hiện thao tác này.'], 401);
 
         $guestToken = $request->header('X-Guest-Token');
-        if (!$guestToken) return response()->json(['message' => 'Missing guest token'], 400);
+        if (!$guestToken) return response()->json(['message' => 'Thiếu mã giỏ hàng khách.'], 400);
 
         $result = $this->service->mergeGuestCart($guestToken, $user);
 

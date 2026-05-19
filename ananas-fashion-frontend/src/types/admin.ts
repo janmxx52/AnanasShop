@@ -222,6 +222,40 @@ export type AdminOrderStatusUpdatePayload = {
 
 export type AdminOrderPaginatedResult = PaginatedResult<AdminOrder>
 
+export type AdminUserRole = 'customer' | 'admin'
+
+export type AdminUser = {
+  id: number
+  name: string
+  email: string
+  phone: string | null
+  role: AdminUserRole
+  is_banned: boolean
+  created_at: string | null
+  updated_at: string | null
+  deleted_at: string | null
+}
+
+export type AdminUserPayload = {
+  name: string
+  email: string
+  phone?: string | null
+  role: AdminUserRole
+  is_banned?: boolean
+  password?: string
+}
+
+export type AdminUserListParams = {
+  page?: number
+  per_page?: number
+  q?: string
+  role?: AdminUserRole
+  is_banned?: boolean
+  with_trashed?: boolean
+}
+
+export type AdminUserPaginatedResult = PaginatedResult<AdminUser>
+
 export type DashboardRecentOrder = {
   order_code: string
   status: OrderStatus

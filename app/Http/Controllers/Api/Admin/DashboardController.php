@@ -19,7 +19,7 @@ class DashboardController extends Controller
     {
         $stats = $this->dashboardStatsService->getStats();
 
-        return $this->success((new DashboardStatsResource($stats))->resolve(), 'Dashboard stats fetched');
+        return $this->success((new DashboardStatsResource($stats))->resolve(), 'Lấy số liệu tổng quan thành công.');
     }
 
     public function revenue()

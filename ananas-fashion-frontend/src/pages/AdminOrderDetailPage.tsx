@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { adminApi } from '@/api/admin.api'
 import { useToast } from '@/app/ToastContext'
+import { AdminCard } from '@/components/admin/AdminCard'
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
+import { ConfirmActionButton } from '@/components/admin/ConfirmActionButton'
 import { OrderItemsTable } from '@/components/order/OrderItemsTable'
 import { OrderStatusBadge } from '@/components/order/OrderStatusBadge'
 import { OrderTimeline } from '@/components/order/OrderTimeline'
@@ -27,18 +30,9 @@ const ADMIN_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 }
 
 function getCustomerLabel(order: AdminOrder): string {
-  if (order.shipping?.name?.trim()) {
-    return order.shipping.name
-  }
-
-  if (order.customer?.guest_name?.trim()) {
-    return order.customer.guest_name
-  }
-
-  if (order.customer?.user_id) {
-    return `Thành viên #${order.customer.user_id}`
-  }
-
+  if (order.shipping?.name?.trim()) return order.shipping.name
+  if (order.customer?.guest_name?.trim()) return order.customer.guest_name
+  if (order.customer?.user_id) return `Thành viên #${order.customer.user_id}`
   return 'Không xác định'
 }
 
@@ -80,34 +74,21 @@ export function AdminOrderDetailPage() {
   }, [orderCode])
 
   const allowedTransitions = useMemo(() => {
-    if (!order) {
-      return []
-    }
-
+    if (!order) return []
     return ADMIN_STATUS_TRANSITIONS[order.status] ?? []
   }, [order])
 
-  const statusTransitions = useMemo(() => {
-    return allowedTransitions.filter((status) => status !== 'cancelled')
-  }, [allowedTransitions])
-
-  const canCancel = useMemo(() => {
-    return allowedTransitions.includes('cancelled')
-  }, [allowedTransitions])
+  const statusTransitions = useMemo(() => allowedTransitions.filter((status) => status !== 'cancelled'), [allowedTransitions])
+  const canCancel = useMemo(() => allowedTransitions.includes('cancelled'), [allowedTransitions])
 
   const timelineItems = useMemo(() => {
-    if (!order) {
-      return []
-    }
-
+    if (!order) return []
     return buildOrderTimeline(order.status)
   }, [order])
 
   const handleUpdateStatus = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (!order || !selectedStatus) {
-      return
-    }
+    if (!order || !selectedStatus) return
 
     setIsUpdatingStatus(true)
 
@@ -124,13 +105,7 @@ export function AdminOrderDetailPage() {
   }
 
   const handleCancelOrder = async () => {
-    if (!order || !canCancel) {
-      return
-    }
-
-    if (!window.confirm('Bạn có chắc chắn muốn hủy đơn hàng này?')) {
-      return
-    }
+    if (!order || !canCancel) return
 
     setIsCancelling(true)
 
@@ -159,100 +134,120 @@ export function AdminOrderDetailPage() {
   }
 
   return (
-    <section className="space-y-4">
-      <header className="flex flex-wrap items-center justify-between gap-2">
-        <div className="space-y-1">
-          <Link to="/admin/orders" className="text-sm text-slate-600 hover:text-slate-900">
-            Quay lại danh sách đơn hàng
-          </Link>
-          <h1 className="text-2xl font-semibold text-slate-900">Đơn hàng {order.code}</h1>
-        </div>
-        {canCancel ? (
-          <Button type="button" variant="danger" isLoading={isCancelling} onClick={() => void handleCancelOrder()}>
-            Hủy đơn hàng
-          </Button>
-        ) : null}
-      </header>
-
-      <section className="grid gap-2 rounded-lg border border-slate-200 bg-white p-4 text-sm sm:grid-cols-2">
-        <p>
-          <span className="text-slate-600">Trạng thái đơn hàng:</span> <OrderStatusBadge status={order.status} />
-        </p>
-        <p>
-          <span className="text-slate-600">Trạng thái thanh toán:</span>{' '}
-          <PaymentStatusBadge status={order.payment_status} />
-        </p>
-        <p>
-          <span className="text-slate-600">Phương thức thanh toán:</span> {getPaymentMethodLabel(order.payment_method)}
-        </p>
-        <p>
-          <span className="text-slate-600">Ngày đặt:</span> {new Date(order.created_at).toLocaleString('vi-VN')}
-        </p>
-        <p>
-          <span className="text-slate-600">Khách hàng:</span> {getCustomerLabel(order)}
-        </p>
-        <p>
-          <span className="text-slate-600">Loại đơn:</span> {order.customer.user_id ? 'Thành viên' : 'Khách'}
-        </p>
-        <p>
-          <span className="text-slate-600">Tạm tính:</span> <PriceText value={order.subtotal} />
-        </p>
-        <p>
-          <span className="text-slate-600">Giảm giá:</span> <PriceText value={order.discount_amount} />
-        </p>
-        <p>
-          <span className="text-slate-600">Phí vận chuyển:</span> <PriceText value={order.shipping_fee} />
-        </p>
-        <p>
-          <span className="text-slate-600">Tổng tiền:</span> <PriceText value={order.total} />
-        </p>
-        <p>
-          <span className="text-slate-600">Voucher:</span> {order.voucher_code || '-'}
-        </p>
-        <p>
-          <span className="text-slate-600">SĐT nhận hàng:</span> {order.shipping.phone || '-'}
-        </p>
-        <p className="sm:col-span-2">
-          <span className="text-slate-600">Địa chỉ giao hàng:</span> {order.shipping.address || '-'}
-        </p>
-        {order.note ? (
-          <p className="sm:col-span-2">
-            <span className="text-slate-600">Ghi chú:</span> {order.note}
-          </p>
-        ) : null}
-      </section>
-
-      <section className="rounded-lg border border-slate-200 bg-white p-4">
-        <h2 className="text-base font-semibold text-slate-900">Cập nhật trạng thái</h2>
-        {statusTransitions.length === 0 ? (
-          <p className="mt-2 text-sm text-slate-600">Đơn hàng này không còn trạng thái tiếp theo hợp lệ.</p>
-        ) : (
-          <form className="mt-3 flex flex-wrap items-end gap-3" onSubmit={handleUpdateStatus}>
-            <label className="block space-y-1">
-              <span className="block text-sm font-medium text-slate-700">Trạng thái mới</span>
-              <select
-                className="w-full min-w-52 rounded border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
-                value={selectedStatus}
-                onChange={(event) => setSelectedStatus(event.target.value as OrderStatus)}
-                required
+    <section className="space-y-5">
+      <AdminPageHeader
+        title={`Đơn hàng ${order.code}`}
+        description="Theo dõi chi tiết đơn hàng và cập nhật trạng thái xử lý."
+        actions={
+          <>
+            <Link
+              to="/admin/orders"
+              className="inline-flex h-10 items-center justify-center border border-neutral-300 px-3 text-sm font-medium text-neutral-700 transition hover:border-neutral-400 hover:text-neutral-900"
+            >
+              Quay lại danh sách
+            </Link>
+            {canCancel ? (
+              <ConfirmActionButton
+                type="button"
+                variant="danger"
+                confirmMessage="Bạn có chắc chắn muốn hủy đơn hàng này?"
+                isLoading={isCancelling}
+                onConfirm={handleCancelOrder}
               >
-                <option value="">Chọn trạng thái</option>
-                {statusTransitions.map((status) => (
-                  <option key={status} value={status}>
-                    {getOrderStatusLabel(status)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <Button type="submit" isLoading={isUpdatingStatus} disabled={!selectedStatus}>
-              Cập nhật trạng thái
-            </Button>
-          </form>
-        )}
-      </section>
+                Hủy đơn hàng
+              </ConfirmActionButton>
+            ) : null}
+          </>
+        }
+      />
 
-      <OrderTimeline items={timelineItems} />
-      <OrderItemsTable items={order.items ?? []} />
+      <div className="grid gap-5 xl:grid-cols-3">
+        <AdminCard title="Thông tin đơn hàng" className="xl:col-span-2">
+          <div className="grid gap-3 text-sm text-neutral-700 sm:grid-cols-2">
+            <p>
+              <span className="text-neutral-500">Trạng thái đơn hàng:</span> <OrderStatusBadge status={order.status} />
+            </p>
+            <p>
+              <span className="text-neutral-500">Trạng thái thanh toán:</span>{' '}
+              <PaymentStatusBadge status={order.payment_status} />
+            </p>
+            <p>
+              <span className="text-neutral-500">Phương thức thanh toán:</span> {getPaymentMethodLabel(order.payment_method)}
+            </p>
+            <p>
+              <span className="text-neutral-500">Ngày đặt:</span> {new Date(order.created_at).toLocaleString('vi-VN')}
+            </p>
+            <p>
+              <span className="text-neutral-500">Khách hàng:</span> {getCustomerLabel(order)}
+            </p>
+            <p>
+              <span className="text-neutral-500">Loại đơn:</span> {order.customer.user_id ? 'Thành viên' : 'Khách'}
+            </p>
+            <p>
+              <span className="text-neutral-500">Tạm tính:</span> <PriceText value={order.subtotal} />
+            </p>
+            <p>
+              <span className="text-neutral-500">Giảm giá:</span> <PriceText value={order.discount_amount} />
+            </p>
+            <p>
+              <span className="text-neutral-500">Phí vận chuyển:</span> <PriceText value={order.shipping_fee} />
+            </p>
+            <p>
+              <span className="text-neutral-500">Tổng tiền:</span> <PriceText value={order.total} />
+            </p>
+            <p>
+              <span className="text-neutral-500">Voucher:</span> {order.voucher_code || '-'}
+            </p>
+            <p>
+              <span className="text-neutral-500">SĐT nhận hàng:</span> {order.shipping.phone || '-'}
+            </p>
+            <p className="sm:col-span-2">
+              <span className="text-neutral-500">Địa chỉ giao hàng:</span> {order.shipping.address || '-'}
+            </p>
+            {order.note ? (
+              <p className="sm:col-span-2">
+                <span className="text-neutral-500">Ghi chú:</span> {order.note}
+              </p>
+            ) : null}
+          </div>
+        </AdminCard>
+
+        <AdminCard title="Cập nhật trạng thái">
+          {statusTransitions.length === 0 ? (
+            <p className="text-sm text-neutral-600">Đơn hàng này không còn trạng thái tiếp theo hợp lệ.</p>
+          ) : (
+            <form className="space-y-3" onSubmit={handleUpdateStatus}>
+              <label className="block space-y-1">
+                <span className="block text-sm font-medium text-neutral-700">Trạng thái mới</span>
+                <select
+                  className="w-full border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-[#f15a24] focus:ring-2 focus:ring-orange-100"
+                  value={selectedStatus}
+                  onChange={(event) => setSelectedStatus(event.target.value as OrderStatus)}
+                  required
+                >
+                  <option value="">Chọn trạng thái</option>
+                  {statusTransitions.map((status) => (
+                    <option key={status} value={status}>
+                      {getOrderStatusLabel(status)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <Button type="submit" isLoading={isUpdatingStatus} disabled={!selectedStatus} className="w-full">
+                Cập nhật trạng thái
+              </Button>
+            </form>
+          )}
+        </AdminCard>
+      </div>
+
+      <AdminCard title="Tiến trình đơn hàng">
+        <OrderTimeline items={timelineItems} />
+      </AdminCard>
+
+      <AdminCard title="Sản phẩm trong đơn">
+        <OrderItemsTable items={order.items ?? []} />
+      </AdminCard>
     </section>
   )
 }

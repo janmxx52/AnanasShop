@@ -15,7 +15,7 @@ class OrderController extends Controller
     {
         $user = $request->user();
         if (!$user) {
-            return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
+            return response()->json(['success' => false, 'message' => 'Bạn cần đăng nhập để thực hiện thao tác này.'], 401);
         }
 
         $perPage = max(1, min(100, (int) $request->query('per_page', 15)));
@@ -37,7 +37,7 @@ class OrderController extends Controller
     {
         $user = $request->user();
         if (!$user) {
-            return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
+            return response()->json(['success' => false, 'message' => 'Bạn cần đăng nhập để thực hiện thao tác này.'], 401);
         }
 
         $order = $orderService->checkoutUser($request, $user, $request->validated());
@@ -52,7 +52,7 @@ class OrderController extends Controller
     {
         $user = $request->user();
         if (!$user) {
-            return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
+            return response()->json(['success' => false, 'message' => 'Bạn cần đăng nhập để thực hiện thao tác này.'], 401);
         }
 
         $order = $orderManagementService->showCustomerOrder($user, $order_code);
@@ -67,14 +67,14 @@ class OrderController extends Controller
     {
         $user = $request->user();
         if (!$user) {
-            return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
+            return response()->json(['success' => false, 'message' => 'Bạn cần đăng nhập để thực hiện thao tác này.'], 401);
         }
 
         $order = $orderManagementService->cancelCustomerOrder($user, $order_code);
 
         return response()->json([
             'success' => true,
-            'message' => 'Order cancelled',
+            'message' => 'Hủy đơn hàng thành công.',
             'data' => (new OrderResource($order))->resolve(),
         ]);
     }

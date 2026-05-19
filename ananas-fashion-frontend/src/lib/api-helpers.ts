@@ -17,15 +17,17 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function defaultMessageForStatus(status: number | null) {
   switch (status) {
     case 401:
-      return 'Bạn cần đăng nhập để tiếp tục.'
+      return 'Bạn cần đăng nhập để thực hiện thao tác này.'
     case 403:
       return 'Bạn không có quyền thực hiện thao tác này.'
     case 404:
-      return 'Không tìm thấy dữ liệu yêu cầu.'
+      return 'Không tìm thấy dữ liệu.'
     case 422:
-      return 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.'
+      return 'Dữ liệu không hợp lệ.'
     case 500:
-      return 'Máy chủ gặp lỗi. Vui lòng thử lại sau.'
+      return 'Đã có lỗi xảy ra. Vui lòng thử lại sau.'
+    case 501:
+      return 'Chức năng này chưa được hỗ trợ.'
     default:
       return FALLBACK_ERROR_MESSAGE
   }
@@ -64,7 +66,7 @@ export function parseApiError(error: unknown): ApiErrorInfo {
   }
 
   const responsePayload = error.response?.data
-  const message =
+  const rawMessage =
     (isRecord(responsePayload) && typeof responsePayload.message === 'string' && responsePayload.message) ||
     error.message ||
     FALLBACK_ERROR_MESSAGE
@@ -78,9 +80,9 @@ export function parseApiError(error: unknown): ApiErrorInfo {
   const firstError = firstValidationMessage(errors)
 
   const normalizedMessage =
-    message === 'The given data was invalid.'
+    rawMessage === 'The given data was invalid.'
       ? firstError ?? defaultMessageForStatus(status)
-      : message || firstError || defaultMessageForStatus(status)
+      : rawMessage || firstError || defaultMessageForStatus(status)
 
   return {
     message: normalizedMessage,

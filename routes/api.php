@@ -127,8 +127,12 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->name('admin.
     Route::patch('/orders/{order_code}/status', [\App\Http\Controllers\Api\Admin\OrderController::class, 'updateStatus']);
     // Users
     Route::get('/users', [\App\Http\Controllers\Api\Admin\UserController::class, 'index']);
-    Route::get('/users/{id}', [\App\Http\Controllers\Api\Admin\UserController::class, 'show']);
-    Route::put('/users/{id}/ban', [\App\Http\Controllers\Api\Admin\UserController::class, 'ban']);
+    Route::post('/users', [\App\Http\Controllers\Api\Admin\UserController::class, 'store']);
+    Route::get('/users/{user}', [\App\Http\Controllers\Api\Admin\UserController::class, 'show']);
+    Route::put('/users/{user}', [\App\Http\Controllers\Api\Admin\UserController::class, 'update']);
+    Route::delete('/users/{user}', [\App\Http\Controllers\Api\Admin\UserController::class, 'destroy']);
+    Route::patch('/users/{user}/ban', [\App\Http\Controllers\Api\Admin\UserController::class, 'ban']);
+    Route::patch('/users/{user}/unban', [\App\Http\Controllers\Api\Admin\UserController::class, 'unban']);
     // Vouchers
     Route::apiResource('vouchers', \App\Http\Controllers\Api\Admin\VoucherController::class);
     // Dashboard

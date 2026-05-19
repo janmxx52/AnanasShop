@@ -48,7 +48,7 @@ class OrderManagementService
 
             if (!in_array($order->status, self::CUSTOMER_CANCELABLE_STATUSES, true)) {
                 throw ValidationException::withMessages([
-                    'status' => 'Order cannot be cancelled in current status',
+                    'status' => 'Không thể hủy đơn hàng ở trạng thái hiện tại.',
                 ]);
             }
 
@@ -77,7 +77,7 @@ class OrderManagementService
             $allowedTransitions = self::ADMIN_STATUS_TRANSITIONS[$currentStatus] ?? [];
             if (!in_array($newStatus, $allowedTransitions, true)) {
                 throw ValidationException::withMessages([
-                    'status' => "Invalid status transition from {$currentStatus} to {$newStatus}",
+                    'status' => "Không thể chuyển trạng thái từ {$currentStatus} sang {$newStatus}.",
                 ]);
             }
 
@@ -99,7 +99,7 @@ class OrderManagementService
     {
         if ($order->status === 'cancelled') {
             throw ValidationException::withMessages([
-                'status' => 'Order is already cancelled',
+                'status' => 'Đơn hàng đã được hủy trước đó.',
             ]);
         }
 

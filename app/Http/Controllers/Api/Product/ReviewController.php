@@ -23,7 +23,7 @@ class ReviewController extends Controller
         if (!$product) {
             return response()->json([
                 'success' => false,
-                'message' => 'Product not found',
+                'message' => 'Không tìm thấy dữ liệu.',
             ], 404);
         }
 
@@ -46,14 +46,14 @@ class ReviewController extends Controller
     {
         $user = $request->user();
         if (!$user) {
-            return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
+            return response()->json(['success' => false, 'message' => 'Bạn cần đăng nhập để thực hiện thao tác này.'], 401);
         }
 
         $product = Product::query()->where('slug', $slug)->where('is_active', true)->first();
         if (!$product) {
             return response()->json([
                 'success' => false,
-                'message' => 'Product not found',
+                'message' => 'Không tìm thấy dữ liệu.',
             ], 404);
         }
 
@@ -69,7 +69,7 @@ class ReviewController extends Controller
     {
         $user = $request->user();
         if (!$user) {
-            return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
+            return response()->json(['success' => false, 'message' => 'Bạn cần đăng nhập để thực hiện thao tác này.'], 401);
         }
 
         try {
@@ -77,13 +77,13 @@ class ReviewController extends Controller
         } catch (ModelNotFoundException) {
             return response()->json([
                 'success' => false,
-                'message' => 'Review not found',
+                'message' => 'Không tìm thấy dữ liệu.',
             ], 404);
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Review deleted',
+            'message' => 'Xóa đánh giá thành công.',
         ]);
     }
 }

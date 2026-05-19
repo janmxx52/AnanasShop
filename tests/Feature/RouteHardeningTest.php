@@ -48,7 +48,7 @@ class RouteHardeningTest extends TestCase
                 ->assertStatus(501)
                 ->assertExactJson([
                     'success' => false,
-                    'message' => 'Feature not implemented',
+                    'message' => 'Chức năng này chưa được hỗ trợ.',
                     'errors' => null,
                 ]);
         }
@@ -76,7 +76,7 @@ class RouteHardeningTest extends TestCase
                 ->assertStatus(501)
                 ->assertExactJson([
                     'success' => false,
-                    'message' => 'Feature not implemented',
+                    'message' => 'Chức năng này chưa được hỗ trợ.',
                     'errors' => null,
                 ]);
         }
@@ -88,9 +88,6 @@ class RouteHardeningTest extends TestCase
         $this->actingAs($admin, 'sanctum');
 
         $cases = [
-            ['GET', '/api/admin/users', []],
-            ['GET', '/api/admin/users/1', []],
-            ['PUT', '/api/admin/users/1/ban', []],
             ['GET', '/api/admin/dashboard/revenue', []],
         ];
 
@@ -99,7 +96,7 @@ class RouteHardeningTest extends TestCase
                 ->assertStatus(501)
                 ->assertExactJson([
                     'success' => false,
-                    'message' => 'Feature not implemented',
+                    'message' => 'Chức năng này chưa được hỗ trợ.',
                     'errors' => null,
                 ]);
         }

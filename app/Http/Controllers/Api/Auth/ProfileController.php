@@ -36,7 +36,7 @@ class ProfileController extends Controller
     public function me(Request $request): JsonResponse
     {
         if ($request->bearerToken() && ! $this->tokenExists($request)) {
-            return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
+            return response()->json(['success' => false, 'message' => 'Bạn cần đăng nhập để thực hiện thao tác này.'], 401);
         }
 
         $payload = ['success' => true, 'data' => new UserResource($request->user())];
@@ -48,7 +48,7 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         if ($request->bearerToken() && ! $this->tokenExists($request)) {
-            return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
+            return response()->json(['success' => false, 'message' => 'Bạn cần đăng nhập để thực hiện thao tác này.'], 401);
         }
         $data = $request->only(['name', 'phone']);
 
@@ -67,7 +67,7 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         if ($request->bearerToken() && ! $this->tokenExists($request)) {
-            return response()->json(['success' => false, 'message' => 'Unauthenticated'], 401);
+            return response()->json(['success' => false, 'message' => 'Bạn cần đăng nhập để thực hiện thao tác này.'], 401);
         }
 
         $ok = $this->authService->changePassword(
@@ -78,9 +78,9 @@ class ProfileController extends Controller
         );
 
         if (! $ok) {
-            return response()->json(['success' => false, 'message' => 'Current password is incorrect'], 422);
+            return response()->json(['success' => false, 'message' => 'Mật khẩu hiện tại không chính xác.'], 422);
         }
 
-        return response()->json(['success' => true, 'message' => 'Password updated']);
+        return response()->json(['success' => true, 'message' => 'Đổi mật khẩu thành công.']);
     }
 }

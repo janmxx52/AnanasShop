@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { adminApi } from '@/api/admin.api'
 import { useToast } from '@/app/ToastContext'
+import { AdminCard } from '@/components/admin/AdminCard'
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
+import { AdminStatusPill } from '@/components/admin/AdminStatusPill'
+import { AdminTable } from '@/components/admin/AdminTable'
+import { ConfirmActionButton } from '@/components/admin/ConfirmActionButton'
+import { FormSection } from '@/components/admin/FormSection'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorState } from '@/components/ui/ErrorState'
@@ -105,23 +111,15 @@ export function AdminCategoriesPage() {
       is_active: formState.is_active,
     }
 
-    if (formState.slug.trim()) {
-      payload.slug = formState.slug.trim()
-    }
+    if (formState.slug.trim()) payload.slug = formState.slug.trim()
     if (formState.parent_id.trim()) {
       payload.parent_id = Number(formState.parent_id)
     } else {
       payload.parent_id = null
     }
-    if (formState.image.trim()) {
-      payload.image = formState.image.trim()
-    }
-    if (formState.description.trim()) {
-      payload.description = formState.description.trim()
-    }
-    if (formState.sort_order.trim()) {
-      payload.sort_order = Number(formState.sort_order)
-    }
+    if (formState.image.trim()) payload.image = formState.image.trim()
+    if (formState.description.trim()) payload.description = formState.description.trim()
+    if (formState.sort_order.trim()) payload.sort_order = Number(formState.sort_order)
 
     return payload
   }
@@ -154,10 +152,6 @@ export function AdminCategoriesPage() {
   }
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa danh mục này?')) {
-      return
-    }
-
     setDeletingId(id)
 
     try {
@@ -185,72 +179,76 @@ export function AdminCategoriesPage() {
   }
 
   return (
-    <section className="space-y-6">
-      <header className="space-y-1">
-        <h1 className="text-2xl font-semibold text-slate-900">Quản lý danh mục</h1>
-        <p className="text-sm text-slate-600">Tạo, cập nhật và xóa danh mục sản phẩm.</p>
-      </header>
+    <section className="space-y-5">
+      <AdminPageHeader
+        title="Quản lý danh mục"
+        description="Tạo, cập nhật và xóa danh mục sản phẩm."
+      />
 
-      <section className="rounded-lg border border-slate-200 bg-white p-4">
-        <h2 className="text-base font-semibold text-slate-900">
-          {editingId ? `Cập nhật danh mục #${editingId}` : 'Tạo danh mục mới'}
-        </h2>
-        <form className="mt-4 grid gap-3 md:grid-cols-2" onSubmit={handleSubmit}>
-          <Input
-            label="Tên danh mục"
-            value={formState.name}
-            onChange={(event) => setFormState((prev) => ({ ...prev, name: event.target.value }))}
-            error={formatFieldError(fieldErrors, 'name')}
-            required
-          />
-          <Input
-            label="Slug (tùy chọn)"
-            value={formState.slug}
-            onChange={(event) => setFormState((prev) => ({ ...prev, slug: event.target.value }))}
-            error={formatFieldError(fieldErrors, 'slug')}
-          />
-          <Input
-            label="ID danh mục cha (tùy chọn)"
-            type="number"
-            min={1}
-            value={formState.parent_id}
-            onChange={(event) => setFormState((prev) => ({ ...prev, parent_id: event.target.value }))}
-            error={formatFieldError(fieldErrors, 'parent_id')}
-          />
-          <Input
-            label="Ảnh (URL, tùy chọn)"
-            value={formState.image}
-            onChange={(event) => setFormState((prev) => ({ ...prev, image: event.target.value }))}
-            error={formatFieldError(fieldErrors, 'image')}
-          />
-          <Input
-            label="Thứ tự sắp xếp"
-            type="number"
-            value={formState.sort_order}
-            onChange={(event) => setFormState((prev) => ({ ...prev, sort_order: event.target.value }))}
-            error={formatFieldError(fieldErrors, 'sort_order')}
-          />
-          <label className="flex items-center gap-2 pt-7 text-sm text-slate-700">
-            <input
-              type="checkbox"
-              checked={formState.is_active}
-              onChange={(event) => setFormState((prev) => ({ ...prev, is_active: event.target.checked }))}
-            />
-            Kích hoạt
-          </label>
-          <label className="block space-y-1 md:col-span-2">
-            <span className="block text-sm font-medium text-slate-700">Mô tả (tùy chọn)</span>
-            <textarea
-              className="min-h-24 w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
-              value={formState.description}
-              onChange={(event) => setFormState((prev) => ({ ...prev, description: event.target.value }))}
-            />
-            {formatFieldError(fieldErrors, 'description') ? (
-              <span className="text-xs text-red-600">{formatFieldError(fieldErrors, 'description')}</span>
-            ) : null}
-          </label>
+      <AdminCard title={editingId ? `Cập nhật danh mục #${editingId}` : 'Tạo danh mục mới'}>
+        <form className="grid gap-3" onSubmit={handleSubmit}>
+          <FormSection title="Thông tin cơ bản">
+            <div className="grid gap-3 md:grid-cols-2">
+              <Input
+                label="Tên danh mục"
+                value={formState.name}
+                onChange={(event) => setFormState((prev) => ({ ...prev, name: event.target.value }))}
+                error={formatFieldError(fieldErrors, 'name')}
+                required
+              />
+              <Input
+                label="Slug (tùy chọn)"
+                value={formState.slug}
+                onChange={(event) => setFormState((prev) => ({ ...prev, slug: event.target.value }))}
+                error={formatFieldError(fieldErrors, 'slug')}
+              />
+              <Input
+                label="ID danh mục cha (tùy chọn)"
+                type="number"
+                min={1}
+                value={formState.parent_id}
+                onChange={(event) => setFormState((prev) => ({ ...prev, parent_id: event.target.value }))}
+                error={formatFieldError(fieldErrors, 'parent_id')}
+              />
+              <Input
+                label="Ảnh (URL, tùy chọn)"
+                value={formState.image}
+                onChange={(event) => setFormState((prev) => ({ ...prev, image: event.target.value }))}
+                error={formatFieldError(fieldErrors, 'image')}
+              />
+              <Input
+                label="Thứ tự sắp xếp"
+                type="number"
+                value={formState.sort_order}
+                onChange={(event) => setFormState((prev) => ({ ...prev, sort_order: event.target.value }))}
+                error={formatFieldError(fieldErrors, 'sort_order')}
+              />
+              <label className="flex items-center gap-2 pt-7 text-sm text-neutral-700">
+                <input
+                  type="checkbox"
+                  checked={formState.is_active}
+                  onChange={(event) => setFormState((prev) => ({ ...prev, is_active: event.target.checked }))}
+                />
+                Kích hoạt
+              </label>
+            </div>
+          </FormSection>
 
-          <div className="flex flex-wrap gap-2 md:col-span-2">
+          <FormSection title="Mô tả">
+            <label className="block space-y-1">
+              <span className="block text-sm font-medium text-neutral-700">Mô tả (tùy chọn)</span>
+              <textarea
+                className="min-h-24 w-full border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-[#f15a24] focus:ring-2 focus:ring-orange-100"
+                value={formState.description}
+                onChange={(event) => setFormState((prev) => ({ ...prev, description: event.target.value }))}
+              />
+              {formatFieldError(fieldErrors, 'description') ? (
+                <span className="text-xs text-red-600">{formatFieldError(fieldErrors, 'description')}</span>
+              ) : null}
+            </label>
+          </FormSection>
+
+          <div className="flex flex-wrap gap-2">
             <Button type="submit" isLoading={isSubmitting}>
               {editingId ? 'Lưu thay đổi' : 'Tạo danh mục'}
             </Button>
@@ -261,66 +259,69 @@ export function AdminCategoriesPage() {
             ) : null}
           </div>
         </form>
-      </section>
+      </AdminCard>
 
-      <section className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
-        <h2 className="text-base font-semibold text-slate-900">Danh sách danh mục</h2>
+      <AdminCard title="Danh sách danh mục">
         {items.length === 0 ? (
           <EmptyState title="Chưa có danh mục" description="Hãy tạo danh mục đầu tiên." />
         ) : (
-          <div className="overflow-x-auto rounded border border-slate-200">
-            <table className="min-w-[860px] bg-white text-sm">
-              <thead className="bg-slate-50 text-left text-slate-600">
-                <tr>
-                  <th className="px-3 py-2">ID</th>
-                  <th className="px-3 py-2">Tên</th>
-                  <th className="px-3 py-2">Slug</th>
-                  <th className="px-3 py-2">Danh mục cha</th>
-                  <th className="px-3 py-2">Thứ tự</th>
-                  <th className="px-3 py-2">Trạng thái</th>
-                  <th className="px-3 py-2">Hành động</th>
+          <AdminTable minWidthClassName="min-w-[860px]">
+            <thead className="bg-neutral-50 text-left text-neutral-600">
+              <tr>
+                <th className="px-3 py-2">ID</th>
+                <th className="px-3 py-2">Tên</th>
+                <th className="px-3 py-2">Slug</th>
+                <th className="px-3 py-2">Danh mục cha</th>
+                <th className="px-3 py-2">Thứ tự</th>
+                <th className="px-3 py-2">Trạng thái</th>
+                <th className="px-3 py-2">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((category) => (
+                <tr key={category.id} className="border-t border-neutral-100">
+                  <td className="px-3 py-2 text-neutral-700">{category.id}</td>
+                  <td className="px-3 py-2 font-medium text-neutral-900">{category.name}</td>
+                  <td className="px-3 py-2 text-neutral-700">{category.slug || '-'}</td>
+                  <td className="px-3 py-2 text-neutral-700">{category.parent_id ?? '-'}</td>
+                  <td className="px-3 py-2 text-neutral-700">{category.sort_order}</td>
+                  <td className="px-3 py-2">
+                    <AdminStatusPill
+                      label={category.is_active ? 'Đang hoạt động' : 'Đang tắt'}
+                      tone={category.is_active ? 'success' : 'neutral'}
+                    />
+                  </td>
+                  <td className="px-3 py-2">
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        disabled={isSubmitting || deletingId === category.id}
+                        onClick={() => void startEdit(category.id)}
+                      >
+                        Sửa
+                      </Button>
+                      <ConfirmActionButton
+                        type="button"
+                        variant="danger"
+                        confirmMessage="Bạn có chắc chắn muốn xóa danh mục này?"
+                        isLoading={deletingId === category.id}
+                        disabled={isSubmitting}
+                        onConfirm={() => handleDelete(category.id)}
+                      >
+                        Xóa
+                      </ConfirmActionButton>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {items.map((category) => (
-                  <tr key={category.id} className="border-t border-slate-100">
-                    <td className="px-3 py-2 text-slate-700">{category.id}</td>
-                    <td className="px-3 py-2 font-medium text-slate-900">{category.name}</td>
-                    <td className="px-3 py-2 text-slate-700">{category.slug || '-'}</td>
-                    <td className="px-3 py-2 text-slate-700">{category.parent_id ?? '-'}</td>
-                    <td className="px-3 py-2 text-slate-700">{category.sort_order}</td>
-                    <td className="px-3 py-2 text-slate-700">{category.is_active ? 'Đang hoạt động' : 'Đang tắt'}</td>
-                    <td className="px-3 py-2">
-                      <div className="flex gap-2">
-                        <Button
-                          type="button"
-                          variant="secondary"
-                          disabled={isSubmitting || deletingId === category.id}
-                          onClick={() => void startEdit(category.id)}
-                        >
-                          Sửa
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="danger"
-                          isLoading={deletingId === category.id}
-                          disabled={isSubmitting}
-                          onClick={() => void handleDelete(category.id)}
-                        >
-                          Xóa
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </AdminTable>
         )}
 
         {meta.last_page > 1 ? (
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm text-slate-600">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm text-neutral-600">
               Trang {meta.current_page} / {meta.last_page} • Tổng {meta.total}
             </p>
             <div className="flex gap-2">
@@ -343,7 +344,7 @@ export function AdminCategoriesPage() {
             </div>
           </div>
         ) : null}
-      </section>
+      </AdminCard>
     </section>
   )
 }

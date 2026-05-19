@@ -44,7 +44,7 @@ export function VoucherBox({
       const response = await voucherApi.checkVoucher({ code })
       setResult(response)
       onVoucherChecked(response)
-      toast.success('Đã áp dụng mã giảm giá để xem trước.')
+      toast.success('Mã giảm giá hợp lệ. Giá trị giảm đã được cập nhật.')
     } catch (error) {
       const apiError = parseApiError(error)
       toast.error(apiError.message)
@@ -64,12 +64,15 @@ export function VoucherBox({
   }
 
   return (
-    <section className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
-      <h2 className="text-base font-semibold text-slate-900">Mã giảm giá</h2>
+    <section className="space-y-4 border border-neutral-200 bg-white p-5">
+      <div className="space-y-1">
+        <h2 className="text-lg font-bold text-neutral-900">Mã giảm giá</h2>
+        <p className="text-sm text-neutral-600">Mã chỉ được kiểm tra trước, sẽ áp dụng khi bạn đặt hàng.</p>
+      </div>
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
         <Input
-          label="Mã giảm giá"
+          label="Nhập mã giảm giá"
           placeholder="Ví dụ: SALE10"
           value={voucherCode}
           onChange={(event) => {
@@ -90,18 +93,18 @@ export function VoucherBox({
         </div>
       </div>
 
-      {errorMessage ? <p className="text-sm text-red-600">{errorMessage}</p> : null}
+      {errorMessage ? <p className="text-sm font-medium text-red-600">{errorMessage}</p> : null}
 
       {result ? (
-        <div className="grid grid-cols-1 gap-2 rounded border border-slate-200 bg-slate-50 p-3 text-sm sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-2 border border-emerald-200 bg-emerald-50/60 p-3 text-sm sm:grid-cols-3">
           <p>
-            <span className="text-slate-600">Tạm tính:</span> <PriceText value={result.subtotal} />
+            <span className="text-neutral-600">Tạm tính:</span> <PriceText value={result.subtotal} />
           </p>
           <p>
-            <span className="text-slate-600">Giảm giá:</span> <PriceText value={result.discount} />
+            <span className="text-neutral-600">Giảm giá:</span> <PriceText value={result.discount} />
           </p>
           <p>
-            <span className="text-slate-600">Sau giảm giá:</span> <PriceText value={result.total_after} />
+            <span className="text-neutral-600">Sau giảm giá:</span> <PriceText value={result.total_after} />
           </p>
         </div>
       ) : null}

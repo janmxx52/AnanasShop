@@ -8,7 +8,7 @@ use Illuminate\Pagination\AbstractPaginator;
 
 trait ApiResponse
 {
-    protected function success($data = null, string $message = 'OK', int $status = 200): JsonResponse
+    protected function success($data = null, string $message = 'Thành công', int $status = 200): JsonResponse
     {
         return response()->json([
             'success' => true,
@@ -17,7 +17,7 @@ trait ApiResponse
         ], $status);
     }
 
-    protected function paginated($paginatorOrResource, string $message = 'OK', int $status = 200): JsonResponse
+    protected function paginated($paginatorOrResource, string $message = 'Thành công', int $status = 200): JsonResponse
     {
         [$data, $meta] = $this->extractPaginatedDataAndMeta($paginatorOrResource);
 
@@ -40,7 +40,7 @@ trait ApiResponse
 
     protected function notImplemented(): JsonResponse
     {
-        return $this->error('Feature not implemented', null, 501);
+        return $this->error('Chức năng này chưa được hỗ trợ.', null, 501);
     }
 
     private function extractPaginatedDataAndMeta($source): array

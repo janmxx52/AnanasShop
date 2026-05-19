@@ -297,4 +297,3 @@ class OrderLookupTest extends TestCase
         return 'ANS-' . now()->format('dmY') . '-' . Str::upper(Str::random(6));
     }
 }
-

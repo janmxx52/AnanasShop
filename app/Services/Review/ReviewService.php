@@ -34,31 +34,31 @@ class ReviewService
         $orderItem = OrderItem::query()->with('order')->find($payload['order_item_id']);
         if (!$orderItem || !$orderItem->order) {
             throw ValidationException::withMessages([
-                'order_item_id' => 'Order item not found',
+                'order_item_id' => 'Không tìm thấy sản phẩm trong đơn hàng.',
             ]);
         }
 
         if ((int) $orderItem->order->user_id !== (int) $user->id) {
             throw ValidationException::withMessages([
-                'order_item_id' => 'You can only review your own order item',
+                'order_item_id' => 'Bạn chỉ có thể đánh giá sản phẩm thuộc đơn hàng của chính mình.',
             ]);
         }
 
         if ($orderItem->order->status !== 'delivered') {
             throw ValidationException::withMessages([
-                'order_item_id' => 'Order must be delivered before review',
+                'order_item_id' => 'Bạn chỉ có thể đánh giá sau khi đơn hàng đã giao thành công.',
             ]);
         }
 
         if ((int) $orderItem->product_id !== (int) $product->id) {
             throw ValidationException::withMessages([
-                'order_item_id' => 'Order item does not belong to the product',
+                'order_item_id' => 'Sản phẩm trong đơn hàng không khớp với sản phẩm đang đánh giá.',
             ]);
         }
 
         if (Review::query()->where('order_item_id', $orderItem->id)->exists()) {
             throw ValidationException::withMessages([
-                'order_item_id' => 'This order item has already been reviewed',
+                'order_item_id' => 'Sản phẩm này trong đơn hàng đã được đánh giá trước đó.',
             ]);
         }
 
@@ -99,7 +99,7 @@ class ReviewService
             ->first();
 
         if (!$review) {
-            throw new ModelNotFoundException('Review not found');
+            throw new ModelNotFoundException('Không tìm thấy đánh giá.');
         }
 
         foreach ($review->reviewImages as $image) {

@@ -23,7 +23,7 @@ export const cartApi = {
     const response = await http.put(`/cart/items/${itemId}`, payload)
     const data = response.data as Record<string, unknown>
 
-    if (data?.message === 'Removed') {
+    if (typeof data?.message === 'string' && data.message.includes('xóa sản phẩm khỏi giỏ hàng')) {
       return null
     }
 

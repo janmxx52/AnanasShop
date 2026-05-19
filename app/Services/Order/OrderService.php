@@ -87,7 +87,7 @@ class OrderService
 
             $cart = Cart::query()->whereKey($cart->id)->lockForUpdate()->first();
             if (!$cart) {
-                throw ValidationException::withMessages(['cart' => 'Cart not found']);
+                throw ValidationException::withMessages(['cart' => 'Không tìm thấy giỏ hàng.']);
             }
 
             $cartItems = CartItem::query()
@@ -96,7 +96,7 @@ class OrderService
                 ->get();
 
             if ($cartItems->isEmpty()) {
-                throw ValidationException::withMessages(['cart' => 'Cart is empty']);
+                throw ValidationException::withMessages(['cart' => 'Giỏ hàng đang trống.']);
             }
 
             $variantIds = $cartItems->pluck('product_variant_id')->unique()->values()->all();
@@ -117,13 +117,13 @@ class OrderService
 
                 if (!$variant || !$product || !$product->is_active) {
                     throw ValidationException::withMessages([
-                        'cart_items' => "Variant {$cartItem->product_variant_id} unavailable",
+                        'cart_items' => "Biến thể {$cartItem->product_variant_id} không còn khả dụng.",
                     ]);
                 }
 
                 if ($variant->stock < $cartItem->quantity) {
                     throw ValidationException::withMessages([
-                        'cart_items' => "Variant {$variant->id} has insufficient stock",
+                        'cart_items' => "Biến thể {$variant->id} không đủ tồn kho.",
                     ]);
                 }
 
@@ -265,20 +265,20 @@ class OrderService
     {
         $parts = [];
         if ($size) {
-            $parts[] = 'Size ' . $size;
+            $parts[] = 'Kích thước ' . $size;
         }
         if ($color) {
-            $parts[] = 'Color ' . $color;
+            $parts[] = 'Màu ' . $color;
         }
 
-        return $parts ? implode(' / ', $parts) : 'Default';
+        return $parts ? implode(' / ', $parts) : 'Mặc định';
     }
 
     private function assertCodOnly(?string $paymentMethod): void
     {
         if ($paymentMethod !== null && $paymentMethod !== 'cod') {
             throw ValidationException::withMessages([
-                'payment_method' => 'Only cod is supported',
+                'payment_method' => 'Hiện chỉ hỗ trợ phương thức thanh toán COD.',
             ]);
         }
     }

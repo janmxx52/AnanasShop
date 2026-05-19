@@ -202,7 +202,7 @@ class CheckoutTest extends TestCase
         $this->assertDatabaseHas('order_items', [
             'order_id' => $orderId,
             'product_name' => $product->name,
-            'variant_name' => 'Size 42 / Color White',
+            'variant_name' => 'Kích thước 42 / Màu White',
             'sku' => 'SKU-SNAPSHOT',
             'image_url' => 'https://cdn.example.com/primary.jpg',
             'unit_price' => 95000.00,

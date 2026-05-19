@@ -18,6 +18,7 @@
 | avatar | varchar(255) | nullable |
 | role | varchar(255) | default `customer` |
 | is_banned | tinyint(1) / bool | default `false` |
+| deleted_at | timestamp | nullable (soft deletes) |
 | remember_token | varchar(100) | nullable |
 | avatar_public_id | varchar(255) | nullable |
 | last_login_at | timestamp | nullable |
@@ -26,7 +27,7 @@
 | updated_at | timestamp | |
 
 **Important notes**
-- `users` hiện **không có SoftDeletes** (`deleted_at` không tồn tại trong migrations).
+- `users` dùng SoftDeletes (`deleted_at`).
 - Role không dùng enum DB, hiện là string.
 
 ---
@@ -352,7 +353,7 @@
 
 ## 18) Explicit sync notes
 
-- `users`: **không** soft delete; có `role`, `is_banned`.
+- `users`: có soft delete, có `role`, `is_banned`.
 - `products`: có soft delete, `sale_price`, `is_active`.
 - `product_variants`: có unique `(product_id, size, color)`.
 - `carts`: có cả `user_id` và `guest_token` (đều unique, nullable).
@@ -361,4 +362,3 @@
 - `order_items`: đã dùng snapshot fields chuẩn mới (`product_name`, `variant_name`, `sku`, `image_url`, `unit_price`, `quantity`, `line_total`, `variant_info` JSON).
 - `wishlists`: unique `(user_id, product_id)`.
 - `reviews`: unique `order_item_id`, có `is_approved`, ảnh nằm ở bảng `review_images` (không dùng JSON column).
-

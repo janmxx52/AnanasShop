@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { adminApi } from '@/api/admin.api'
+import { AdminCard } from '@/components/admin/AdminCard'
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
+import { AdminTable } from '@/components/admin/AdminTable'
+import { AdminToolbar } from '@/components/admin/AdminToolbar'
 import { OrderStatusBadge } from '@/components/order/OrderStatusBadge'
 import { PaymentStatusBadge } from '@/components/order/PaymentStatusBadge'
 import { Button } from '@/components/ui/Button'
@@ -35,18 +39,9 @@ const DEFAULT_FILTERS: OrderFilterState = {
 }
 
 function getCustomerName(order: AdminOrder): string {
-  if (order.shipping?.name?.trim()) {
-    return order.shipping.name
-  }
-
-  if (order.customer?.guest_name?.trim()) {
-    return order.customer.guest_name
-  }
-
-  if (order.customer?.user_id) {
-    return `Thành viên #${order.customer.user_id}`
-  }
-
+  if (order.shipping?.name?.trim()) return order.shipping.name
+  if (order.customer?.guest_name?.trim()) return order.customer.guest_name
+  if (order.customer?.user_id) return `Thành viên #${order.customer.user_id}`
   return 'Không xác định'
 }
 
@@ -80,13 +75,9 @@ export function AdminOrdersPage() {
 
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
-      const matchesCode = filters.q.trim()
-        ? order.code.toLowerCase().includes(filters.q.trim().toLowerCase())
-        : true
+      const matchesCode = filters.q.trim() ? order.code.toLowerCase().includes(filters.q.trim().toLowerCase()) : true
       const matchesStatus = filters.status === 'all' ? true : order.status === filters.status
-      const matchesPaymentStatus =
-        filters.payment_status === 'all' ? true : order.payment_status === filters.payment_status
-
+      const matchesPaymentStatus = filters.payment_status === 'all' ? true : order.payment_status === filters.payment_status
       return matchesCode && matchesStatus && matchesPaymentStatus
     })
   }, [filters, orders])
@@ -100,15 +91,14 @@ export function AdminOrdersPage() {
   }
 
   return (
-    <section className="space-y-6">
-      <header className="space-y-1">
-        <h1 className="text-2xl font-semibold text-slate-900">Quản lý đơn hàng</h1>
-        <p className="text-sm text-slate-600">Theo dõi đơn hàng và chuyển trạng thái theo luồng xử lý.</p>
-      </header>
+    <section className="space-y-5">
+      <AdminPageHeader
+        title="Quản lý đơn hàng"
+        description="Theo dõi đơn hàng và chuyển trạng thái theo luồng xử lý."
+      />
 
-      <section className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
-        <h2 className="text-base font-semibold text-slate-900">Bộ lọc đơn hàng (trang hiện tại)</h2>
-        <div className="grid gap-3 md:grid-cols-3">
+      <AdminCard title="Tìm kiếm và lọc">
+        <AdminToolbar className="grid w-full gap-3 md:grid-cols-3">
           <Input
             label="Tìm mã đơn hàng"
             placeholder="Ví dụ: ANS-15052026-ABC123"
@@ -117,13 +107,11 @@ export function AdminOrdersPage() {
           />
 
           <label className="block space-y-1">
-            <span className="block text-sm font-medium text-slate-700">Trạng thái đơn</span>
+            <span className="block text-sm font-medium text-neutral-700">Trạng thái đơn</span>
             <select
-              className="w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+              className="w-full border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-[#f15a24] focus:ring-2 focus:ring-orange-100"
               value={filters.status}
-              onChange={(event) =>
-                setFilters((prev) => ({ ...prev, status: event.target.value as OrderFilterState['status'] }))
-              }
+              onChange={(event) => setFilters((prev) => ({ ...prev, status: event.target.value as OrderFilterState['status'] }))}
             >
               <option value="all">Tất cả</option>
               <option value="pending">Chờ xác nhận</option>
@@ -137,16 +125,11 @@ export function AdminOrdersPage() {
           </label>
 
           <label className="block space-y-1">
-            <span className="block text-sm font-medium text-slate-700">Trạng thái thanh toán</span>
+            <span className="block text-sm font-medium text-neutral-700">Trạng thái thanh toán</span>
             <select
-              className="w-full rounded border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+              className="w-full border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-[#f15a24] focus:ring-2 focus:ring-orange-100"
               value={filters.payment_status}
-              onChange={(event) =>
-                setFilters((prev) => ({
-                  ...prev,
-                  payment_status: event.target.value as OrderFilterState['payment_status'],
-                }))
-              }
+              onChange={(event) => setFilters((prev) => ({ ...prev, payment_status: event.target.value as OrderFilterState['payment_status'] }))}
             >
               <option value="all">Tất cả</option>
               <option value="pending">Chờ thanh toán</option>
@@ -156,68 +139,62 @@ export function AdminOrdersPage() {
               <option value="refunded">Đã hoàn tiền</option>
             </select>
           </label>
-        </div>
-      </section>
+        </AdminToolbar>
+      </AdminCard>
 
-      <section className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
-        <h2 className="text-base font-semibold text-slate-900">Danh sách đơn hàng</h2>
-
+      <AdminCard title="Danh sách đơn hàng">
         {filteredOrders.length === 0 ? (
           <EmptyState
             title={orders.length === 0 ? 'Chưa có đơn hàng' : 'Không có đơn hàng phù hợp'}
-            description={
-              orders.length === 0 ? 'Hệ thống chưa có đơn hàng nào.' : 'Hãy thử thay đổi điều kiện lọc ở trên.'
-            }
+            description={orders.length === 0 ? 'Hệ thống chưa có đơn hàng nào.' : 'Hãy thử thay đổi điều kiện lọc ở trên.'}
           />
         ) : (
-          <div className="overflow-x-auto rounded border border-slate-200">
-            <table className="min-w-[1180px] bg-white text-sm">
-              <thead className="bg-slate-50 text-left text-slate-600">
-                <tr>
-                  <th className="px-3 py-2">Mã đơn</th>
-                  <th className="px-3 py-2">Khách hàng</th>
-                  <th className="px-3 py-2">Tổng tiền</th>
-                  <th className="px-3 py-2">Trạng thái đơn</th>
-                  <th className="px-3 py-2">Thanh toán</th>
-                  <th className="px-3 py-2">Phương thức</th>
-                  <th className="px-3 py-2">Ngày tạo</th>
-                  <th className="px-3 py-2">Hành động</th>
+          <AdminTable minWidthClassName="min-w-[1180px]">
+            <thead className="bg-neutral-50 text-left text-neutral-600">
+              <tr>
+                <th className="px-3 py-2">Mã đơn</th>
+                <th className="px-3 py-2">Khách hàng</th>
+                <th className="px-3 py-2">Tổng tiền</th>
+                <th className="px-3 py-2">Trạng thái đơn</th>
+                <th className="px-3 py-2">Thanh toán</th>
+                <th className="px-3 py-2">Phương thức</th>
+                <th className="px-3 py-2">Ngày tạo</th>
+                <th className="px-3 py-2">Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredOrders.map((order) => (
+                <tr key={order.id} className="border-t border-neutral-100">
+                  <td className="px-3 py-2 font-medium text-neutral-900">{order.code}</td>
+                  <td className="px-3 py-2 text-neutral-700">{getCustomerName(order)}</td>
+                  <td className="px-3 py-2 text-neutral-900">
+                    <PriceText value={order.total} />
+                  </td>
+                  <td className="px-3 py-2">
+                    <OrderStatusBadge status={order.status} />
+                  </td>
+                  <td className="px-3 py-2">
+                    <PaymentStatusBadge status={order.payment_status} />
+                  </td>
+                  <td className="px-3 py-2 text-neutral-700">{getPaymentMethodLabel(order.payment_method)}</td>
+                  <td className="px-3 py-2 text-neutral-700">{new Date(order.created_at).toLocaleString('vi-VN')}</td>
+                  <td className="px-3 py-2">
+                    <Link
+                      to={`/admin/orders/${order.code}`}
+                      className="inline-flex rounded bg-neutral-900 px-3 py-2 text-xs font-medium text-white transition hover:bg-black"
+                    >
+                      Xem chi tiết
+                    </Link>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {filteredOrders.map((order) => (
-                  <tr key={order.id} className="border-t border-slate-100">
-                    <td className="px-3 py-2 font-medium text-slate-900">{order.code}</td>
-                    <td className="px-3 py-2 text-slate-700">{getCustomerName(order)}</td>
-                    <td className="px-3 py-2 text-slate-900">
-                      <PriceText value={order.total} />
-                    </td>
-                    <td className="px-3 py-2">
-                      <OrderStatusBadge status={order.status} />
-                    </td>
-                    <td className="px-3 py-2">
-                      <PaymentStatusBadge status={order.payment_status} />
-                    </td>
-                    <td className="px-3 py-2 text-slate-700">{getPaymentMethodLabel(order.payment_method)}</td>
-                    <td className="px-3 py-2 text-slate-700">{new Date(order.created_at).toLocaleString('vi-VN')}</td>
-                    <td className="px-3 py-2">
-                      <Link
-                        to={`/admin/orders/${order.code}`}
-                        className="inline-flex rounded bg-slate-900 px-3 py-2 text-xs font-medium text-white hover:bg-slate-800"
-                      >
-                        Xem chi tiết
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </AdminTable>
         )}
 
         {meta.last_page > 1 ? (
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm text-slate-600">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm text-neutral-600">
               Trang {meta.current_page} / {meta.last_page} • Tổng {meta.total}
             </p>
             <div className="flex gap-2">
@@ -240,7 +217,7 @@ export function AdminOrdersPage() {
             </div>
           </div>
         ) : null}
-      </section>
+      </AdminCard>
     </section>
   )
 }

@@ -55,7 +55,7 @@ class WishlistService
 
         if (!$product) {
             throw ValidationException::withMessages([
-                'product_id' => 'Product is unavailable',
+                'product_id' => 'Sản phẩm không khả dụng.',
             ]);
         }
 
@@ -86,4 +86,3 @@ class WishlistService
             ->delete();
     }
 }
-

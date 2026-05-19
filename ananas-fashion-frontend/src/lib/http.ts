@@ -1,7 +1,7 @@
 import axios, { AxiosHeaders } from 'axios'
 import { ensureGuestToken, getAccessToken, setGuestToken } from '@/lib/storage'
 
-const guestTokenPaths = ['/cart', '/checkout/guest']
+const guestTokenPaths = ['/cart', '/checkout/guest', '/vouchers/check']
 
 const shouldAttachGuestToken = (url: string) => {
   return guestTokenPaths.some((path) => url.startsWith(path))

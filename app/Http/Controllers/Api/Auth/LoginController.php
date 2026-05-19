@@ -23,7 +23,7 @@ class LoginController extends Controller
         $result = $this->authService->login($credentials['email'], $credentials['password'], $device);
 
         if (empty($result)) {
-            return response()->json(['success' => false, 'message' => 'Invalid credentials'], 401);
+            return response()->json(['success' => false, 'message' => 'Email hoặc mật khẩu không chính xác, hoặc tài khoản đã bị khóa.'], 401);
         }
 
         return response()->json(['success' => true, 'data' => new AuthResource($result)], 200);
@@ -44,7 +44,7 @@ class LoginController extends Controller
             $this->authService->logoutCurrent($user);
         }
 
-        return response()->json(['success' => true, 'message' => 'Logged out'], 200);
+        return response()->json(['success' => true, 'message' => 'Đăng xuất thành công.'], 200);
     }
 
     public function logoutAll(Request $request): JsonResponse
@@ -55,6 +55,6 @@ class LoginController extends Controller
             ->where('tokenable_id', $user->getKey())
             ->delete();
 
-        return response()->json(['success' => true, 'message' => 'Logged out from all devices'], 200);
+        return response()->json(['success' => true, 'message' => 'Đăng xuất khỏi tất cả thiết bị thành công.'], 200);
     }
 }

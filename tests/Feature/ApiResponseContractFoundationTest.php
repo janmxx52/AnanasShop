@@ -18,7 +18,7 @@ class ApiResponseContractFoundationTest extends TestCase
             ->assertStatus(501)
             ->assertExactJson([
                 'success' => false,
-                'message' => 'Feature not implemented',
+                'message' => 'Chức năng này chưa được hỗ trợ.',
                 'errors' => null,
             ]);
     }
@@ -31,7 +31,7 @@ class ApiResponseContractFoundationTest extends TestCase
 
             public function respond()
             {
-                return $this->success(['id' => 1], 'Created', 201);
+                return $this->success(['id' => 1], 'Tạo mới thành công.', 201);
             }
         };
 
@@ -40,7 +40,7 @@ class ApiResponseContractFoundationTest extends TestCase
         $this->assertSame(201, $response->getStatusCode());
         $this->assertSame([
             'success' => true,
-            'message' => 'Created',
+            'message' => 'Tạo mới thành công.',
             'data' => ['id' => 1],
         ], $response->getData(true));
     }
@@ -53,7 +53,7 @@ class ApiResponseContractFoundationTest extends TestCase
 
             public function respond()
             {
-                return $this->error('Validation failed', ['field' => ['Required']], 422);
+                return $this->error('Dữ liệu không hợp lệ.', ['field' => ['Trường bắt buộc.']], 422);
             }
         };
 
@@ -62,8 +62,8 @@ class ApiResponseContractFoundationTest extends TestCase
         $this->assertSame(422, $response->getStatusCode());
         $this->assertSame([
             'success' => false,
-            'message' => 'Validation failed',
-            'errors' => ['field' => ['Required']],
+            'message' => 'Dữ liệu không hợp lệ.',
+            'errors' => ['field' => ['Trường bắt buộc.']],
         ], $response->getData(true));
     }
 
@@ -75,7 +75,7 @@ class ApiResponseContractFoundationTest extends TestCase
 
             public function respond(LengthAwarePaginator $paginator)
             {
-                return $this->paginated($paginator, 'Fetched');
+                return $this->paginated($paginator, 'Lấy dữ liệu thành công.');
             }
         };
 
@@ -91,7 +91,7 @@ class ApiResponseContractFoundationTest extends TestCase
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame([
             'success' => true,
-            'message' => 'Fetched',
+            'message' => 'Lấy dữ liệu thành công.',
             'data' => [
                 ['id' => 1],
                 ['id' => 2],

@@ -33,7 +33,7 @@ class ProductController extends Controller
         $product = $this->repository->findBySlugWithRelations($slug);
 
         if (!$product || !$product->is_active) {
-            return response()->json(['message' => 'Product not found'], 404);
+            return response()->json(['message' => 'Không tìm thấy dữ liệu.'], 404);
         }
 
         return new ProductResource($product);

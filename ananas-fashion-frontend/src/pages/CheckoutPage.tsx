@@ -4,13 +4,13 @@ import { useAuth } from '@/app/AuthContext'
 import { useToast } from '@/app/ToastContext'
 import { cartApi } from '@/api/cart.api'
 import { orderApi } from '@/api/order.api'
+import { CheckoutOrderSummary } from '@/components/checkout/CheckoutOrderSummary'
+import { CheckoutSteps } from '@/components/checkout/CheckoutSteps'
 import { VoucherBox } from '@/components/checkout/VoucherBox'
-import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { Input } from '@/components/ui/Input'
 import { LoadingState } from '@/components/ui/LoadingState'
-import { PriceText } from '@/components/ui/PriceText'
 import { formatFieldError, parseApiError } from '@/lib/api-helpers'
 import { setCheckoutSuccessOrder } from '@/lib/checkout-success'
 import type { Cart } from '@/types/cart'
@@ -49,7 +49,7 @@ const EMPTY_USER_FORM: UserCheckoutForm = {
 
 export function CheckoutPage() {
   const navigate = useNavigate()
-  const { isAuthenticated, token, user } = useAuth()
+  const { isAuthenticated, user } = useAuth()
   const toast = useToast()
 
   const [cart, setCart] = useState<Cart | null>(null)
@@ -82,7 +82,7 @@ export function CheckoutPage() {
 
   useEffect(() => {
     void loadCart()
-  }, [loadCart, token])
+  }, [loadCart])
 
   useEffect(() => {
     if (!user) {
@@ -170,7 +170,7 @@ export function CheckoutPage() {
   }
 
   if (isLoadingCart) {
-    return <LoadingState message="Đang tải dữ liệu thanh toán..." />
+    return <LoadingState message="Đang tải thông tin thanh toán..." />
   }
 
   if (cartError) {
@@ -181,7 +181,10 @@ export function CheckoutPage() {
     return (
       <div className="space-y-3">
         <EmptyState title="Giỏ hàng đang trống" description="Vui lòng thêm ít nhất một sản phẩm trước khi thanh toán." />
-        <Link to="/products" className="inline-block rounded bg-slate-900 px-4 py-2 text-sm font-medium text-white">
+        <Link
+          to="/products"
+          className="inline-flex h-11 items-center justify-center rounded bg-slate-900 px-4 text-sm font-medium text-white"
+        >
           Đi tới danh sách sản phẩm
         </Link>
       </div>
@@ -190,13 +193,15 @@ export function CheckoutPage() {
 
   return (
     <section className="space-y-6">
-      <header className="space-y-1">
-        <h1 className="text-2xl font-semibold text-slate-900">Thanh toán</h1>
-        <p className="text-sm text-slate-600">Giai đoạn hiện tại chỉ hỗ trợ COD.</p>
+      <CheckoutSteps current="checkout" />
+
+      <header className="space-y-1 border-b border-neutral-200 pb-4">
+        <h1 className="text-3xl font-extrabold uppercase tracking-[0.08em] text-neutral-900">Thanh toán</h1>
+        <p className="text-sm text-neutral-600">Hoàn tất thông tin đặt hàng để tiếp tục.</p>
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
-        <div className="space-y-4">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_380px] xl:items-start">
+        <div className="order-2 space-y-4 xl:order-1">
           {submitMessage &&
           submitMessage !== cartErrorMessage &&
           submitMessage !== cartItemsErrorMessage &&
@@ -208,99 +213,115 @@ export function CheckoutPage() {
           {cartItemsErrorMessage ? <ErrorState message={cartItemsErrorMessage} /> : null}
           {voucherErrorMessage ? <ErrorState message={voucherErrorMessage} /> : null}
 
-          {!isAuthenticated ? (
-            <section className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
-              <h2 className="text-base font-semibold text-slate-900">Thông tin khách mua</h2>
-              <Input
-                label="Họ và tên"
-                value={guestForm.full_name}
-                onChange={(event) =>
-                  setGuestForm((previous) => ({ ...previous, full_name: event.target.value }))
-                }
-                error={formatFieldError(fieldErrors, 'full_name')}
-                required
-              />
-              <Input
-                label="Email"
-                type="email"
-                value={guestForm.email}
-                onChange={(event) =>
-                  setGuestForm((previous) => ({ ...previous, email: event.target.value }))
-                }
-                error={formatFieldError(fieldErrors, 'email')}
-                required
-              />
-              <Input
-                label="Số điện thoại"
-                value={guestForm.phone}
-                onChange={(event) =>
-                  setGuestForm((previous) => ({ ...previous, phone: event.target.value }))
-                }
-                error={formatFieldError(fieldErrors, 'phone')}
-                required
-              />
-            </section>
-          ) : (
-            <section className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
-              <h2 className="text-base font-semibold text-slate-900">Thông tin giao hàng</h2>
-              <Input
-                label="Tên người nhận"
-                value={userForm.shipping_name}
-                onChange={(event) =>
-                  setUserForm((previous) => ({ ...previous, shipping_name: event.target.value }))
-                }
-                error={formatFieldError(fieldErrors, 'shipping_name')}
-                required
-              />
-              <Input
-                label="Số điện thoại nhận hàng"
-                value={userForm.shipping_phone}
-                onChange={(event) =>
-                  setUserForm((previous) => ({ ...previous, shipping_phone: event.target.value }))
-                }
-                error={formatFieldError(fieldErrors, 'shipping_phone')}
-                required
-              />
-              <Input label="Email tài khoản" value={user?.email ?? ''} disabled />
-            </section>
-          )}
+          <section className="space-y-4 border border-neutral-200 bg-white p-5">
+            <div className="space-y-1">
+              <h2 className="text-lg font-bold text-neutral-900">Thông tin nhận hàng</h2>
+              {isAuthenticated ? (
+                <p className="text-sm text-neutral-600">
+                  Bạn đang thanh toán bằng tài khoản{' '}
+                  <span className="font-semibold text-neutral-900">{user?.email ?? 'đã đăng nhập'}</span>.
+                </p>
+              ) : (
+                <p className="text-sm text-neutral-600">Vui lòng nhập đầy đủ thông tin để hệ thống giao hàng chính xác.</p>
+              )}
+            </div>
 
-          <section className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
-            <Input
-              label="Địa chỉ giao hàng"
-              value={isAuthenticated ? userForm.shipping_address : guestForm.shipping_address}
-              onChange={(event) => {
-                if (isAuthenticated) {
-                  setUserForm((previous) => ({
-                    ...previous,
-                    shipping_address: event.target.value,
-                  }))
-                  return
-                }
+            {!isAuthenticated ? (
+              <div className="space-y-3">
+                <Input
+                  label="Họ và tên"
+                  value={guestForm.full_name}
+                  onChange={(event) =>
+                    setGuestForm((previous) => ({ ...previous, full_name: event.target.value }))
+                  }
+                  error={formatFieldError(fieldErrors, 'full_name')}
+                  required
+                />
+                <Input
+                  label="Email"
+                  type="email"
+                  value={guestForm.email}
+                  onChange={(event) =>
+                    setGuestForm((previous) => ({ ...previous, email: event.target.value }))
+                  }
+                  error={formatFieldError(fieldErrors, 'email')}
+                  required
+                />
+                <Input
+                  label="Số điện thoại"
+                  value={guestForm.phone}
+                  onChange={(event) =>
+                    setGuestForm((previous) => ({ ...previous, phone: event.target.value }))
+                  }
+                  error={formatFieldError(fieldErrors, 'phone')}
+                  required
+                />
+                <Input
+                  label="Địa chỉ giao hàng"
+                  value={guestForm.shipping_address}
+                  onChange={(event) =>
+                    setGuestForm((previous) => ({
+                      ...previous,
+                      shipping_address: event.target.value,
+                    }))
+                  }
+                  error={formatFieldError(fieldErrors, 'shipping_address')}
+                  required
+                />
+                <Input
+                  label="Ghi chú (tùy chọn)"
+                  value={guestForm.note}
+                  onChange={(event) => setGuestForm((previous) => ({ ...previous, note: event.target.value }))}
+                />
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <Input
+                  label="Họ và tên người nhận"
+                  value={userForm.shipping_name}
+                  onChange={(event) =>
+                    setUserForm((previous) => ({ ...previous, shipping_name: event.target.value }))
+                  }
+                  error={formatFieldError(fieldErrors, 'shipping_name')}
+                  required
+                />
+                <Input
+                  label="Số điện thoại"
+                  value={userForm.shipping_phone}
+                  onChange={(event) =>
+                    setUserForm((previous) => ({ ...previous, shipping_phone: event.target.value }))
+                  }
+                  error={formatFieldError(fieldErrors, 'shipping_phone')}
+                  required
+                />
+                <Input label="Email tài khoản" value={user?.email ?? ''} disabled />
+                <Input
+                  label="Địa chỉ giao hàng"
+                  value={userForm.shipping_address}
+                  onChange={(event) =>
+                    setUserForm((previous) => ({
+                      ...previous,
+                      shipping_address: event.target.value,
+                    }))
+                  }
+                  error={formatFieldError(fieldErrors, 'shipping_address')}
+                  required
+                />
+                <Input
+                  label="Ghi chú (tùy chọn)"
+                  value={userForm.note}
+                  onChange={(event) => setUserForm((previous) => ({ ...previous, note: event.target.value }))}
+                />
+              </div>
+            )}
+          </section>
 
-                setGuestForm((previous) => ({
-                  ...previous,
-                  shipping_address: event.target.value,
-                }))
-              }}
-              error={formatFieldError(fieldErrors, 'shipping_address')}
-              required
-            />
-
-            <Input
-              label="Ghi chú (tùy chọn)"
-              value={isAuthenticated ? userForm.note : guestForm.note}
-              onChange={(event) => {
-                if (isAuthenticated) {
-                  setUserForm((previous) => ({ ...previous, note: event.target.value }))
-                  return
-                }
-
-                setGuestForm((previous) => ({ ...previous, note: event.target.value }))
-              }}
-            />
-
-            <Input label="Phương thức thanh toán" value="Thanh toán khi nhận hàng (COD)" disabled />
+          <section className="space-y-3 border border-neutral-200 bg-white p-5">
+            <h2 className="text-lg font-bold text-neutral-900">Phương thức thanh toán</h2>
+            <div className="rounded border border-neutral-300 bg-neutral-50 p-4">
+              <p className="text-sm font-semibold text-neutral-900">Thanh toán khi nhận hàng (COD)</p>
+              <p className="mt-1 text-sm text-neutral-600">Bạn thanh toán khi đơn hàng được giao thành công.</p>
+            </div>
           </section>
 
           <VoucherBox
@@ -309,39 +330,19 @@ export function CheckoutPage() {
             onVoucherChecked={setVoucherResult}
             disabled={isSubmitting}
           />
-
-          <div className="flex flex-wrap gap-2">
-            <Button type="button" onClick={() => void submitCheckout()} isLoading={isSubmitting}>
-              Đặt hàng
-            </Button>
-            <Link className="rounded bg-slate-200 px-4 py-2 text-sm font-medium text-slate-900" to="/cart">
-              Quay lại giỏ hàng
-            </Link>
-          </div>
         </div>
 
-        <aside className="space-y-3 rounded-lg border border-slate-200 bg-white p-4 lg:sticky lg:top-20 lg:self-start">
-          <h2 className="text-base font-semibold text-slate-900">Tóm tắt đơn hàng</h2>
-          <p className="text-sm text-slate-700">
-            Số sản phẩm: <strong>{cart.items.length}</strong>
-          </p>
-          <p className="text-sm text-slate-700">
-            Tạm tính: <PriceText value={subtotal} />
-          </p>
-          <p className="text-sm text-slate-700">
-            Giảm giá: <PriceText value={discountAmount} />
-          </p>
-          <p className="text-sm text-slate-700">
-            Phí vận chuyển: <PriceText value={estimatedShippingFee} />
-          </p>
-          <hr className="border-slate-200" />
-          <p className="text-lg font-semibold text-slate-900">
-            Tổng dự kiến: <PriceText value={estimatedTotal} />
-          </p>
-          <p className="text-xs text-slate-500">
-            Quy tắc phí vận chuyển: tạm tính {'<'} 500.000 VND tính 30.000 VND, từ 500.000 VND trở lên miễn phí.
-          </p>
-        </aside>
+        <div className="order-1 xl:order-2">
+          <CheckoutOrderSummary
+            cart={cart}
+            subtotal={subtotal}
+            discountAmount={discountAmount}
+            shippingFee={estimatedShippingFee}
+            estimatedTotal={estimatedTotal}
+            isSubmitting={isSubmitting}
+            onSubmit={submitCheckout}
+          />
+        </div>
       </div>
     </section>
   )

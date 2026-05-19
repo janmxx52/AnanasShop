@@ -53,6 +53,48 @@ class VoucherTest extends TestCase
         $this->assertDatabaseHas('vouchers', ['id' => $id, 'is_active' => 0]);
     }
 
+    public function test_admin_created_voucher_can_be_checked_by_authenticated_user()
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $this->actingAs($admin, 'sanctum');
+
+        $create = $this->postJson('/api/admin/vouchers', [
+            'code' => 'ADMINUSER10',
+            'type' => 'percent',
+            'value' => 10,
+            'max_discount' => 20000,
+            'min_order_amount' => 0,
+            'usage_limit' => 100,
+            'usage_per_user' => 2,
+            'is_active' => 1,
+        ]);
+
+        $create->assertStatus(201)->assertJsonPath('data.code', 'ADMINUSER10');
+
+        $user = User::factory()->create();
+        $this->actingAs($user, 'sanctum');
+
+        $product = Product::factory()->create(['base_price' => 200000, 'sale_price' => null]);
+        $variant = ProductVariant::factory()->for($product)->create([
+            'stock' => 10,
+            'price_adjustment' => 0,
+        ]);
+
+        $cart = Cart::create(['user_id' => $user->id]);
+        $cart->items()->create([
+            'product_variant_id' => $variant->id,
+            'quantity' => 1,
+        ]);
+
+        $check = $this->postJson('/api/vouchers/check', ['code' => 'ADMINUSER10']);
+
+        $check->assertStatus(200)
+            ->assertJsonPath('data.code', 'ADMINUSER10')
+            ->assertJsonPath('data.subtotal', 200000)
+            ->assertJsonPath('data.discount', 20000)
+            ->assertJsonPath('data.total_after', 180000);
+    }
+
     public function test_guest_can_check_valid_voucher()
     {
         $product = Product::factory()->create(['base_price' => 1000, 'sale_price' => null]);
