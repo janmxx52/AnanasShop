@@ -1,28 +1,28 @@
-﻿# API Documentation â€” Ananas Fashion Backend
+# API Documentation — Ananas Fashion Backend
 
 > Last updated: 2026-05-14  
 > Base URL: `/api`  
-> Content type: `application/json` (trá»« endpoint upload áº£nh dÃ¹ng `multipart/form-data`)
+> Content type: `application/json` (trừ endpoint upload ảnh dùng `multipart/form-data`)
 
 ---
 
 ## 1) Base URL
 
-- Táº¥t cáº£ endpoint Ä‘Æ°á»£c prefix bá»Ÿi `/api`.
+- Tất cả endpoint được prefix bởi `/api`.
 
 ---
 
 ## 2) Authentication
 
-- DÃ¹ng Laravel Sanctum (token-based).
-- Header chuáº©n:
+- Dùng Laravel Sanctum (token-based).
+- Header chuẩn:
 
 ```http
 Authorization: Bearer {token}
 Accept: application/json
 ```
 
-- Guest cart dÃ¹ng thÃªm header:
+- Guest cart dùng thêm header:
 
 ```http
 X-Guest-Token: {uuid}
@@ -32,7 +32,7 @@ X-Guest-Token: {uuid}
 
 ## 3) Response Contract
 
-## 3.1 Success envelope (chuáº©n má»›i)
+## 3.1 Success envelope (chuẩn mới)
 
 ```json
 {
@@ -42,7 +42,7 @@ X-Guest-Token: {uuid}
 }
 ```
 
-## 3.2 Paginated envelope (chuáº©n má»›i)
+## 3.2 Paginated envelope (chuẩn mới)
 
 ```json
 {
@@ -58,7 +58,7 @@ X-Guest-Token: {uuid}
 }
 ```
 
-## 3.3 Error envelope (chuáº©n má»›i)
+## 3.3 Error envelope (chuẩn mới)
 
 ```json
 {
@@ -82,10 +82,10 @@ X-Guest-Token: {uuid}
 }
 ```
 
-## 3.5 Ghi chÃº tÆ°Æ¡ng thÃ­ch
+## 3.5 Ghi chú tương thích
 
-- Má»™t sá»‘ endpoint cÅ©/public váº«n tráº£ format legacy (khÃ´ng bá»c `message`/`success` Ä‘á»“ng nháº¥t), vÃ­ dá»¥ `GET /api/products`, `GET /api/products/{slug}`, nhÃ³m cart/auth cÅ©.
-- Validation exception máº·c Ä‘á»‹nh Laravel hiá»‡n váº«n cÃ³ thá»ƒ tráº£:
+- Một số endpoint cũ/public vẫn trả format legacy (không bọc `message`/`success` đồng nhất), ví dụ `GET /api/products`, `GET /api/products/{slug}`, nhóm cart/auth cũ.
+- Validation exception mặc định Laravel hiện vẫn có thể trả:
 
 ```json
 {
@@ -128,7 +128,7 @@ X-Guest-Token: {uuid}
 }
 ```
 - Error example `422`: duplicate email/invalid password.
-- Business notes: password min 8, cÃ³ chá»¯ hoa/thÆ°á»ng/sá»‘.
+- Business notes: password min 8, có chữ hoa/thường/số.
 - Related tests: `tests/Feature/AuthFlowTest.php`.
 
 ### 4.2 POST `/api/auth/login`
@@ -163,7 +163,7 @@ X-Guest-Token: {uuid}
   "message": "Invalid credentials"
 }
 ```
-- Business notes: user bá»‹ ban khÃ´ng Ä‘Äƒng nháº­p Ä‘Æ°á»£c.
+- Business notes: user bị ban không đăng nhập được.
 - Related tests: `tests/Feature/AuthFlowTest.php`.
 
 ### 4.3 POST `/api/auth/logout`
@@ -178,7 +178,7 @@ X-Guest-Token: {uuid}
 }
 ```
 - Error `401`: unauthenticated.
-- Business notes: revoke token hiá»‡n táº¡i.
+- Business notes: revoke token hiện tại.
 - Related tests: `tests/Feature/AuthFlowTest.php`.
 
 ### 4.4 POST `/api/auth/logout-all`
@@ -193,7 +193,7 @@ X-Guest-Token: {uuid}
 }
 ```
 - Error `401`: unauthenticated.
-- Business notes: revoke toÃ n bá»™ token cá»§a user.
+- Business notes: revoke toàn bộ token của user.
 - Related tests: `tests/Feature/AuthFlowTest.php`.
 
 ### 4.5 GET `/api/auth/me`
@@ -219,13 +219,13 @@ X-Guest-Token: {uuid}
   "message": "Unauthenticated"
 }
 ```
-- Business notes: dÃ¹ng Ä‘á»ƒ verify token.
+- Business notes: dùng để verify token.
 - Related tests: `tests/Feature/AuthFlowTest.php`.
 
 ### 4.6 PUT `/api/auth/me`
 - Auth: Required
 - Headers: `Authorization`, `Accept`
-- Content type: `multipart/form-data` náº¿u upload avatar.
+- Content type: `multipart/form-data` nếu upload avatar.
 - Request body example:
 ```json
 {
@@ -273,7 +273,7 @@ X-Guest-Token: {uuid}
   "message": "Current password is incorrect"
 }
 ```
-- Business notes: Ä‘á»•i máº­t kháº©u sáº½ revoke token khÃ¡c phiÃªn hiá»‡n táº¡i.
+- Business notes: đổi mật khẩu sẽ revoke token khác phiên hiện tại.
 - Related tests: `tests/Feature/AuthFlowTest.php`.
 
 ---
@@ -314,10 +314,10 @@ X-Guest-Token: {uuid}
 ```
 - Error example `422`: query param invalid.
 - Business notes:
-  - chá»‰ tráº£ product `is_active=true`
-  - giÃ¡ hiá»ƒn thá»‹ dÃ¹ng `sale_price ?? base_price`
-  - giÃ¡ variant = product display price + `price_adjustment`
-  - cÃ³ `rating_avg`, `review_count` real-time (approved reviews).
+  - chỉ trả product `is_active=true`
+  - giá hiển thị dùng `sale_price ?? base_price`
+  - giá variant = product display price + `price_adjustment`
+  - có `rating_avg`, `review_count` real-time (approved reviews).
 - Related tests: `tests/Feature/ProductPublicApiTest.php`, `tests/Feature/ReviewTest.php`.
 
 ### 5.2 GET `/api/products/{slug}`
@@ -342,7 +342,7 @@ X-Guest-Token: {uuid}
   "message": "Product not found"
 }
 ```
-- Business notes: inactive/missing tráº£ 404.
+- Business notes: inactive/missing trả 404.
 - Related tests: `tests/Feature/ProductPublicApiTest.php`.
 
 ### 5.3 GET `/api/products/{slug}/reviews`
@@ -370,8 +370,8 @@ X-Guest-Token: {uuid}
   }
 }
 ```
-- Error `404`: product khÃ´ng tá»“n táº¡i/khÃ´ng active.
-- Business notes: chá»‰ hiá»ƒn thá»‹ review approved.
+- Error `404`: product không tồn tại/không active.
+- Business notes: chỉ hiển thị review approved.
 - Related tests: `tests/Feature/ReviewTest.php`.
 
 ---
@@ -379,9 +379,9 @@ X-Guest-Token: {uuid}
 ## 6) Cart APIs
 
 ### 6.1 GET `/api/cart`
-- Auth: Public hoáº·c Authenticated
+- Auth: Public hoặc Authenticated
 - Headers:
-  - Guest: `X-Guest-Token` (optional láº§n Ä‘áº§u), `Accept`
+  - Guest: `X-Guest-Token` (optional lần đầu), `Accept`
   - User: `Authorization`, `Accept`
 - Request body: none
 - Success `200`:
@@ -396,14 +396,14 @@ X-Guest-Token: {uuid}
   "total": 0
 }
 ```
-- Error `500`/`404`: hiáº¿m, thÆ°á»ng khÃ´ng dÃ¹ng.
+- Error `500`/`404`: hiếm, thường không dùng.
 - Business notes:
-  - náº¿u guest chÆ°a cÃ³ token, backend táº¡o cart má»›i vÃ  tráº£ header `X-Guest-Token`.
-  - cart total tÃ­nh real-time tá»« product/variant hiá»‡n táº¡i.
+  - nếu guest chưa có token, backend tạo cart mới và trả header `X-Guest-Token`.
+  - cart total tính real-time từ product/variant hiện tại.
 - Related tests: `tests/Feature/CartTest.php`.
 
 ### 6.2 POST `/api/cart/items`
-- Auth: Public hoáº·c Authenticated
+- Auth: Public hoặc Authenticated
 - Headers: nhÆ° `GET /cart`
 - Request body:
 ```json
@@ -423,12 +423,12 @@ X-Guest-Token: {uuid}
   "subtotal": 940000
 }
 ```
-- Error `422`: vÆ°á»£t stock, product inactive, variant out of stock.
-- Business notes: add cÃ¹ng variant sáº½ cá»™ng dá»“n quantity.
+- Error `422`: vượt stock, product inactive, variant out of stock.
+- Business notes: add cùng variant sẽ cộng dồn quantity.
 - Related tests: `tests/Feature/CartTest.php`.
 
 ### 6.3 PUT `/api/cart/items/{itemId}`
-- Auth: Public hoáº·c Authenticated
+- Auth: Public hoặc Authenticated
 - Headers: nhÆ° `GET /cart`
 - Request body:
 ```json
@@ -450,12 +450,12 @@ X-Guest-Token: {uuid}
   "message": "Removed"
 }
 ```
-- Error `422`: quantity invalid/vÆ°á»£t stock.
-- Business notes: quantity=0 sáº½ xÃ³a item.
+- Error `422`: quantity invalid/vượt stock.
+- Business notes: quantity=0 sẽ xóa item.
 - Related tests: `tests/Feature/CartTest.php`.
 
 ### 6.4 DELETE `/api/cart/items/{itemId}`
-- Auth: Public hoáº·c Authenticated
+- Auth: Public hoặc Authenticated
 - Headers: nhÆ° `GET /cart`
 - Request body: none
 - Success `200`:
@@ -464,12 +464,12 @@ X-Guest-Token: {uuid}
   "message": "Deleted"
 }
 ```
-- Error `404`: item khÃ´ng thuá»™c cart hiá»‡n táº¡i.
-- Business notes: chá»‰ xÃ³a item thuá»™c Ä‘Ãºng cart owner.
+- Error `404`: item không thuộc cart hiện tại.
+- Business notes: chỉ xóa item thuộc đúng cart owner.
 - Related tests: `tests/Feature/CartTest.php`.
 
 ### 6.5 DELETE `/api/cart`
-- Auth: Public hoáº·c Authenticated
+- Auth: Public hoặc Authenticated
 - Headers: nhÆ° `GET /cart`
 - Request body: none
 - Success `200`:
@@ -478,7 +478,7 @@ X-Guest-Token: {uuid}
   "message": "Cleared"
 }
 ```
-- Business notes: clear toÃ n bá»™ item trong cart hiá»‡n táº¡i.
+- Business notes: clear toàn bộ item trong cart hiện tại.
 - Related tests: `tests/Feature/CartTest.php`.
 
 ### 6.6 POST `/api/cart/merge`
@@ -505,7 +505,7 @@ X-Guest-Token: {uuid}
   "message": "Missing guest token"
 }
 ```
-- Business notes: merge quantity nhÆ°ng khÃ´ng vÆ°á»£t stock, guest cart bá»‹ xÃ³a sau merge.
+- Business notes: merge quantity nhưng không vượt stock, guest cart bị xóa sau merge.
 - Related tests: `tests/Feature/CartTest.php`.
 
 ---
@@ -513,7 +513,7 @@ X-Guest-Token: {uuid}
 ## 7) Voucher APIs
 
 ### 7.1 POST `/api/vouchers/check`
-- Auth: Public hoáº·c Authenticated
+- Auth: Public hoặc Authenticated
 - Headers:
   - Guest: `X-Guest-Token`, `Accept`
   - User: `Authorization`, `Accept`
@@ -551,15 +551,15 @@ X-Guest-Token: {uuid}
 ```
 - Business notes:
   - check `min_order_amount`, `usage_limit`, `usage_per_user`, active, start/end time.
-  - check endpoint khÃ´ng mutate `used_count`/`voucher_usages`.
+  - check endpoint không mutate `used_count`/`voucher_usages`.
 - Related tests: `tests/Feature/VoucherTest.php`.
 
 ### 7.2 Admin voucher CRUD
 
-Táº¥t cáº£ endpoint dÆ°á»›i Ä‘Ã¢y:
+Tất cả endpoint dưới đây:
 - Auth: Required + `role:admin`
 - Headers: `Authorization`, `Accept`
-- Response: dÃ¹ng success/paginated envelope.
+- Response: dùng success/paginated envelope.
 
 #### GET `/api/admin/vouchers`
 - Query: `per_page` (default 15)
@@ -591,7 +591,7 @@ Táº¥t cáº£ endpoint dÆ°á»›i Ä‘Ã¢y:
 - Error `404`: not found.
 
 #### PUT `/api/admin/vouchers/{voucher}`
-- Body: tÆ°Æ¡ng tá»± create.
+- Body: tương tự create.
 - Success `200`: voucher updated.
 - Error `422`/`404`.
 
@@ -604,7 +604,7 @@ Táº¥t cáº£ endpoint dÆ°á»›i Ä‘Ã¢y:
   "data": null
 }
 ```
-- Business notes: soft-disable báº±ng `is_active=0`.
+- Business notes: soft-disable bằng `is_active=0`.
 
 ---
 
@@ -622,7 +622,7 @@ Táº¥t cáº£ endpoint dÆ°á»›i Ä‘Ã¢y:
   "shipping_address": "123 Nguyen Trai, Q1, HCM",
   "voucher_code": "SALE10",
   "payment_method": "cod",
-  "note": "Giao giá» hÃ nh chÃ­nh"
+  "note": "Giao giờ hành chính"
 }
 ```
 - Success `201`:
@@ -644,10 +644,10 @@ Táº¥t cáº£ endpoint dÆ°á»›i Ä‘Ã¢y:
 ```
 - Error `422`: cart empty, stock insufficient, voucher invalid, payment_method != cod.
 - Business notes:
-  - checkout flow cháº¡y trong `DB::transaction`
+  - checkout flow chạy trong `DB::transaction`
   - lock cart/variant/voucher (`lockForUpdate`)
-  - snapshot order_items, trá»« stock, clear cart sau success
-  - táº¡o voucher_usage + increment used_count chá»‰ sau success.
+  - snapshot order_items, trừ stock, clear cart sau success
+  - tạo voucher_usage + increment used_count chỉ sau success.
 - Related tests: `tests/Feature/CheckoutTest.php`, `tests/Feature/PaymentFoundationTest.php`.
 
 ### 8.2 POST `/api/orders`
@@ -664,7 +664,7 @@ Táº¥t cáº£ endpoint dÆ°á»›i Ä‘Ã¢y:
   "note": "Call before delivery"
 }
 ```
-- Success `201`: format giá»‘ng guest checkout.
+- Success `201`: format giống guest checkout.
 - Error `401` unauthenticated; `422` validation/business rule.
 - Business notes: COD only.
 - Related tests: `tests/Feature/CheckoutTest.php`.
@@ -687,7 +687,7 @@ Táº¥t cáº£ endpoint dÆ°á»›i Ä‘Ã¢y:
 }
 ```
 - Error `401`.
-- Business notes: user chá»‰ tháº¥y order cá»§a chÃ­nh mÃ¬nh.
+- Business notes: user chỉ thấy order của chính mình.
 - Related tests: `tests/Feature/OrderManagementTest.php`.
 
 ### 8.4 GET `/api/orders/{order_code}`
@@ -695,8 +695,8 @@ Táº¥t cáº£ endpoint dÆ°á»›i Ä‘Ã¢y:
 - Headers: `Authorization`, `Accept`
 - Request body: none
 - Success `200`: `success + data(OrderResource)`.
-- Error `404`: order khÃ´ng thuá»™c user hoáº·c khÃ´ng tá»“n táº¡i.
-- Business notes: ownership enforce á»Ÿ repository/service.
+- Error `404`: order không thuộc user hoặc không tồn tại.
+- Business notes: ownership enforce ở repository/service.
 - Related tests: `tests/Feature/OrderManagementTest.php`.
 
 ### 8.5 POST `/api/orders/{order_code}/cancel`
@@ -715,9 +715,9 @@ Táº¥t cáº£ endpoint dÆ°á»›i Ä‘Ã¢y:
   }
 }
 ```
-- Error `422`: status khÃ´ng cho phÃ©p cancel.
+- Error `422`: status không cho phép cancel.
 - Business notes:
-  - customer chá»‰ cancel khi status `pending|confirmed`
+  - customer chỉ cancel khi status `pending|confirmed`
   - restore stock, revoke voucher_usage (`revoked_at`), decrement `used_count`
   - transaction + lock order/variant/voucher.
 - Related tests: `tests/Feature/OrderManagementTest.php`, `tests/Feature/PaymentFoundationTest.php`.
@@ -762,21 +762,21 @@ Táº¥t cáº£ endpoint dÆ°á»›i Ä‘Ã¢y:
 ```json
 {
   "success": false,
-  "message": "KhÃ´ng tÃ¬m tháº¥y Ä‘Æ¡n hÃ ng"
+  "message": "Không tìm thấy đơn hàng"
 }
 ```
 - Business notes:
-  - báº¯t buá»™c `order_code + (email hoáº·c phone)`
-  - náº¿u gá»­i cáº£ email+phone, cáº£ hai pháº£i match
-  - khÃ´ng leak PII khi fail
-  - match Æ°u tiÃªn `customer_email/customer_phone`, fallback `guest_email/guest_phone/shipping_phone`.
+  - bắt buộc `order_code + (email hoặc phone)`
+  - nếu gửi cả email+phone, cả hai phải match
+  - không leak PII khi fail
+  - match ưu tiên `customer_email/customer_phone`, fallback `guest_email/guest_phone/shipping_phone`.
 - Related tests: `tests/Feature/OrderLookupTest.php`.
 
 ---
 
 ## 9) Wishlist APIs
 
-Táº¥t cáº£ endpoint wishlist:
+Tất cả endpoint wishlist:
 - Auth: Required (`auth:sanctum`)
 - Headers: `Authorization`, `Accept`
 
@@ -807,7 +807,7 @@ Táº¥t cáº£ endpoint wishlist:
 }
 ```
 - Error `401`.
-- Business notes: chá»‰ tráº£ product active.
+- Business notes: chỉ trả product active.
 - Related tests: `tests/Feature/WishlistTest.php`.
 
 ### 9.2 POST `/api/wishlist/toggle`
@@ -841,7 +841,7 @@ Táº¥t cáº£ endpoint wishlist:
 }
 ```
 - Error `422`: product inactive/soft-deleted/unavailable.
-- Business notes: unique `(user_id,product_id)` chá»‘ng duplicate.
+- Business notes: unique `(user_id,product_id)` chống duplicate.
 - Related tests: `tests/Feature/WishlistTest.php`.
 
 ### 9.3 DELETE `/api/wishlist/{product}`
@@ -854,7 +854,7 @@ Táº¥t cáº£ endpoint wishlist:
 }
 ```
 - Error `401`: unauthenticated.
-- Business notes: idempotent, khÃ´ng tráº£ 404 khi item khÃ´ng tá»“n táº¡i.
+- Business notes: idempotent, không trả 404 khi item không tồn tại.
 - Related tests: `tests/Feature/WishlistTest.php`.
 
 ---
@@ -866,15 +866,15 @@ Táº¥t cáº£ endpoint wishlist:
 - Headers: `Accept`
 - Query: `page`, `per_page` (max 50)
 - Request body: none
-- Success `200`: xem má»¥c `5.3`.
-- Error `404`: product khÃ´ng tá»“n táº¡i/khÃ´ng active.
-- Business notes: chá»‰ review approved.
+- Success `200`: xem mục `5.3`.
+- Error `404`: product không tồn tại/không active.
+- Business notes: chỉ review approved.
 - Related tests: `tests/Feature/ReviewTest.php`.
 
 ### 10.2 POST `/api/products/{slug}/reviews`
 - Auth: Required
 - Headers: `Authorization`, `Accept`
-- Content type: `multipart/form-data` náº¿u cÃ³ áº£nh.
+- Content type: `multipart/form-data` nếu có ảnh.
 - Request body:
 ```json
 {
@@ -899,11 +899,11 @@ Táº¥t cáº£ endpoint wishlist:
   }
 }
 ```
-- Error `422`: chÆ°a delivered, order_item khÃ´ng thuá»™c user, sai product slug, duplicate order_item review, rating out of range, áº£nh > 3.
+- Error `422`: chưa delivered, order_item không thuộc user, sai product slug, duplicate order_item review, rating out of range, ảnh > 3.
 - Business notes:
-  - má»—i `order_item` chá»‰ review 1 láº§n
-  - user mua láº¡i cÃ¹ng product á»Ÿ order_item khÃ¡c váº«n review Ä‘Æ°á»£c
-  - upload áº£nh qua CloudinaryService + cleanup khi fail.
+  - mỗi `order_item` chỉ review 1 lần
+  - user mua lại cùng product ở order_item khác vẫn review được
+  - upload ảnh qua CloudinaryService + cleanup khi fail.
 - Related tests: `tests/Feature/ReviewTest.php`.
 
 ### 10.3 DELETE `/api/reviews/{id}`
@@ -917,15 +917,15 @@ Táº¥t cáº£ endpoint wishlist:
   "message": "Review deleted"
 }
 ```
-- Error `404`: review khÃ´ng thuá»™c user hoáº·c khÃ´ng tá»“n táº¡i.
-- Business notes: chá»‰ owner Ä‘Æ°á»£c xÃ³a.
+- Error `404`: review không thuộc user hoặc không tồn tại.
+- Business notes: chỉ owner được xóa.
 - Related tests: `tests/Feature/ReviewTest.php`.
 
 ---
 
 ## 11) Admin APIs
 
-Táº¥t cáº£ endpoint admin:
+Tất cả endpoint admin:
 - Prefix: `/api/admin`
 - Middleware: `auth:sanctum` + `role:admin`
 - Headers: `Authorization`, `Accept`
@@ -958,7 +958,7 @@ Táº¥t cáº£ endpoint admin:
 - Error `404` (`message: Not found`).
 
 ### PUT `/api/admin/categories/{id}`
-- Body: field update tÆ°Æ¡ng tá»± create.
+- Body: field update tương tự create.
 - Success `200`.
 - Error `404`/`422`.
 
@@ -1007,7 +1007,7 @@ Táº¥t cáº£ endpoint admin:
 
 ### GET `/api/admin/products`
 - Query: `q`, `category`, `brand`, `is_active`, `with_trashed`, `per_page`
-- Success `200`: paginated envelope vá»›i `AdminProductResource`.
+- Success `200`: paginated envelope với `AdminProductResource`.
 - Related tests: `tests/Feature/AdminProductTest.php`.
 
 ### POST `/api/admin/products`
@@ -1078,7 +1078,7 @@ Táº¥t cáº£ endpoint admin:
 
 ### GET `/api/admin/products/{product}/variants/{variant}`
 - Success `200`.
-- Error `404` (variant khÃ´ng thuá»™c product).
+- Error `404` (variant không thuộc product).
 
 ### PUT/PATCH `/api/admin/products/{product}/variants/{variant}`
 - Success `200`.
@@ -1086,7 +1086,7 @@ Táº¥t cáº£ endpoint admin:
 
 ### DELETE `/api/admin/products/{product}/variants/{variant}`
 - Success `200`.
-- Error `400`: variant Ä‘Ã£ Ä‘Æ°á»£c tham chiáº¿u á»Ÿ order_items.
+- Error `400`: variant đã được tham chiếu ở order_items.
 
 ## 11.5 Product Image CRUD
 
@@ -1117,16 +1117,16 @@ Táº¥t cáº£ endpoint admin:
 
 ### DELETE `/api/admin/products/{product}/images/{image}`
 - Success `200`.
-- Error `404`: image khÃ´ng thuá»™c product.
+- Error `404`: image không thuộc product.
 
 ### PATCH `/api/admin/products/{product}/images/{image}/primary`
-- Success `200`: image Ä‘Æ°á»£c set primary.
-- Error `404`: image khÃ´ng thuá»™c product.
+- Success `200`: image được set primary.
+- Error `404`: image không thuộc product.
 
 ## 11.6 Admin Voucher CRUD
 
 - Endpoint: `GET|POST /api/admin/vouchers`, `GET|PUT|DELETE /api/admin/vouchers/{voucher}`
-- Contract/details: xem má»¥c `7.2`.
+- Contract/details: xem mục `7.2`.
 - Related tests: `tests/Feature/VoucherTest.php`.
 
 ## 11.7 Admin Order Management
@@ -1161,13 +1161,13 @@ Táº¥t cáº£ endpoint admin:
 ```
 - Success `200`: updated order.
 - Error `422`:
-  - transition khÃ´ng há»£p lá»‡
-  - cáº¥m set `payment_status` trá»±c tiáº¿p (`payment_status` bá»‹ `prohibited`).
+  - transition không hợp lệ
+  - cấm set `payment_status` trực tiếp (`payment_status` bị `prohibited`).
 - Business notes:
-  - flow há»£p lá»‡: `pending->confirmed->processing->shipping->delivered`
-  - tá»« `shipping` cÃ³ thá»ƒ `returned`
-  - admin cancel báº±ng `status=cancelled` (khÃ´ng endpoint riÃªng)
-  - cancel sáº½ restore stock + voucher usage rollback.
+  - flow hợp lệ: `pending->confirmed->processing->shipping->delivered`
+  - từ `shipping` có thể `returned`
+  - admin cancel bằng `status=cancelled` (không endpoint riêng)
+  - cancel sẽ restore stock + voucher usage rollback.
 - Related tests: `tests/Feature/OrderManagementTest.php`, `tests/Feature/PaymentFoundationTest.php`.
 
 ## 11.8 Admin User Management
@@ -1316,23 +1316,23 @@ Táº¥t cáº£ endpoint admin:
 
 ## 13) Payment Foundation (COD only)
 
-- Phase hiá»‡n táº¡i: chá»‰ COD trong checkout/order management.
-- Quy Æ°á»›c:
-  - `payment_method`: `cod` (request khÃ¡c `cod` sáº½ lá»—i 422).
+- Phase hiện tại: chỉ COD trong checkout/order management.
+- Quy ước:
+  - `payment_method`: `cod` (request khác `cod` sẽ lỗi 422).
   - `payment_status`:
-    - `pending`: má»›i checkout COD
-    - `paid`: admin chuyá»ƒn order sang `delivered` vá»›i COD
-    - `cancelled`: order bá»‹ há»§y (customer/admin)
-    - `failed`: dÃ nh cho online payment fail á»Ÿ phase VNPay/MoMo tÆ°Æ¡ng lai
-    - `refunded`: reserved cho flow hoÃ n tiá»n tÆ°Æ¡ng lai.
-- KhÃ´ng tÃ­ch há»£p VNPay/MoMo trong scope hiá»‡n táº¡i.
+    - `pending`: mới checkout COD
+    - `paid`: admin chuyển order sang `delivered` với COD
+    - `cancelled`: order bị hủy (customer/admin)
+    - `failed`: dành cho online payment fail ở phase VNPay/MoMo tương lai
+    - `refunded`: reserved cho flow hoàn tiền tương lai.
+- Không tích hợp VNPay/MoMo trong scope hiện tại.
 - Related tests: `tests/Feature/PaymentFoundationTest.php`, `tests/Feature/CheckoutTest.php`.
 
 ---
 
-## 14) Out-of-scope endpoints Ä‘ang giá»¯ route (tráº£ 501)
+## 14) Out-of-scope endpoints đang giữ route (trả 501)
 
-CÃ¡c endpoint dÆ°á»›i Ä‘Ã¢y tráº£:
+Các endpoint dưới đây trả:
 ```json
 {
   "success": false,

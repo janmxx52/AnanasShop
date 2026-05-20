@@ -1,87 +1,87 @@
-﻿# Business Rules â€” Ananas Fashion
+# Business Rules — Ananas Fashion
 
 > Updated: 2026-05-15  
-> Scope: backend rules Ä‘ang implemented hoáº·c Ä‘Ã£ chá»‘t quyáº¿t Ä‘á»‹nh
+> Scope: backend rules đang implemented hoặc đã chốt quyết định
 
 ---
 
 ## 1) Authentication & Authorization
 
-- DÃ¹ng Sanctum token-based auth.
-- Register yÃªu cáº§u: `name`, `email`, `password`, `password_confirmation`; `phone` optional.
-- Password tá»‘i thiá»ƒu 8 kÃ½ tá»±, cÃ³ chá»¯ hoa + chá»¯ thÆ°á»ng + sá»‘.
+- Dùng Sanctum token-based auth.
+- Register yêu cầu: `name`, `email`, `password`, `password_confirmation`; `phone` optional.
+- Password tối thiểu 8 ký tự, có chữ hoa + chữ thường + số.
 - Email unique.
-- User bá»‹ `is_banned=true` khÃ´ng Ä‘Æ°á»£c login.
-- User cÃ³ thá»ƒ logout current token vÃ  logout all tokens.
-- Admin routes yÃªu cáº§u: `auth:sanctum + role:admin`.
+- User bị `is_banned=true` không được login.
+- User có thể logout current token và logout all tokens.
+- Admin routes yêu cầu: `auth:sanctum + role:admin`.
 
 ---
 
 ## 2) Product & Pricing
 
-- Public chá»‰ hiá»ƒn thá»‹ product `is_active=true` vÃ  chÆ°a soft deleted.
+- Public chỉ hiển thị product `is_active=true` và chưa soft deleted.
 - Product display price:
-  - `product_display_price = sale_price` náº¿u cÃ³
-  - ngÆ°á»£c láº¡i dÃ¹ng `base_price`.
+  - `product_display_price = sale_price` nếu có
+  - ngược lại dùng `base_price`.
 - Variant final price:
   - `variant_final_price = product_display_price + price_adjustment`.
-- Rule giÃ¡ trÃªn pháº£i Ä‘á»“ng nháº¥t giá»¯a:
+- Rule giá trên phải đồng nhất giữa:
   - Product API
   - Cart realtime total
   - Voucher subtotal check
   - Checkout unit_price snapshot.
-- Variant uniqueness: khÃ´ng trÃ¹ng `(product_id, size, color)`.
+- Variant uniqueness: không trùng `(product_id, size, color)`.
 
 ---
 
 ## 3) Cart
 
-- Há»— trá»£ guest cart (`X-Guest-Token`) vÃ  user cart (`auth:sanctum`).
-- CÃ¹ng variant trong cÃ¹ng cart sáº½ cá»™ng quantity.
-- Quantity tá»‘i thiá»ƒu 1; update vá» 0 thÃ¬ remove item.
-- Quantity khÃ´ng vÆ°á»£t stock variant.
-- KhÃ´ng cho add/update variant náº¿u product inactive hoáº·c variant háº¿t hÃ ng.
-- Cart khÃ´ng lÆ°u giÃ¡ cá»©ng, luÃ´n tÃ­nh realtime.
-- Sau login cÃ³ thá»ƒ merge guest cart vÃ o user cart, quantity váº«n pháº£i theo stock.
+- Hỗ trợ guest cart (`X-Guest-Token`) và user cart (`auth:sanctum`).
+- Cùng variant trong cùng cart sẽ cộng quantity.
+- Quantity tối thiểu 1; update về 0 thì remove item.
+- Quantity không vượt stock variant.
+- Không cho add/update variant nếu product inactive hoặc variant hết hàng.
+- Cart không lưu giá cứng, luôn tính realtime.
+- Sau login có thể merge guest cart vào user cart, quantity vẫn phải theo stock.
 
 ---
 
 ## 4) Voucher
 
-- Voucher type: `percent` hoáº·c `fixed`.
+- Voucher type: `percent` hoặc `fixed`.
 - Validate:
   - `is_active`
   - `starts_at` / `expires_at`
   - `min_order_amount`
   - `usage_limit`
   - `usage_per_user`.
-- Percent voucher pháº£i tÃ´n trá»ng `max_discount` (náº¿u cÃ³).
-- `voucher_usages` lÃ  source of truth cho usage.
-- `vouchers.used_count` lÃ  counter cache.
-- Voucher check endpoint **khÃ´ng Ä‘Æ°á»£c mutate** usage.
-- Chá»‰ mutate usage khi checkout success trong transaction:
-  - táº¡o `voucher_usages`
+- Percent voucher phải tôn trọng `max_discount` (nếu có).
+- `voucher_usages` là source of truth cho usage.
+- `vouchers.used_count` là counter cache.
+- Voucher check endpoint **không được mutate** usage.
+- Chỉ mutate usage khi checkout success trong transaction:
+  - tạo `voucher_usages`
   - increment `used_count`.
 - Khi cancel order:
-  - khÃ´ng xÃ³a usage row
+  - không xóa usage row
   - set `voucher_usages.revoked_at = now()`
   - decrement `vouchers.used_count`.
-- Usage limit/per-user chá»‰ count usage cÃ³ `revoked_at IS NULL`.
+- Usage limit/per-user chỉ count usage có `revoked_at IS NULL`.
 
 ---
 
 ## 5) Checkout & Orders
 
-- Checkout há»— trá»£:
+- Checkout hỗ trợ:
   - guest: `POST /api/checkout/guest`
   - authenticated user: `POST /api/orders`.
-- Validate cart khÃ´ng rá»—ng trÆ°á»›c checkout.
+- Validate cart không rỗng trước checkout.
 - Lock rows khi checkout:
   - lock cart/cart_items
   - lock product_variants
-  - lock voucher (náº¿u cÃ³ code).
-- Sau lock pháº£i validate láº¡i stock.
-- Subtotal tÃ­nh tá»« realtime price.
+  - lock voucher (nếu có code).
+- Sau lock phải validate lại stock.
+- Subtotal tính từ realtime price.
 - Shipping fee:
   - `subtotal < 500000 => 30000`
   - `subtotal >= 500000 => 0`.
@@ -90,7 +90,7 @@
 - Snapshot order/item:
   - order: customer + shipping info
   - order_items: `product_id`, `product_variant_id`, `product_name`, `variant_name`, `sku`, `image_url`, `unit_price`, `quantity`, `line_total`, `variant_info`.
-- Trá»« stock, clear cart, ghi voucher usage pháº£i náº±m trong cÃ¹ng `DB::transaction`.
+- Trừ stock, clear cart, ghi voucher usage phải nằm trong cùng `DB::transaction`.
 - Order code format: `ANS-DDMMYYYY-RANDOM6`.
 
 ---
@@ -98,109 +98,109 @@
 ## 6) Order Management
 
 - Customer:
-  - chá»‰ xem order cá»§a chÃ­nh mÃ¬nh
-  - chá»‰ cancel khi status thuá»™c `[pending, confirmed]`.
+  - chỉ xem order của chính mình
+  - chỉ cancel khi status thuộc `[pending, confirmed]`.
 - Admin:
-  - list/show má»i order
+  - list/show mọi order
   - update status theo flow.
 - Status flow:
   - `pending -> confirmed -> processing -> shipping -> delivered`
   - `shipping -> returned`
   - cancel:
-    - customer: tá»« `pending|confirmed`
-    - admin: tá»« `pending|confirmed|processing|shipping`
-    - delivered khÃ´ng Ä‘Æ°á»£c cancel.
-- Cancel order pháº£i:
+    - customer: từ `pending|confirmed`
+    - admin: từ `pending|confirmed|processing|shipping`
+    - delivered không được cancel.
+- Cancel order phải:
   - lock order (`lockForUpdate`)
-  - cháº¡y transaction
-  - restore stock cho cÃ¡c item cÃ³ `product_variant_id`
+  - chạy transaction
+  - restore stock cho các item có `product_variant_id`
   - rollback voucher usage (`revoked_at`)
   - decrement `used_count`
-  - cháº·n double cancel/double restore.
+  - chặn double cancel/double restore.
 
 ---
 
 ## 7) Payment Foundation (COD-only phase)
 
-- ChÆ°a tÃ­ch há»£p VNPay/MoMo trong phase nÃ y.
-- Checkout chá»‰ cháº¥p nháº­n `payment_method=cod`.
+- Chưa tích hợp VNPay/MoMo trong phase này.
+- Checkout chỉ chấp nhận `payment_method=cod`.
 - Payment status convention:
-  - `pending`: COD chÆ°a thu tiá»n (hoáº·c online chÆ°a callback cho phase sau)
-  - `paid`: thanh toÃ¡n thÃ nh cÃ´ng
-  - `failed`: chá»‰ dÃ nh cho online payment fail á»Ÿ phase sau
-  - `cancelled`: order bá»‹ há»§y
-  - `refunded`: Ä‘Ã£ hoÃ n tiá»n.
+  - `pending`: COD chưa thu tiền (hoặc online chưa callback cho phase sau)
+  - `paid`: thanh toán thành công
+  - `failed`: chỉ dành cho online payment fail ở phase sau
+  - `cancelled`: order bị hủy
+  - `refunded`: đã hoàn tiền.
 - COD flow:
   - checkout => `payment_status=pending`
   - admin set order `delivered` => `payment_status=paid`
   - customer/admin cancel => `payment_status=cancelled`.
-- KhÃ´ng cho client set `payment_status` trá»±c tiáº¿p qua payload update status bÃ¬nh thÆ°á»ng.
+- Không cho client set `payment_status` trực tiếp qua payload update status bình thường.
 
 ---
 
 ## 8) Order Lookup (Public)
 
 - Endpoint: `POST /api/orders/lookup` + `throttle:10,1`.
-- Lookup báº±ng:
-  - `order_code + email`, hoáº·c
+- Lookup bằng:
+  - `order_code + email`, hoặc
   - `order_code + phone`.
-- KhÃ´ng cho lookup chá»‰ báº±ng `order_code`.
-- Náº¿u gá»­i cáº£ email vÃ  phone thÃ¬ cáº£ hai pháº£i cÃ¹ng match.
-- Contact source Æ°u tiÃªn snapshot trÃªn orders:
+- Không cho lookup chỉ bằng `order_code`.
+- Nếu gửi cả email và phone thì cả hai phải cùng match.
+- Contact source ưu tiên snapshot trên orders:
   - `customer_email`, `customer_phone`
-  - fallback tÆ°Æ¡ng thÃ­ch dá»¯ liá»‡u cÅ©: `guest_email`, `shipping_phone` (vÃ  `guest_phone` náº¿u cÃ³).
-- Fail response luÃ´n chung:
-  - `"KhÃ´ng tÃ¬m tháº¥y Ä‘Æ¡n hÃ ng"`.
-- KhÃ´ng leak PII khi fail.
+  - fallback tương thích dữ liệu cũ: `guest_email`, `shipping_phone` (và `guest_phone` nếu có).
+- Fail response luôn chung:
+  - `"Không tìm thấy đơn hàng"`.
+- Không leak PII khi fail.
 - Success response:
-  - mask `shipping_address` (20 kÃ½ tá»± Ä‘áº§u + `****`)
+  - mask `shipping_address` (20 ký tự đầu + `****`)
   - status timeline static theo `orders.status`.
 
 ---
 
 ## 9) Wishlist
 
-- Wishlist chá»‰ cho user Ä‘Ã£ Ä‘Äƒng nháº­p.
-- Routes chuáº©n:
+- Wishlist chỉ cho user đã đăng nhập.
+- Routes chuẩn:
   - `GET /api/wishlist`
   - `POST /api/wishlist/toggle`
   - `DELETE /api/wishlist/{product}`.
 - Toggle:
-  - chÆ°a cÃ³ thÃ¬ add
-  - Ä‘Ã£ cÃ³ thÃ¬ remove.
+  - chưa có thì add
+  - đã có thì remove.
 - DELETE idempotent:
-  - item cÃ³/khÃ´ng cÃ³ Ä‘á»u tráº£ success.
+  - item có/không có đều trả success.
 - Pagination:
   - default `per_page=12`
   - max `per_page=50`.
-- Chá»‰ cho wishlist product active vÃ  chÆ°a soft deleted.
-- Chá»‘ng duplicate báº±ng unique `(user_id, product_id)`.
+- Chỉ cho wishlist product active và chưa soft deleted.
+- Chống duplicate bằng unique `(user_id, product_id)`.
 
 ---
 
 ## 10) Reviews
 
-- Guest khÃ´ng Ä‘Æ°á»£c create/delete review.
-- Chá»‰ user Ä‘Äƒng nháº­p Ä‘Æ°á»£c review.
-- Chá»‰ review order_item thuá»™c chÃ­nh user.
-- Order chá»©a order_item pháº£i `delivered`.
-- `order_item.product_id` pháº£i khá»›p product slug route.
-- Má»—i `order_item` chá»‰ review 1 láº§n (unique `order_item_id`).
-- User mua láº¡i cÃ¹ng product á»Ÿ order_item khÃ¡c váº«n review Ä‘Æ°á»£c.
-- Rating integer tá»« 1..5.
+- Guest không được create/delete review.
+- Chỉ user đăng nhập được review.
+- Chỉ review order_item thuộc chính user.
+- Order chứa order_item phải `delivered`.
+- `order_item.product_id` phải khớp product slug route.
+- Mỗi `order_item` chỉ review 1 lần (unique `order_item_id`).
+- User mua lại cùng product ở order_item khác vẫn review được.
+- Rating integer từ 1..5.
 - Comment optional.
-- Tá»‘i Ä‘a 3 áº£nh/review.
-- Review images lÆ°u á»Ÿ báº£ng riÃªng `review_images` (khÃ´ng dÃ¹ng JSON trong `reviews`).
+- Tối đa 3 ảnh/review.
+- Review images lưu ở bảng riêng `review_images` (không dùng JSON trong `reviews`).
 - Upload review image qua `CloudinaryService`.
-- `is_approved` default true trong phase hiá»‡n táº¡i; chÆ°a cÃ³ admin moderation.
-- Public review list chá»‰ hiá»ƒn thá»‹ review approved.
-- Product list/detail tráº£ `rating_avg`, `review_count` tÃ­nh realtime.
+- `is_approved` default true trong phase hiện tại; chưa có admin moderation.
+- Public review list chỉ hiển thị review approved.
+- Product list/detail trả `rating_avg`, `review_count` tính realtime.
 
 ---
 
 ## 11) Admin Dashboard Stats
 
-- Chá»‰ admin truy cáº­p Ä‘Æ°á»£c endpoint stats.
+- Chỉ admin truy cập được endpoint stats.
 - Metrics:
   - `total_users`
   - `total_products`
@@ -216,11 +216,11 @@
   - `recent_orders` (limit 5)
   - `top_selling_products` (limit 5).
 - Revenue rule:
-  - `SUM(orders.total)` chá»‰ vá»›i orders `status=delivered` vÃ  `payment_status=paid`.
+  - `SUM(orders.total)` chỉ với orders `status=delivered` và `payment_status=paid`.
 - Review rule:
-  - chá»‰ tÃ­nh review `is_approved=true`.
-- `average_rating = 0` náº¿u chÆ°a cÃ³ review.
-- `recent_orders` khÃ´ng tráº£ full PII.
+  - chỉ tính review `is_approved=true`.
+- `average_rating = 0` nếu chưa có review.
+- `recent_orders` không trả full PII.
 
 ---
 
@@ -252,11 +252,11 @@
 
 ## 12) API Response Contract
 
-- Há»‡ thá»‘ng Ä‘ang migrate dáº§n sang envelope chuáº©n:
+- Hệ thống đang migrate dần sang envelope chuẩn:
   - success
   - paginated
   - error.
-- Stub/out-of-scope endpoint pháº£i tráº£ 501 theo envelope:
+- Stub/out-of-scope endpoint phải trả 501 theo envelope:
 ```json
 {
   "success": false,
@@ -264,12 +264,12 @@
   "errors": null
 }
 ```
-- Admin endpoints má»›i Æ°u tiÃªn dÃ¹ng `ApiResponse` helper/trait.
-- Public legacy endpoints chÆ°a migrate toÃ n bá»™ trong phase hiá»‡n táº¡i.
+- Admin endpoints mới ưu tiên dùng `ApiResponse` helper/trait.
+- Public legacy endpoints chưa migrate toàn bộ trong phase hiện tại.
 
 ---
 
-## 13) Out-of-scope endpoints (giá»¯ route, tráº£ 501)
+## 13) Out-of-scope endpoints (giữ route, trả 501)
 
 - Forgot/reset password APIs
 - Public categories/brands APIs
@@ -300,10 +300,10 @@
 
 ## Notes / Clarifications
 
-- `X-Guest-Token` dÃ¹ng Ä‘á»ƒ Ä‘á»‹nh danh guest cart. Client pháº£i lÆ°u vÃ  gá»­i láº¡i token nÃ y trong cÃ¡c request cart/checkout guest. Token nÃªn lÃ  UUID hoáº·c chuá»—i Ä‘á»§ khÃ³ Ä‘oÃ¡n.
-- `order_code` pháº£i unique. Náº¿u random code bá»‹ trÃ¹ng thÃ¬ há»‡ thá»‘ng pháº£i generate láº¡i.
-- `refunded` trong `payment_status` Ä‘Æ°á»£c reserve cho phase refund/payment gateway sau, hiá»‡n chÆ°a dÃ¹ng trong COD-only flow.
-- `total_products` trong dashboard khÃ´ng tÃ­nh soft-deleted products, nhÆ°ng váº«n tÃ­nh product `is_active=false`.
-- Khi táº¡o endpoint má»›i, Æ°u tiÃªn dÃ¹ng `ApiResponse` envelope chuáº©n.
-- Khi refactor endpoint public legacy sang envelope má»›i, pháº£i cáº­p nháº­t feature tests tÆ°Æ¡ng á»©ng.
-- Khi xÃ³a review, cáº§n xá»­ lÃ½ review images liÃªn quan theo implementation hiá»‡n táº¡i.
+- `X-Guest-Token` dùng để định danh guest cart. Client phải lưu và gửi lại token này trong các request cart/checkout guest. Token nên là UUID hoặc chuỗi đủ khó đoán.
+- `order_code` phải unique. Nếu random code bị trùng thì hệ thống phải generate lại.
+- `refunded` trong `payment_status` được reserve cho phase refund/payment gateway sau, hiện chưa dùng trong COD-only flow.
+- `total_products` trong dashboard không tính soft-deleted products, nhưng vẫn tính product `is_active=false`.
+- Khi tạo endpoint mới, ưu tiên dùng `ApiResponse` envelope chuẩn.
+- Khi refactor endpoint public legacy sang envelope mới, phải cập nhật feature tests tương ứng.
+- Khi xóa review, cần xử lý review images liên quan theo implementation hiện tại.
