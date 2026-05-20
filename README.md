@@ -1,59 +1,215 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Ananas Fashion E-commerce
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## 1. Giới thiệu project
 
-## About Laravel
+Ananas Fashion là project e-commerce thời trang lấy cảm hứng từ Ananas, gồm:
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Backend API**: Laravel 12
+- **Frontend**: React + Vite + TypeScript
+- Có đủ flow **client site** và **admin site**
+- Dữ liệu demo được tạo bằng **migrations + seeders**, không cần import `.sql` thủ công
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Project phù hợp để demo học phần/đồ án fullstack.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 2. Công nghệ sử dụng
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### Backend
+- Laravel 12
+- Laravel Sanctum (token-based auth)
+- SQLite local database
+- Cloudinary service wrapper (có fallback local storage khi chạy local)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Frontend
+- React
+- Vite
+- TypeScript
+- TailwindCSS
+- Axios
+- React Router DOM
+- Recharts (dashboard chart)
 
-## Laravel Sponsors
+### Testing
+- PHPUnit / Laravel Feature Tests
+- Vitest + React Testing Library
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## 3. Yêu cầu cài đặt
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### Cần có
+- PHP **>= 8.2**
+- Composer
+- Node.js + npm
+- Git (nếu clone repository)
 
-## Contributing
+### Không yêu cầu
+- SQL Server
+- MySQL
+- XAMPP database
+- Import file `.sql`
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## 4. Cấu trúc thư mục chính
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- `app/` – logic backend (Controllers, Services, Models...)
+- `routes/api.php` – toàn bộ API routes
+- `database/migrations/` – schema database
+- `database/seeders/` – dữ liệu seed demo
+- `ananas-fashion-frontend/` – source frontend
+- `ananas-fashion-frontend/public/ananas-assets/` – ảnh demo catalog
+- `.ai/` – tài liệu phân tích/rules/API nội bộ project
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## 5. Hướng dẫn chạy Backend Laravel (Windows PowerShell)
 
-## License
+```bash
+cd Ananas-Fashion
+composer install
+copy .env.example .env
+php artisan key:generate
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Cấu hình SQLite local
+
+1) Tạo file database:
+
+```bash
+New-Item -ItemType File -Path .\database\database.sqlite -Force
+```
+
+2) Mở file `.env`, chỉnh các biến DB:
+
+```env
+DB_CONNECTION=sqlite
+DB_DATABASE=database/database.sqlite
+DB_HOST=
+DB_PORT=
+DB_USERNAME=
+DB_PASSWORD=
+```
+
+> Lưu ý: project demo này chạy bằng SQLite local file.
+
+### Migrate + seed dữ liệu demo
+
+```bash
+php artisan migrate:fresh --seed
+```
+
+Seeder chính sẽ tạo:
+- tài khoản demo admin/customer
+- catalog Ananas từ local assets (`AnanasCatalogSeeder`)
+- voucher demo (nếu `VoucherSeeder` tồn tại)
+
+### Chạy backend server
+
+```bash
+php artisan serve
+```
+
+Backend chạy mặc định tại: `http://127.0.0.1:8000`
+
+---
+
+## 6. Hướng dẫn chạy Frontend
+
+Mở terminal mới:
+
+```bash
+cd Ananas-Fashion\ananas-fashion-frontend
+npm install
+copy .env.example .env
+```
+
+Kiểm tra `.env` frontend:
+
+```env
+VITE_API_BASE_URL=http://127.0.0.1:8000/api
+```
+
+Chạy frontend:
+
+```bash
+npm run dev
+```
+
+Frontend chạy mặc định tại: `http://127.0.0.1:5173`
+
+---
+
+## 7. Tài khoản demo
+
+Sau khi `migrate:fresh --seed`, dùng:
+
+- **Admin**
+  - Email: `admin@example.com`
+  - Password: `Password1`
+
+- **Customer**
+  - Email: `customer.e2e@example.com`
+  - Password: `Password1`
+
+---
+
+## 8. Chạy test
+
+### Backend
+
+```bash
+cd Ananas-Fashion
+php artisan test
+```
+
+### Frontend
+
+```bash
+cd Ananas-Fashion\ananas-fashion-frontend
+npm run test
+npm run build
+```
+
+---
+
+## 9. API & tài liệu tham khảo
+
+- API documentation: `.ai/api/api-documentation.md`
+- Route notes: `.ai/api/routes.md`
+- Business rules: `.ai/business/business-rules.md`
+- Demo seed guide: `.ai/database/ananas-demo-seed.md`
+- Postman skeleton: `.ai/api/postman-collection-skeleton.json`
+
+---
+
+## 10. Quy trình chạy demo nhanh (gợi ý cho giảng viên/người chấm)
+
+1) Backend:
+- `composer install`
+- cấu hình `.env` dùng SQLite
+- `php artisan migrate:fresh --seed`
+- `php artisan serve`
+
+2) Frontend:
+- `cd ananas-fashion-frontend`
+- `npm install`
+- `npm run dev`
+
+3) Truy cập:
+- Client: `http://127.0.0.1:5173`
+- Đăng nhập admin để vào khu vực quản trị
+
+---
+
+## 11. Troubleshooting nhanh
+
+- Nếu báo lỗi DB connection: kiểm tra lại `DB_CONNECTION=sqlite` và file `database/database.sqlite`.
+- Nếu frontend không gọi được API: kiểm tra `VITE_API_BASE_URL` và backend đã `php artisan serve`.
+- Nếu cần reset dữ liệu demo:
+
+```bash
+php artisan migrate:fresh --seed
+```
+
