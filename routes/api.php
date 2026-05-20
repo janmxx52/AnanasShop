@@ -137,5 +137,6 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->name('admin.
     Route::apiResource('vouchers', \App\Http\Controllers\Api\Admin\VoucherController::class);
     // Dashboard
     Route::get('/dashboard/stats', [\App\Http\Controllers\Api\Admin\DashboardController::class, 'stats']);
+    Route::get('/dashboard/analytics', [\App\Http\Controllers\Api\Admin\DashboardController::class, 'analytics']);
     Route::get('/dashboard/revenue', [\App\Http\Controllers\Api\Admin\DashboardController::class, 'revenue']);
 });

@@ -144,6 +144,9 @@ export function ProductDetailPage() {
     return resolvedImages.images[selectedImageIndex] ?? resolvedImages.mainImage
   }, [resolvedImages, selectedImageIndex])
 
+  const galleryImages = resolvedImages?.images ?? []
+  const hasGalleryThumbnails = galleryImages.length > 1
+
   const breadcrumbItems = useMemo(() => {
     if (!product) {
       return []
@@ -258,12 +261,12 @@ export function ProductDetailPage() {
     <section className="space-y-6">
       <Breadcrumb items={breadcrumbItems} />
 
-      <div className="grid gap-6 border border-neutral-200 bg-white p-4 sm:p-6 lg:grid-cols-[1.15fr_1fr] lg:gap-8">
+      <div className="grid items-start gap-6 border border-neutral-200 bg-white p-4 sm:p-6 lg:grid-cols-[1.15fr_1fr] lg:gap-8">
         <div className="space-y-3">
-          <div className="grid gap-3 md:grid-cols-[88px_1fr]">
-            {resolvedImages && resolvedImages.images.length > 1 ? (
+          <div className={`grid gap-3 ${hasGalleryThumbnails ? 'md:grid-cols-[88px_1fr]' : 'grid-cols-1'}`}>
+            {hasGalleryThumbnails ? (
               <div className="order-2 grid grid-cols-4 gap-2 md:order-1 md:grid-cols-1 md:auto-rows-[80px]">
-                {resolvedImages.images.map((image, index) => (
+                {galleryImages.map((image, index) => (
                   <button
                     key={`${image}-${index}`}
                     type="button"
@@ -280,7 +283,7 @@ export function ProductDetailPage() {
               </div>
             ) : null}
 
-            <div className="order-1 aspect-square overflow-hidden bg-neutral-100 md:order-2">
+            <div className={`aspect-square overflow-hidden bg-neutral-100 ${hasGalleryThumbnails ? 'order-1 md:order-2' : ''}`}>
               {activeImage ? (
                 <img src={activeImage} alt={product.name} className="h-full w-full object-cover" />
               ) : (

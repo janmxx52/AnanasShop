@@ -1,238 +1,295 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import type { ReactNode } from 'react'
 import { adminApi } from '@/api/admin.api'
-import { AdminCard } from '@/components/admin/AdminCard'
+import { AdminInventorySummary } from '@/components/admin/AdminInventorySummary'
+import { AdminMetricCard } from '@/components/admin/AdminMetricCard'
+import { AdminOrderChart } from '@/components/admin/AdminOrderChart'
+import { AdminOrderStatusChart } from '@/components/admin/AdminOrderStatusChart'
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader'
-import { AdminTable } from '@/components/admin/AdminTable'
-import { OrderStatusBadge } from '@/components/order/OrderStatusBadge'
-import { PaymentStatusBadge } from '@/components/order/PaymentStatusBadge'
+import { AdminRecentOrdersTable } from '@/components/admin/AdminRecentOrdersTable'
+import { AdminRevenueChart } from '@/components/admin/AdminRevenueChart'
+import { AdminSectionCard } from '@/components/admin/AdminSectionCard'
+import { AdminTopProductsTable } from '@/components/admin/AdminTopProductsTable'
 import { Button } from '@/components/ui/Button'
-import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { LoadingState } from '@/components/ui/LoadingState'
 import { PriceText } from '@/components/ui/PriceText'
 import { parseApiError } from '@/lib/api-helpers'
-import type { DashboardStats } from '@/types/admin'
+import type { AdminDashboardAnalytics, AdminDashboardStats } from '@/types/admin'
 
-type MetricCard = {
+type MetricCardModel = {
   label: string
-  value: string
+  value: ReactNode
   helper: string
   icon: string
+  tone: 'neutral' | 'primary' | 'success' | 'warning' | 'danger'
+  growth?: number | null
+  growthLabel?: string
 }
 
-function MetricStatCard({ label, value, helper, icon }: MetricCard) {
-  return (
-    <article className="border border-neutral-200 bg-white p-4 shadow-sm">
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-medium text-neutral-600">{label}</p>
-        <span className="text-lg">{icon}</span>
-      </div>
-      <p className="mt-2 text-2xl font-bold text-neutral-900">{value}</p>
-      <p className="mt-1 text-xs text-neutral-500">{helper}</p>
-    </article>
-  )
+function formatNumber(value: number): string {
+  return value.toLocaleString('vi-VN')
 }
 
 export function AdminDashboardPage() {
-  const [stats, setStats] = useState<DashboardStats | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [stats, setStats] = useState<AdminDashboardStats | null>(null)
+  const [analytics, setAnalytics] = useState<AdminDashboardAnalytics | null>(null)
+  const [isStatsLoading, setIsStatsLoading] = useState(true)
+  const [isAnalyticsLoading, setIsAnalyticsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [statsError, setStatsError] = useState<string | null>(null)
+  const [analyticsError, setAnalyticsError] = useState<string | null>(null)
+  const [updatedAt, setUpdatedAt] = useState<Date | null>(null)
 
   const fetchStats = useCallback(async () => {
-    setIsLoading(true)
-    setErrorMessage(null)
+    setIsStatsLoading(true)
+    setStatsError(null)
 
     try {
       const response = await adminApi.dashboardStats()
       setStats(response)
     } catch (error) {
       const apiError = parseApiError(error)
-      setErrorMessage(apiError.message)
+      setStatsError(apiError.message)
+      setStats(null)
     } finally {
-      setIsLoading(false)
+      setIsStatsLoading(false)
     }
   }, [])
 
-  useEffect(() => {
-    void fetchStats()
-  }, [fetchStats])
+  const fetchAnalytics = useCallback(async () => {
+    setIsAnalyticsLoading(true)
+    setAnalyticsError(null)
 
-  const metricCards = useMemo<MetricCard[]>(() => {
+    try {
+      const response = await adminApi.dashboardAnalytics()
+      setAnalytics(response)
+    } catch (error) {
+      const apiError = parseApiError(error)
+      setAnalyticsError(apiError.message)
+      setAnalytics(null)
+    } finally {
+      setIsAnalyticsLoading(false)
+    }
+  }, [])
+
+  const refreshDashboard = useCallback(async () => {
+    setIsRefreshing(true)
+    await Promise.allSettled([fetchStats(), fetchAnalytics()])
+    setUpdatedAt(new Date())
+    setIsRefreshing(false)
+  }, [fetchAnalytics, fetchStats])
+
+  useEffect(() => {
+    void refreshDashboard()
+  }, [refreshDashboard])
+
+  const lastUpdatedText = useMemo(() => {
+    if (!updatedAt) {
+      return 'Chưa có dữ liệu cập nhật'
+    }
+
+    return new Intl.DateTimeFormat('vi-VN', {
+      dateStyle: 'full',
+      timeStyle: 'short',
+    }).format(updatedAt)
+  }, [updatedAt])
+
+  const kpiCards = useMemo<MetricCardModel[]>(() => {
     if (!stats) {
       return []
     }
 
+    const metrics = analytics?.metrics
+
     return [
       {
-        label: 'Tổng người dùng',
-        value: stats.total_users.toLocaleString('vi-VN'),
-        helper: 'Người dùng đang hoạt động trên hệ thống',
-        icon: '👤',
-      },
-      {
-        label: 'Tổng sản phẩm',
-        value: stats.total_products.toLocaleString('vi-VN'),
-        helper: 'Bao gồm cả sản phẩm đang tắt',
-        icon: '📦',
+        label: 'Tổng khách hàng',
+        value: formatNumber(stats.total_users),
+        helper: 'Tổng tài khoản đang hoạt động',
+        icon: '👥',
+        tone: 'neutral',
+        growth: metrics?.customer_growth_percent ?? null,
+        growthLabel: 'so với tháng trước',
       },
       {
         label: 'Tổng đơn hàng',
-        value: stats.total_orders.toLocaleString('vi-VN'),
-        helper: 'Số đơn ghi nhận từ trước đến nay',
+        value: formatNumber(stats.total_orders),
+        helper: 'Tổng đơn phát sinh trong hệ thống',
         icon: '🧾',
+        tone: 'primary',
+        growth: metrics?.order_growth_percent ?? null,
+        growthLabel: 'so với tháng trước',
       },
       {
         label: 'Tổng doanh thu',
-        value: new Intl.NumberFormat('vi-VN', {
-          style: 'currency',
-          currency: 'VND',
-          maximumFractionDigits: 0,
-        }).format(stats.total_revenue),
-        helper: 'Chỉ tính đơn delivered + paid',
+        value: <PriceText value={stats.total_revenue} />,
+        helper: 'Chỉ tính đơn đã giao và đã thanh toán',
         icon: '💰',
+        tone: 'success',
+        growth: metrics?.revenue_growth_percent ?? null,
+        growthLabel: 'so với tháng trước',
       },
       {
-        label: 'Đơn chờ xác nhận',
-        value: stats.pending_orders.toLocaleString('vi-VN'),
-        helper: 'Cần xử lý sớm trong vận hành',
-        icon: '⏳',
+        label: 'Tổng sản phẩm',
+        value: formatNumber(stats.total_products),
+        helper: 'Tổng sản phẩm trong danh mục',
+        icon: '📦',
+        tone: 'neutral',
       },
       {
-        label: 'Đơn đã hủy',
-        value: stats.cancelled_orders.toLocaleString('vi-VN'),
-        helper: 'Theo dõi tỷ lệ hủy đơn',
-        icon: '❌',
+        label: 'Doanh thu hôm nay',
+        value: metrics ? <PriceText value={metrics.today_revenue} /> : '—',
+        helper: 'Doanh thu theo ngày hiện tại',
+        icon: '📅',
+        tone: 'primary',
       },
       {
-        label: 'Đơn đã giao',
-        value: stats.delivered_orders.toLocaleString('vi-VN'),
-        helper: 'Đơn hoàn tất giao hàng',
-        icon: '✅',
+        label: 'Doanh thu tháng này',
+        value: metrics ? <PriceText value={metrics.this_month_revenue} /> : '—',
+        helper: 'Tính từ đầu tháng đến hiện tại',
+        icon: '📈',
+        tone: 'success',
       },
       {
-        label: 'Biến thể sắp hết',
-        value: stats.low_stock_variants.toLocaleString('vi-VN'),
+        label: 'Sản phẩm sắp hết hàng',
+        value: formatNumber(stats.low_stock_variants),
         helper: 'Stock > 0 và ≤ 5',
         icon: '⚠️',
+        tone: 'warning',
       },
       {
-        label: 'Biến thể hết hàng',
-        value: stats.out_of_stock_variants.toLocaleString('vi-VN'),
-        helper: 'Stock = 0',
+        label: 'Sản phẩm hết hàng',
+        value: formatNumber(stats.out_of_stock_variants),
+        helper: 'Stock ≤ 0',
         icon: '🚫',
-      },
-      {
-        label: 'Tổng đánh giá',
-        value: stats.total_reviews.toLocaleString('vi-VN'),
-        helper: 'Chỉ tính đánh giá đã duyệt',
-        icon: '📝',
-      },
-      {
-        label: 'Điểm đánh giá TB',
-        value: stats.average_rating.toFixed(1),
-        helper: 'Trung bình toàn hệ thống',
-        icon: '⭐',
+        tone: 'danger',
       },
     ]
-  }, [stats])
+  }, [analytics, stats])
 
-  if (isLoading) {
-    return <LoadingState message="Đang tải thống kê bảng điều khiển..." />
+  const recentOrders = analytics?.recent_orders ?? stats?.recent_orders ?? []
+  const topProducts = analytics?.top_selling_products ?? stats?.top_selling_products ?? []
+
+  if (isStatsLoading) {
+    return <LoadingState message="Đang tải dữ liệu dashboard..." />
   }
 
-  if (errorMessage) {
-    return <ErrorState message={errorMessage} />
-  }
-
-  if (!stats) {
-    return <EmptyState title="Chưa có dữ liệu bảng điều khiển" />
+  if (statsError || !stats) {
+    return (
+      <section className="space-y-4">
+        <ErrorState message={statsError ?? 'Không tải được dữ liệu dashboard.'} />
+        <Button type="button" variant="secondary" onClick={() => void refreshDashboard()} disabled={isRefreshing}>
+          Thử tải lại
+        </Button>
+      </section>
+    )
   }
 
   return (
-    <section className="space-y-5">
+    <section className="space-y-6">
       <AdminPageHeader
-        title="Bảng điều khiển quản trị"
-        description="Theo dõi nhanh chỉ số vận hành theo dữ liệu hệ thống."
+        title="Tổng quan hệ thống"
+        description="Theo dõi doanh thu, đơn hàng, sản phẩm và hoạt động bán hàng."
         actions={
-          <Button type="button" variant="secondary" onClick={() => void fetchStats()}>
-            Tải lại dữ liệu
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600">
+              Cập nhật mới nhất: {lastUpdatedText}
+            </span>
+            <Button type="button" variant="secondary" onClick={() => void refreshDashboard()} disabled={isRefreshing}>
+              {isRefreshing ? 'Đang cập nhật...' : 'Tải lại dữ liệu'}
+            </Button>
+          </div>
         }
       />
 
-      <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {metricCards.map((card) => (
-          <MetricStatCard key={card.label} {...card} />
+      <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {kpiCards.map((card) => (
+          <AdminMetricCard key={card.label} {...card} />
         ))}
       </section>
 
-      <div className="grid gap-5 xl:grid-cols-2">
-        <AdminCard title="Đơn hàng gần đây" description="Hiển thị 5 đơn mới nhất">
-          {stats.recent_orders.length === 0 ? (
-            <EmptyState title="Chưa có đơn hàng gần đây" />
+      <section className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+        <AdminSectionCard
+          className="xl:col-span-8"
+          title="Doanh thu 12 tháng gần nhất"
+          description="Biểu đồ doanh thu từ đơn đã giao và đã thanh toán."
+        >
+          {isAnalyticsLoading ? (
+            <LoadingState message="Đang tải biểu đồ doanh thu..." />
+          ) : analytics ? (
+            <AdminRevenueChart chart={analytics.revenue_chart} />
           ) : (
-            <AdminTable minWidthClassName="min-w-[760px]">
-              <thead className="bg-neutral-50 text-left text-neutral-600">
-                <tr>
-                  <th className="px-3 py-2">Mã đơn</th>
-                  <th className="px-3 py-2">Khách hàng</th>
-                  <th className="px-3 py-2">Trạng thái</th>
-                  <th className="px-3 py-2">Thanh toán</th>
-                  <th className="px-3 py-2">Tổng tiền</th>
-                  <th className="px-3 py-2">Ngày tạo</th>
-                </tr>
-              </thead>
-              <tbody>
-                {stats.recent_orders.map((order) => (
-                  <tr key={order.order_code} className="border-t border-neutral-100">
-                    <td className="px-3 py-2 font-medium text-neutral-900">{order.order_code}</td>
-                    <td className="px-3 py-2 text-neutral-700">{order.customer_name || 'Không có'}</td>
-                    <td className="px-3 py-2">
-                      <OrderStatusBadge status={order.status} />
-                    </td>
-                    <td className="px-3 py-2">
-                      <PaymentStatusBadge status={order.payment_status} />
-                    </td>
-                    <td className="px-3 py-2 text-neutral-900">
-                      <PriceText value={order.total} />
-                    </td>
-                    <td className="px-3 py-2 text-neutral-700">{new Date(order.created_at).toLocaleString('vi-VN')}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </AdminTable>
+            <ErrorState message={analyticsError ?? 'Không tải được dữ liệu biểu đồ doanh thu.'} />
           )}
-        </AdminCard>
+        </AdminSectionCard>
 
-        <AdminCard title="Sản phẩm bán chạy" description="Top 5 sản phẩm theo số lượng bán">
-          {stats.top_selling_products.length === 0 ? (
-            <EmptyState title="Chưa có dữ liệu sản phẩm bán chạy" />
+        <AdminSectionCard
+          className="xl:col-span-4"
+          title="Tồn kho biến thể"
+          description="Theo dõi nhanh sức khỏe tồn kho."
+        >
+          {isAnalyticsLoading ? (
+            <LoadingState message="Đang tải dữ liệu tồn kho..." />
+          ) : analytics ? (
+            <AdminInventorySummary inventory={analytics.inventory} />
           ) : (
-            <AdminTable minWidthClassName="min-w-[620px]">
-              <thead className="bg-neutral-50 text-left text-neutral-600">
-                <tr>
-                  <th className="px-3 py-2">ID sản phẩm</th>
-                  <th className="px-3 py-2">Tên sản phẩm</th>
-                  <th className="px-3 py-2">Đã bán</th>
-                  <th className="px-3 py-2">Doanh thu</th>
-                </tr>
-              </thead>
-              <tbody>
-                {stats.top_selling_products.map((product) => (
-                  <tr key={product.product_id} className="border-t border-neutral-100">
-                    <td className="px-3 py-2 text-neutral-700">{product.product_id}</td>
-                    <td className="px-3 py-2 font-medium text-neutral-900">{product.product_name}</td>
-                    <td className="px-3 py-2 text-neutral-700">{product.total_sold.toLocaleString('vi-VN')}</td>
-                    <td className="px-3 py-2 text-neutral-900">
-                      <PriceText value={product.revenue} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </AdminTable>
+            <ErrorState message={analyticsError ?? 'Không tải được dữ liệu tồn kho.'} />
           )}
-        </AdminCard>
-      </div>
+        </AdminSectionCard>
+      </section>
+
+      <section className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+        <AdminSectionCard
+          className="xl:col-span-7"
+          title="Số lượng đơn hàng theo tháng"
+          description="Tổng số đơn hàng phát sinh theo từng tháng."
+        >
+          {isAnalyticsLoading ? (
+            <LoadingState message="Đang tải biểu đồ đơn hàng..." />
+          ) : analytics ? (
+            <AdminOrderChart chart={analytics.order_chart} />
+          ) : (
+            <ErrorState message={analyticsError ?? 'Không tải được dữ liệu biểu đồ đơn hàng.'} />
+          )}
+        </AdminSectionCard>
+
+        <AdminSectionCard
+          className="xl:col-span-5"
+          title="Phân bổ trạng thái đơn hàng"
+          description="Tỷ trọng các trạng thái đơn hàng hiện tại."
+        >
+          {isAnalyticsLoading ? (
+            <LoadingState message="Đang tải biểu đồ trạng thái đơn..." />
+          ) : analytics ? (
+            <AdminOrderStatusChart orderStatus={analytics.order_status} />
+          ) : (
+            <ErrorState message={analyticsError ?? 'Không tải được dữ liệu trạng thái đơn hàng.'} />
+          )}
+        </AdminSectionCard>
+      </section>
+
+      <section className="grid grid-cols-1 gap-4 xl:grid-cols-12">
+        <AdminSectionCard
+          className="xl:col-span-7"
+          title="Đơn hàng gần đây"
+          description="5 đơn hàng mới nhất trong hệ thống."
+        >
+          <AdminRecentOrdersTable orders={recentOrders} />
+        </AdminSectionCard>
+
+        <AdminSectionCard
+          className="xl:col-span-5"
+          title="Sản phẩm bán chạy"
+          description="Top sản phẩm theo số lượng bán."
+        >
+          <AdminTopProductsTable products={topProducts} />
+        </AdminSectionCard>
+      </section>
+
+      {analyticsError && !isAnalyticsLoading ? (
+        <ErrorState message={`Không tải được analytics nâng cao: ${analyticsError}. Dashboard vẫn dùng dữ liệu stats cơ bản.`} />
+      ) : null}
     </section>
   )
 }

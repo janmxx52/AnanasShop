@@ -1226,7 +1226,7 @@ Táº¥t cáº£ endpoint admin:
 ```json
 {
   "success": true,
-  "message": "Dashboard stats fetched",
+  "message": "Lấy số liệu tổng quan thành công.",
   "data": {
     "total_users": 100,
     "total_products": 500,
@@ -1246,10 +1246,71 @@ Táº¥t cáº£ endpoint admin:
 ```
 - Error `401`/`403`.
 - Business notes:
-  - `total_revenue`: chá»‰ order `status=delivered` vÃ  `payment_status=paid`
-  - `recent_orders`: limit 5, khÃ´ng tráº£ full PII
-  - `top_selling_products`: limit 5, chá»‰ delivered+paid, bá» item `product_id=null`.
+  - `total_revenue`: chỉ order `status=delivered` và `payment_status=paid`
+  - `recent_orders`: limit 5, không trả full PII
+  - `top_selling_products`: limit 5, chỉ delivered+paid, bỏ item `product_id=null`.
 - Related tests: `tests/Feature/DashboardStatsTest.php`.
+
+## 11.10 Admin Dashboard Analytics
+
+### GET `/api/admin/dashboard/analytics`
+- Auth: Required (`auth:sanctum + role:admin`)
+- Success `200`:
+```json
+{
+  "success": true,
+  "message": "Lấy dữ liệu phân tích dashboard thành công.",
+  "data": {
+    "metrics": {
+      "today_revenue": 0,
+      "this_month_revenue": 0,
+      "last_month_revenue": 0,
+      "revenue_growth_percent": 0,
+      "order_growth_percent": 0,
+      "customer_growth_percent": 0
+    },
+    "revenue_chart": {
+      "range": "12m",
+      "labels": ["2025-06", "2025-07"],
+      "series": [0, 0]
+    },
+    "order_chart": {
+      "range": "12m",
+      "labels": ["2025-06", "2025-07"],
+      "series": [0, 0]
+    },
+    "order_status": {
+      "pending": 0,
+      "confirmed": 0,
+      "processing": 0,
+      "shipping": 0,
+      "delivered": 0,
+      "cancelled": 0,
+      "returned": 0
+    },
+    "inventory": {
+      "in_stock": 0,
+      "low_stock": 0,
+      "out_of_stock": 0
+    },
+    "recent_orders": [],
+    "top_selling_products": []
+  }
+}
+```
+- Error `401`/`403`.
+- Business notes:
+  - Revenue chart và metrics revenue chỉ tính order `status=delivered` + `payment_status=paid`.
+  - `cancelled` không được tính vào revenue.
+  - 12-month chart luôn trả đủ 12 điểm; tháng không có dữ liệu trả `0`.
+  - Growth percent convention:
+    - previous month = 0, current > 0 => `100`
+    - previous month = 0, current = 0 => `0`
+  - Inventory breakdown:
+    - `in_stock`: stock > 5
+    - `low_stock`: 0 < stock <= 5
+    - `out_of_stock`: stock <= 0
+- Related tests: `tests/Feature/DashboardAnalyticsTest.php`.
 
 ---
 
@@ -1324,6 +1385,7 @@ CÃ¡c endpoint dÆ°á»›i Ä‘Ã¢y tráº£:
 - Review: `tests/Feature/ReviewTest.php`
 - Admin catalog: `tests/Feature/AdminCategoryBrandTest.php`, `tests/Feature/AdminProductTest.php`, `tests/Feature/AdminProductVariantTest.php`, `tests/Feature/AdminProductImageTest.php`
 - Dashboard: `tests/Feature/DashboardStatsTest.php`
+- Dashboard analytics: `tests/Feature/DashboardAnalyticsTest.php`
 - Admin user management: `tests/Feature/AdminUserManagementTest.php`
 - Route/stub hardening: `tests/Feature/RouteHardeningTest.php`
 - API response contract foundation: `tests/Feature/ApiResponseContractFoundationTest.php`

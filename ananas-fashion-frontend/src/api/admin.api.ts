@@ -29,7 +29,8 @@ import type {
   AdminVoucherListParams,
   AdminVoucherPaginatedResult,
   AdminVoucherPayload,
-  DashboardStats,
+  AdminDashboardAnalytics,
+  AdminDashboardStats,
 } from '@/types/admin'
 
 function extractPaginatedData<T>(payload: ApiPaginatedEnvelope<T> | unknown): { data: T[]; meta: PaginationMeta } {
@@ -50,9 +51,14 @@ function extractPaginatedData<T>(payload: ApiPaginatedEnvelope<T> | unknown): { 
 }
 
 export const adminApi = {
-  async dashboardStats(): Promise<DashboardStats> {
-    const response = await http.get<ApiSuccessEnvelope<DashboardStats>>('/admin/dashboard/stats')
-    return extractResponseData<DashboardStats>(response.data)
+  async dashboardStats(): Promise<AdminDashboardStats> {
+    const response = await http.get<ApiSuccessEnvelope<AdminDashboardStats>>('/admin/dashboard/stats')
+    return extractResponseData<AdminDashboardStats>(response.data)
+  },
+
+  async dashboardAnalytics(): Promise<AdminDashboardAnalytics> {
+    const response = await http.get<ApiSuccessEnvelope<AdminDashboardAnalytics>>('/admin/dashboard/analytics')
+    return extractResponseData<AdminDashboardAnalytics>(response.data)
   },
 
   async listUsers(params?: AdminUserListParams): Promise<AdminUserPaginatedResult> {

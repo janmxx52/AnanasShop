@@ -270,9 +270,10 @@ export type DashboardTopSellingProduct = {
   product_name: string
   total_sold: number
   revenue: number
+  image_url?: string | null
 }
 
-export type DashboardStats = {
+export type AdminDashboardStats = {
   total_users: number
   total_products: number
   total_orders: number
@@ -287,3 +288,52 @@ export type DashboardStats = {
   recent_orders: DashboardRecentOrder[]
   top_selling_products: DashboardTopSellingProduct[]
 }
+
+export type DashboardAnalyticsMetrics = {
+  today_revenue: number
+  this_month_revenue: number
+  last_month_revenue: number
+  revenue_growth_percent: number
+  order_growth_percent: number
+  customer_growth_percent: number
+}
+
+export type DashboardRevenueChart = {
+  range: '12m'
+  labels: string[]
+  series: number[]
+}
+
+export type DashboardOrderChart = {
+  range: '12m'
+  labels: string[]
+  series: number[]
+}
+
+export type DashboardOrderStatus = {
+  pending: number
+  confirmed: number
+  processing: number
+  shipping: number
+  delivered: number
+  cancelled: number
+  returned: number
+}
+
+export type DashboardInventory = {
+  in_stock: number
+  low_stock: number
+  out_of_stock: number
+}
+
+export type AdminDashboardAnalytics = {
+  metrics: DashboardAnalyticsMetrics
+  revenue_chart: DashboardRevenueChart
+  order_chart: DashboardOrderChart
+  order_status: DashboardOrderStatus
+  inventory: DashboardInventory
+  recent_orders: DashboardRecentOrder[]
+  top_selling_products: DashboardTopSellingProduct[]
+}
+
+export type DashboardStats = AdminDashboardStats

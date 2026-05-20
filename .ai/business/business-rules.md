@@ -224,6 +224,32 @@
 
 ---
 
+## 11.1) Admin Dashboard Analytics
+
+- Chỉ admin truy cập được endpoint analytics.
+- Endpoint: `GET /api/admin/dashboard/analytics`.
+- Dữ liệu analytics gồm:
+  - `metrics`
+  - `revenue_chart` (12 tháng)
+  - `order_chart` (12 tháng)
+  - `order_status`
+  - `inventory`
+  - `recent_orders`
+  - `top_selling_products`.
+- Revenue cho analytics phải nhất quán với stats:
+  - chỉ tính order `status=delivered` và `payment_status=paid`.
+  - không tính order cancelled vào revenue.
+- Growth percent convention:
+  - previous month = 0, current > 0 => `100`
+  - previous month = 0, current = 0 => `0`.
+- Inventory breakdown:
+  - `in_stock`: stock > 5
+  - `low_stock`: 0 < stock <= 5
+  - `out_of_stock`: stock <= 0.
+- 12-month charts luôn trả đủ 12 điểm, tháng không có dữ liệu trả `0`.
+
+---
+
 ## 12) API Response Contract
 
 - Há»‡ thá»‘ng Ä‘ang migrate dáº§n sang envelope chuáº©n:
