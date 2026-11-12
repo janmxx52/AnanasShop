@@ -1,0 +1,304 @@
+﻿
+  GET|HEAD        api/addresses .......................................................... addresses.index ΓÇ║ Api\User\AddressController@index
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+  POST            api/addresses .......................................................... addresses.store ΓÇ║ Api\User\AddressController@store
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+  GET|HEAD        api/addresses/{address} .................................................. addresses.show ΓÇ║ Api\User\AddressController@show
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+  PUT|PATCH       api/addresses/{address} .............................................. addresses.update ΓÇ║ Api\User\AddressController@update
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+  DELETE          api/addresses/{address} ............................................ addresses.destroy ΓÇ║ Api\User\AddressController@destroy
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+  PUT             api/addresses/{id}/default .......................................................... Api\User\AddressController@setDefault
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+  GET|HEAD        api/admin/brands ..................................................... admin.brands.index ΓÇ║ Api\Admin\BrandController@index
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  POST            api/admin/brands ..................................................... admin.brands.store ΓÇ║ Api\Admin\BrandController@store
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  GET|HEAD        api/admin/brands/{brand} ............................................... admin.brands.show ΓÇ║ Api\Admin\BrandController@show
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  PUT|PATCH       api/admin/brands/{brand} ........................................... admin.brands.update ΓÇ║ Api\Admin\BrandController@update
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  DELETE          api/admin/brands/{brand} ......................................... admin.brands.destroy ΓÇ║ Api\Admin\BrandController@destroy
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  GET|HEAD        api/admin/categories .......................................... admin.categories.index ΓÇ║ Api\Admin\CategoryController@index
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  POST            api/admin/categories .......................................... admin.categories.store ΓÇ║ Api\Admin\CategoryController@store
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  GET|HEAD        api/admin/categories/{category} ................................. admin.categories.show ΓÇ║ Api\Admin\CategoryController@show
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  PUT|PATCH       api/admin/categories/{category} ............................. admin.categories.update ΓÇ║ Api\Admin\CategoryController@update
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  DELETE          api/admin/categories/{category} ........................... admin.categories.destroy ΓÇ║ Api\Admin\CategoryController@destroy
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  GET|HEAD        api/admin/dashboard/analytics ............................................ admin. ΓÇ║ Api\Admin\DashboardController@analytics
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  GET|HEAD        api/admin/dashboard/revenue ................................................ admin. ΓÇ║ Api\Admin\DashboardController@revenue
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  GET|HEAD        api/admin/dashboard/stats .................................................... admin. ΓÇ║ Api\Admin\DashboardController@stats
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  GET|HEAD        api/admin/orders ................................................................. admin. ΓÇ║ Api\Admin\OrderController@index
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  GET|HEAD        api/admin/orders/{order_code} ..................................................... admin. ΓÇ║ Api\Admin\OrderController@show
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  PATCH           api/admin/orders/{order_code}/status ...................................... admin. ΓÇ║ Api\Admin\OrderController@updateStatus
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  GET|HEAD        api/admin/products ............................................... admin.products.index ΓÇ║ Api\Admin\ProductController@index
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  POST            api/admin/products ............................................... admin.products.store ΓÇ║ Api\Admin\ProductController@store
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  POST            api/admin/products/{id}/restore .............................................. admin. ΓÇ║ Api\Admin\ProductController@restore
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  PATCH           api/admin/products/{id}/status ................................................ admin. ΓÇ║ Api\Admin\ProductController@status
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  GET|HEAD        api/admin/products/{product} ....................................... admin.products.show ΓÇ║ Api\Admin\ProductController@show
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  PUT|PATCH       api/admin/products/{product} ................................... admin.products.update ΓÇ║ Api\Admin\ProductController@update
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  DELETE          api/admin/products/{product} ................................. admin.products.destroy ΓÇ║ Api\Admin\ProductController@destroy
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  GET|HEAD        api/admin/products/{product}/images ....................................... admin. ΓÇ║ Api\Admin\ProductImageController@index
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  POST            api/admin/products/{product}/images ....................................... admin. ΓÇ║ Api\Admin\ProductImageController@store
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  DELETE          api/admin/products/{product}/images/{image} ............................. admin. ΓÇ║ Api\Admin\ProductImageController@destroy
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  PATCH           api/admin/products/{product}/images/{image}/primary .................. admin. ΓÇ║ Api\Admin\ProductImageController@setPrimary
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  GET|HEAD        api/admin/products/{product}/variants ................................... admin. ΓÇ║ Api\Admin\ProductVariantController@index
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  POST            api/admin/products/{product}/variants ................................... admin. ΓÇ║ Api\Admin\ProductVariantController@store
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  GET|HEAD        api/admin/products/{product}/variants/{variant} .......................... admin. ΓÇ║ Api\Admin\ProductVariantController@show
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  PUT             api/admin/products/{product}/variants/{variant} ........................ admin. ΓÇ║ Api\Admin\ProductVariantController@update
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  PATCH           api/admin/products/{product}/variants/{variant} ........................ admin. ΓÇ║ Api\Admin\ProductVariantController@update
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  DELETE          api/admin/products/{product}/variants/{variant} ....................... admin. ΓÇ║ Api\Admin\ProductVariantController@destroy
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  GET|HEAD        api/admin/users ................................................................... admin. ΓÇ║ Api\Admin\UserController@index
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  POST            api/admin/users ................................................................... admin. ΓÇ║ Api\Admin\UserController@store
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  GET|HEAD        api/admin/users/{user} ............................................................. admin. ΓÇ║ Api\Admin\UserController@show
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  PUT             api/admin/users/{user} ........................................................... admin. ΓÇ║ Api\Admin\UserController@update
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  DELETE          api/admin/users/{user} .......................................................... admin. ΓÇ║ Api\Admin\UserController@destroy
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  PATCH           api/admin/users/{user}/ban .......................................................... admin. ΓÇ║ Api\Admin\UserController@ban
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  PATCH           api/admin/users/{user}/unban ...................................................... admin. ΓÇ║ Api\Admin\UserController@unban
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  GET|HEAD        api/admin/vouchers ............................................... admin.vouchers.index ΓÇ║ Api\Admin\VoucherController@index
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  POST            api/admin/vouchers ............................................... admin.vouchers.store ΓÇ║ Api\Admin\VoucherController@store
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  GET|HEAD        api/admin/vouchers/{voucher} ....................................... admin.vouchers.show ΓÇ║ Api\Admin\VoucherController@show
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  PUT|PATCH       api/admin/vouchers/{voucher} ................................... admin.vouchers.update ΓÇ║ Api\Admin\VoucherController@update
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  DELETE          api/admin/vouchers/{voucher} ................................. admin.vouchers.destroy ΓÇ║ Api\Admin\VoucherController@destroy
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+                  Γçé App\Http\Middleware\EnsureUserRole:admin
+  POST            api/auth/forgot-password .................................................. Api\Auth\ForgotPasswordController@sendResetLink
+                  Γçé api
+  POST            api/auth/login ............................................................................. Api\Auth\LoginController@login
+                  Γçé api
+  POST            api/auth/logout ........................................................................... Api\Auth\LoginController@logout
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+  POST            api/auth/logout-all .................................................................... Api\Auth\LoginController@logoutAll
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+  GET|HEAD        api/auth/me ................................................................................. Api\Auth\ProfileController@me
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+  PUT             api/auth/me ............................................................................. Api\Auth\ProfileController@update
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+  PUT             api/auth/me/password ............................................................ Api\Auth\ProfileController@changePassword
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+  POST            api/auth/register .................................................................... Api\Auth\RegisterController@register
+                  Γçé api
+  POST            api/auth/reset-password ............................................................ Api\Auth\ResetPasswordController@reset
+                  Γçé api
+  GET|HEAD        api/brands ................................................................................ Api\Brand\BrandController@index
+                  Γçé api
+  GET|HEAD        api/brands/{slug} .......................................................................... Api\Brand\BrandController@show
+                  Γçé api
+  GET|HEAD        api/cart .................................................................................... Api\Cart\CartController@index
+                  Γçé api
+  DELETE          api/cart .................................................................................... Api\Cart\CartController@clear
+                  Γçé api
+  POST            api/cart/items ............................................................................ Api\Cart\CartController@addItem
+                  Γçé api
+  PUT             api/cart/items/{itemId} ................................................................ Api\Cart\CartController@updateItem
+                  Γçé api
+  DELETE          api/cart/items/{itemId} ................................................................ Api\Cart\CartController@removeItem
+                  Γçé api
+  POST            api/cart/merge .............................................................................. Api\Cart\CartController@merge
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+  GET|HEAD        api/categories ...................................................................... Api\Category\CategoryController@index
+                  Γçé api
+  GET|HEAD        api/categories/{slug} ................................................................ Api\Category\CategoryController@show
+                  Γçé api
+  POST            api/checkout/guest ................................................................ Api\Order\GuestCheckoutController@store
+                  Γçé api
+  DELETE          api/comments/{id} ................................................................... Api\Product\CommentController@destroy
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+  GET|HEAD        api/orders ................................................................................ Api\Order\OrderController@index
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+  POST            api/orders ................................................................................ Api\Order\OrderController@store
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+  POST            api/orders/lookup ................................................................... Api\Order\OrderLookupController@store
+                  Γçé api
+                  Γçé Illuminate\Routing\Middleware\ThrottleRequests:10,1
+  GET|HEAD        api/orders/{order_code} .................................................................... Api\Order\OrderController@show
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+  POST            api/orders/{order_code}/cancel ........................................................... Api\Order\OrderController@cancel
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+  GET|HEAD        api/payments/callback .............................................................. Api\Payment\PaymentController@callback
+                  Γçé api
+  POST            api/payments/callback .............................................................. Api\Payment\PaymentController@callback
+                  Γçé api
+  POST            api/payments/checkout .............................................................. Api\Payment\PaymentController@checkout
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+  GET|HEAD        api/products .......................................................................... Api\Product\ProductController@index
+                  Γçé api
+  GET|HEAD        api/products/{slug} .................................................................... Api\Product\ProductController@show
+                  Γçé api
+  GET|HEAD        api/products/{slug}/comments .......................................................... Api\Product\CommentController@index
+                  Γçé api
+  POST            api/products/{slug}/comments .......................................................... Api\Product\CommentController@store
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+  GET|HEAD        api/products/{slug}/reviews ............................................................ Api\Product\ReviewController@index
+                  Γçé api
+  POST            api/products/{slug}/reviews ............................................................ Api\Product\ReviewController@store
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+  DELETE          api/reviews/{id} ..................................................................... Api\Product\ReviewController@destroy
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+  POST            api/vouchers/apply .................................................................... Api\Voucher\VoucherController@apply
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+  POST            api/vouchers/check .................................................................... Api\Voucher\VoucherController@check
+                  Γçé api
+  GET|HEAD        api/wishlist ............................................................................ Api\User\WishlistController@index
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+  POST            api/wishlist/toggle .................................................................... Api\User\WishlistController@toggle
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+  DELETE          api/wishlist/{product} ................................................................ Api\User\WishlistController@destroy
+                  Γçé api
+                  Γçé Illuminate\Auth\Middleware\Authenticate:sanctum
+
+                                                                                                                          Showing [92] routes
+

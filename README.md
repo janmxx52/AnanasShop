@@ -128,7 +128,7 @@ copy .env.example .env
 Kiểm tra `.env` frontend:
 
 ```env
-VITE_API_BASE_URL=http://127.0.0.1:8000/api
+VITE_API_URL=http://127.0.0.1:8000/api
 ```
 
 Chạy frontend:
@@ -206,7 +206,7 @@ npm run build
 ## 11. Troubleshooting nhanh
 
 - Nếu báo lỗi DB connection: kiểm tra lại `DB_CONNECTION=sqlite` và file `database/database.sqlite`.
-- Nếu frontend không gọi được API: kiểm tra `VITE_API_BASE_URL` và backend đã `php artisan serve`.
+- Nếu frontend không gọi được API: kiểm tra `VITE_API_URL` và backend đã `php artisan serve`.
 - Nếu cần reset dữ liệu demo:
 
 ```bash

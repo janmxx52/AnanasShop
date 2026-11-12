@@ -1,0 +1,14 @@
+/vendor/
+/node_modules/
+/.env
+/.env.backup
+/storage/*.key
+/storage/logs/*
+/.phpunit.result.cache
+/ananas-fashion-frontend/node_modules/
+/ananas-fashion-frontend/dist/
+.ai/
+.vscode/
+*.log
+check_api.php
+

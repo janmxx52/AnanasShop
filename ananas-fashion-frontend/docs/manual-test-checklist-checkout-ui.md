@@ -3,7 +3,7 @@
 ## Điều kiện trước khi test
 - Chạy backend: `php artisan serve`
 - Chạy frontend: `npm run dev` trong thư mục `ananas-fashion-frontend`
-- Biến môi trường frontend: `VITE_API_BASE_URL=http://127.0.0.1:8000/api`
+- Biến môi trường frontend: `VITE_API_URL=http://127.0.0.1:8000/api`
 
 ## 1) Guest checkout không dùng voucher
 - Thêm sản phẩm vào giỏ bằng guest token.

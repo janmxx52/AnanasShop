@@ -1,6 +1,6 @@
 # Business Rules — Ananas Fashion
 
-> Updated: 2026-05-15  
+> Updated: 2026-06-04  
 > Scope: backend rules đang implemented hoặc đã chốt quyết định
 
 ---
@@ -13,6 +13,7 @@
 - Email unique.
 - User bị `is_banned=true` không được login.
 - User có thể logout current token và logout all tokens.
+- Current profile endpoint chỉ cập nhật `name`, `phone`, `avatar`; không hỗ trợ đổi email.
 - Admin routes yêu cầu: `auth:sanctum + role:admin`.
 
 ---
@@ -31,6 +32,8 @@
   - Voucher subtotal check
   - Checkout unit_price snapshot.
 - Variant uniqueness: không trùng `(product_id, size, color)`.
+- Public Category/Brand API chỉ trả category/brand active.
+- Public Category/Brand detail chỉ trả product active và chưa soft deleted.
 
 ---
 
@@ -67,6 +70,7 @@
   - set `voucher_usages.revoked_at = now()`
   - decrement `vouchers.used_count`.
 - Usage limit/per-user chỉ count usage có `revoked_at IS NULL`.
+- Admin delete voucher hiện là soft-disable bằng `is_active=0`, không hard delete record.
 
 ---
 
@@ -260,7 +264,7 @@
 ```json
 {
   "success": false,
-  "message": "Feature not implemented",
+  "message": "Chức năng này chưa được hỗ trợ.",
   "errors": null
 }
 ```
@@ -272,7 +276,6 @@
 ## 13) Out-of-scope endpoints (giữ route, trả 501)
 
 - Forgot/reset password APIs
-- Public categories/brands APIs
 - Comment APIs
 - Address APIs
 - Payment checkout/callback APIs
@@ -280,7 +283,7 @@
 - Admin dashboard revenue API
 
 
-## Admin User Management
+## 14) Admin User Management
 
 - Chỉ admin được truy cập quản lý user.
 - Admin có thể xem danh sách user.
@@ -298,7 +301,7 @@
 - Không trả password/hash/token ra API.
 - User delete dùng soft delete (`deleted_at`), không hard delete trong phase này.
 
-## Notes / Clarifications
+## 15) Notes / Clarifications
 
 - `X-Guest-Token` dùng để định danh guest cart. Client phải lưu và gửi lại token này trong các request cart/checkout guest. Token nên là UUID hoặc chuỗi đủ khó đoán.
 - `order_code` phải unique. Nếu random code bị trùng thì hệ thống phải generate lại.
@@ -307,3 +310,6 @@
 - Khi tạo endpoint mới, ưu tiên dùng `ApiResponse` envelope chuẩn.
 - Khi refactor endpoint public legacy sang envelope mới, phải cập nhật feature tests tương ứng.
 - Khi xóa review, cần xử lý review images liên quan theo implementation hiện tại.
+- `PublicCategoryBrandTest` xác nhận Public Category/Brand API đã implement, nhưng `RouteHardeningTest` và `ApiResponseContractFoundationTest` cũ vẫn có kỳ vọng `501`.
+- Database baseline hiện tại là SQLite local; `.env.example` vẫn khai báo MySQL và cần được thống nhất trước khi bàn giao.
+- Product catalog demo được seed từ local assets; Cloudinary production credentials và media lifecycle cần xác minh riêng.

@@ -3,7 +3,7 @@
 ## Điều kiện trước khi test
 - Chạy backend: `php artisan serve` (mặc định `http://127.0.0.1:8000`)
 - Chạy frontend: `npm run dev` trong thư mục `ananas-fashion-frontend`
-- Dùng biến môi trường frontend: `VITE_API_BASE_URL=http://127.0.0.1:8000/api`
+- Dùng biến môi trường frontend: `VITE_API_URL=http://127.0.0.1:8000/api`
 - Seed sẵn tài khoản test nếu cần:
   - khách hàng: `customer.e2e@example.com` / `Password1`
   - admin: `admin@example.com` / `Password1`
