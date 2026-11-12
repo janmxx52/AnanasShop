@@ -26,11 +26,9 @@ return [
         'http://localhost:3000',
     ]) ?: ['*'],
 
-    'allowed_origins_patterns' => [
-        '#^https?://.*\.pages\.dev$#',
-        '#^https?://.*\.vercel\.app$#',
-        '#^https?://.*\.netlify\.app$#',
-    ],
+    // Production frontend origin is configured through FRONTEND_URL.
+    // Avoid allowing unrelated deployments on shared hosting domains.
+    'allowed_origins_patterns' => [],
 
     'allowed_headers' => ['*'],
 

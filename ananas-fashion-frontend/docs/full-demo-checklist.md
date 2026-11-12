@@ -1,7 +1,7 @@
 # Checklist demo tổng thể Frontend Ananas Fashion
 
 ## Điều kiện trước khi demo
-- Backend chạy tại `http://127.0.0.1:8000` và frontend dùng `VITE_API_BASE_URL=http://127.0.0.1:8000/api`.
+- Backend chạy tại `http://127.0.0.1:8000` và frontend dùng `VITE_API_URL=http://127.0.0.1:8000/api`.
 - Chạy frontend trong thư mục `ananas-fashion-frontend` bằng `npm run dev`.
 - Có sẵn tài khoản:
   - Admin: `admin@example.com` / `Password1`

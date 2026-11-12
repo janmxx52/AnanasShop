@@ -44,3 +44,4 @@ services:
         value: stderr
       - key: BCRYPT_ROUNDS
         value: "12"
+

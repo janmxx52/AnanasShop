@@ -3,7 +3,7 @@
 ## Điều kiện trước khi test
 - Backend đang chạy: `php artisan serve`
 - Frontend đang chạy: `npm run dev` trong `ananas-fashion-frontend`
-- `VITE_API_BASE_URL` trỏ đúng backend `/api`
+- `VITE_API_URL` trỏ đúng backend `/api`
 - Có dữ liệu mẫu đơn hàng cho guest và user đã đăng nhập
 
 ## 1) Tra cứu công khai thành công bằng email

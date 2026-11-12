@@ -1,6 +1,11 @@
 import axios, { AxiosHeaders } from 'axios'
 import { ensureGuestToken, getAccessToken, setGuestToken } from '@/lib/storage'
 
+const apiBaseUrl = import.meta.env.VITE_API_URL ||
+  (import.meta.env.DEV
+    ? 'http://127.0.0.1:8000/api'
+    : 'https://ananasshop.onrender.com/api')
+
 const guestTokenPaths = ['/cart', '/checkout/guest', '/vouchers/check']
 
 const shouldAttachGuestToken = (url: string) => {
@@ -8,7 +13,7 @@ const shouldAttachGuestToken = (url: string) => {
 }
 
 export const http = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000/api',
+  baseURL: apiBaseUrl,
   headers: {
     Accept: 'application/json',
   },

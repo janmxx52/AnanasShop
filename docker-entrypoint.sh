@@ -23,3 +23,4 @@ sed -i "s/:80/:$PORT/" /etc/apache2/sites-available/*.conf
 
 # Start Apache in foreground
 exec apache2-foreground
+
