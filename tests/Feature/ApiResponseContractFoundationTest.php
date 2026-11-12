@@ -12,16 +12,6 @@ class ApiResponseContractFoundationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_not_implemented_returns_501_with_error_envelope(): void
-    {
-        $this->getJson('/api/categories')
-            ->assertStatus(501)
-            ->assertExactJson([
-                'success' => false,
-                'message' => 'Chức năng này chưa được hỗ trợ.',
-                'errors' => null,
-            ]);
-    }
 
     public function test_success_helper_returns_standard_envelope(): void
     {

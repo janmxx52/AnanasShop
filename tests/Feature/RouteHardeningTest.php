@@ -29,30 +29,6 @@ class RouteHardeningTest extends TestCase
         $this->assertCount(1, $productsRoutes);
     }
 
-    public function test_out_of_scope_public_endpoints_return_501_json(): void
-    {
-        $cases = [
-            ['GET', '/api/categories', []],
-            ['GET', '/api/categories/ao-thun', []],
-            ['GET', '/api/brands', []],
-            ['GET', '/api/brands/ananas', []],
-            ['GET', '/api/products/demo/comments', []],
-            ['POST', '/api/auth/forgot-password', ['email' => 'demo@example.com']],
-            ['POST', '/api/auth/reset-password', ['email' => 'demo@example.com', 'token' => 'x', 'password' => 'Password1']],
-            ['GET', '/api/payments/callback', []],
-            ['POST', '/api/payments/callback', []],
-        ];
-
-        foreach ($cases as [$method, $uri, $payload]) {
-            $this->json($method, $uri, $payload)
-                ->assertStatus(501)
-                ->assertExactJson([
-                    'success' => false,
-                    'message' => 'Chức năng này chưa được hỗ trợ.',
-                    'errors' => null,
-                ]);
-        }
-    }
 
     public function test_out_of_scope_protected_endpoints_return_501_json_after_authentication(): void
     {

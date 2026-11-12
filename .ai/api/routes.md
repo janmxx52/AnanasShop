@@ -1,192 +1,200 @@
 # API Routes — Ananas Fashion
 
-> Updated: 2026-05-15  
+> Updated: 2026-06-04  
 > Source of truth: `routes/api.php`  
-> Base URL: `/api`
+> Base URL local: `http://127.0.0.1:8000/api`
 
----
+## 1. Quy ước
 
-## 1) Auth & middleware overview
+| Nhãn | Ý nghĩa |
+|---|---|
+| Public | Không cần đăng nhập. |
+| Public / Optional Auth | Dùng Bearer token nếu là user; nếu là guest dùng `X-Guest-Token`. |
+| Requires Auth | Yêu cầu `auth:sanctum`. |
+| Requires Admin | Yêu cầu `auth:sanctum + role:admin`. |
+| Implemented | Có controller/logic thực tế. |
+| Not Implemented | Route tồn tại nhưng controller trả controlled `501`. |
 
-- **Public**: không cần token.
-- **Protected user**: `auth:sanctum`.
-- **Admin**: `auth:sanctum + role:admin`.
-- **Guest cart**: dùng header `X-Guest-Token` khi không đăng nhập.
+Response contract hiện ở trạng thái hybrid. Admin API mới và route `501` ưu tiên envelope chuẩn; một số public/legacy endpoint vẫn trả Resource hoặc payload trực tiếp.
 
----
+## 2. Public Routes
 
-## 2) Response contract hiện tại
+| Method | Endpoint | Quyền | Trạng thái | Ghi chú |
+|---|---|---|---|---|
+| POST | `/api/auth/register` | Public | Implemented | Đăng ký và phát Sanctum token. |
+| POST | `/api/auth/login` | Public | Implemented | Đăng nhập; user bị ban không thể login. |
+| POST | `/api/auth/forgot-password` | Public | Not Implemented | Controlled `501`. |
+| POST | `/api/auth/reset-password` | Public | Not Implemented | Controlled `501`. |
+| GET | `/api/products` | Public | Implemented | List/search/filter/sort/pagination. |
+| GET | `/api/products/{slug}` | Public | Implemented | Product detail. |
+| GET | `/api/products/{slug}/reviews` | Public | Implemented | Approved reviews. |
+| GET | `/api/products/{slug}/comments` | Public | Not Implemented | Controlled `501`. |
+| GET | `/api/categories` | Public | Implemented | Active categories; có conflict test cũ. |
+| GET | `/api/categories/{slug}` | Public | Implemented | Active category detail; có conflict test cũ. |
+| GET | `/api/brands` | Public | Implemented | Active brands; có conflict test cũ. |
+| GET | `/api/brands/{slug}` | Public | Implemented | Active brand detail; có conflict test cũ. |
+| POST | `/api/vouchers/check` | Public / Optional Auth | Implemented | Check voucher, không mutate usage. |
+| POST | `/api/orders/lookup` | Public | Implemented | `throttle:10,1`. |
+| GET | `/api/cart` | Public / Optional Auth | Implemented | Guest/user cart. |
+| POST | `/api/cart/items` | Public / Optional Auth | Implemented | Add cart item. |
+| PUT | `/api/cart/items/{itemId}` | Public / Optional Auth | Implemented | Update quantity; `0` sẽ remove. |
+| DELETE | `/api/cart/items/{itemId}` | Public / Optional Auth | Implemented | Remove cart item. |
+| DELETE | `/api/cart` | Public / Optional Auth | Implemented | Clear cart. |
+| POST | `/api/checkout/guest` | Public | Implemented | Guest checkout COD. |
+| GET | `/api/payments/callback` | Public | Not Implemented | Controlled `501`. |
+| POST | `/api/payments/callback` | Public | Not Implemented | Controlled `501`. |
 
-Hệ thống đang ở trạng thái **hybrid**:
+## 3. Protected User Routes
 
-- **Standard envelope** (đã dùng ở nhiều endpoint mới/admin/stub):
-```json
-{
-  "success": true,
-  "message": "OK",
-  "data": {}
-}
-```
-- **Paginated envelope** (chuẩn mới):
-```json
-{
-  "success": true,
-  "message": "OK",
-  "data": [],
-  "meta": {
-    "current_page": 1,
-    "per_page": 15,
-    "total": 100,
-    "last_page": 7
-  }
-}
-```
-- **Error envelope**:
+Middleware: `auth:sanctum`.
+
+| Method | Endpoint | Trạng thái | Ghi chú |
+|---|---|---|---|
+| POST | `/api/auth/logout` | Implemented | Revoke current token. |
+| POST | `/api/auth/logout-all` | Implemented | Revoke toàn bộ tokens. |
+| GET | `/api/auth/me` | Implemented | Current user. |
+| PUT | `/api/auth/me` | Implemented | Update `name`, `phone`, `avatar`. |
+| PUT | `/api/auth/me/password` | Implemented | Change password, revoke token khác. |
+| GET | `/api/addresses` | Not Implemented | Controlled `501`. |
+| POST | `/api/addresses` | Not Implemented | Controlled `501`. |
+| GET | `/api/addresses/{address}` | Not Implemented | Controlled `501`. |
+| PUT | `/api/addresses/{address}` | Not Implemented | Controlled `501`. |
+| PATCH | `/api/addresses/{address}` | Not Implemented | Controlled `501`. |
+| DELETE | `/api/addresses/{address}` | Not Implemented | Controlled `501`. |
+| PUT | `/api/addresses/{id}/default` | Not Implemented | Controlled `501`. |
+| POST | `/api/cart/merge` | Implemented | Merge guest cart vào user cart. |
+| GET | `/api/orders` | Implemented | Customer order list. |
+| POST | `/api/orders` | Implemented | Authenticated checkout COD. |
+| GET | `/api/orders/{order_code}` | Implemented | Customer order detail. |
+| POST | `/api/orders/{order_code}/cancel` | Implemented | Customer cancel theo status rule. |
+| POST | `/api/payments/checkout` | Not Implemented | Controlled `501`. |
+| POST | `/api/products/{slug}/reviews` | Implemented | Create review. |
+| DELETE | `/api/reviews/{id}` | Implemented | Delete own review. |
+| POST | `/api/products/{slug}/comments` | Not Implemented | Controlled `501`. |
+| DELETE | `/api/comments/{id}` | Not Implemented | Controlled `501`. |
+| GET | `/api/wishlist` | Implemented | Wishlist list. |
+| POST | `/api/wishlist/toggle` | Implemented | Add/remove wishlist. |
+| DELETE | `/api/wishlist/{product}` | Implemented | Idempotent remove. |
+| POST | `/api/vouchers/apply` | Not Implemented | Controlled `501`; checkout dùng `voucher_code`. |
+
+## 4. Admin Routes
+
+Middleware: `auth:sanctum + role:admin`.
+
+### 4.1. Product
+
+| Method | Endpoint | Trạng thái |
+|---|---|---|
+| GET | `/api/admin/products` | Implemented |
+| POST | `/api/admin/products` | Implemented |
+| GET | `/api/admin/products/{product}` | Implemented |
+| PUT | `/api/admin/products/{product}` | Implemented |
+| PATCH | `/api/admin/products/{product}` | Implemented |
+| DELETE | `/api/admin/products/{product}` | Implemented — soft delete |
+| POST | `/api/admin/products/{id}/restore` | Implemented |
+| PATCH | `/api/admin/products/{id}/status` | Implemented |
+
+### 4.2. Product Variant
+
+| Method | Endpoint | Trạng thái |
+|---|---|---|
+| GET | `/api/admin/products/{product}/variants` | Implemented |
+| POST | `/api/admin/products/{product}/variants` | Implemented |
+| GET | `/api/admin/products/{product}/variants/{variant}` | Implemented |
+| PUT | `/api/admin/products/{product}/variants/{variant}` | Implemented |
+| PATCH | `/api/admin/products/{product}/variants/{variant}` | Implemented |
+| DELETE | `/api/admin/products/{product}/variants/{variant}` | Implemented |
+
+### 4.3. Product Image
+
+| Method | Endpoint | Trạng thái |
+|---|---|---|
+| GET | `/api/admin/products/{product}/images` | Implemented |
+| POST | `/api/admin/products/{product}/images` | Implemented |
+| DELETE | `/api/admin/products/{product}/images/{image}` | Implemented |
+| PATCH | `/api/admin/products/{product}/images/{image}/primary` | Implemented |
+
+### 4.4. Category và Brand
+
+| Method | Endpoint | Trạng thái |
+|---|---|---|
+| GET/POST | `/api/admin/categories` | Implemented |
+| GET/PUT/PATCH/DELETE | `/api/admin/categories/{category}` | Implemented |
+| GET/POST | `/api/admin/brands` | Implemented |
+| GET/PUT/PATCH/DELETE | `/api/admin/brands/{brand}` | Implemented |
+
+### 4.5. Order
+
+| Method | Endpoint | Trạng thái |
+|---|---|---|
+| GET | `/api/admin/orders` | Implemented |
+| GET | `/api/admin/orders/{order_code}` | Implemented |
+| PATCH | `/api/admin/orders/{order_code}/status` | Implemented |
+
+### 4.6. User
+
+| Method | Endpoint | Trạng thái |
+|---|---|---|
+| GET | `/api/admin/users` | Implemented |
+| POST | `/api/admin/users` | Implemented |
+| GET | `/api/admin/users/{user}` | Implemented |
+| PUT | `/api/admin/users/{user}` | Implemented |
+| DELETE | `/api/admin/users/{user}` | Implemented — soft delete theo rule |
+| PATCH | `/api/admin/users/{user}/ban` | Implemented |
+| PATCH | `/api/admin/users/{user}/unban` | Implemented |
+
+### 4.7. Voucher
+
+| Method | Endpoint | Trạng thái |
+|---|---|---|
+| GET/POST | `/api/admin/vouchers` | Implemented |
+| GET/PUT/PATCH | `/api/admin/vouchers/{voucher}` | Implemented |
+| DELETE | `/api/admin/vouchers/{voucher}` | Implemented — soft-disable `is_active=0` |
+
+### 4.8. Dashboard
+
+| Method | Endpoint | Trạng thái |
+|---|---|---|
+| GET | `/api/admin/dashboard/stats` | Implemented |
+| GET | `/api/admin/dashboard/analytics` | Implemented |
+| GET | `/api/admin/dashboard/revenue` | Not Implemented — controlled `501` |
+
+## 5. Route Inventory
+
+| Phân loại | Số route operations |
+|---|---:|
+| Public / Public Optional Auth | 22 |
+| Requires Auth | 26 |
+| Requires Admin | 49 |
+| **Tổng cộng** | **97** |
+
+| Trạng thái | Số route operations |
+|---|---:|
+| Implemented | 80 |
+| Not Implemented / controlled `501` | 17 |
+
+## 6. Controlled 501 Routes
+
+- Forgot/reset password.
+- Comment module.
+- Address management.
+- Online payment checkout/callback.
+- Standalone voucher apply.
+- Admin dashboard revenue endpoint.
+
+Response hiện tại:
+
 ```json
 {
   "success": false,
-  "message": "Error message",
-  "errors": {}
-}
-```
-- **Not implemented (501)**:
-```json
-{
-  "success": false,
-  "message": "Feature not implemented",
+  "message": "Chức năng này chưa được hỗ trợ.",
   "errors": null
 }
 ```
 
-Ghi chú: một số endpoint public cũ (ví dụ product list/detail, cart, auth legacy) vẫn trả format legacy.
+## 7. Need Verification và Conflict
 
----
-
-## 3) Public routes
-
-| Method | Endpoint | Auth | Status | Notes |
-|---|---|---|---|---|
-| POST | `/api/auth/register` | Public | ✅ Implemented | Đăng ký |
-| POST | `/api/auth/login` | Public | ✅ Implemented | Đăng nhập |
-| POST | `/api/auth/forgot-password` | Public | 🧱 501 | Out-of-scope |
-| POST | `/api/auth/reset-password` | Public | 🧱 501 | Out-of-scope |
-| GET | `/api/products` | Public | ✅ Implemented | List/filter/sort |
-| GET | `/api/products/{slug}` | Public | ✅ Implemented | Product detail |
-| GET | `/api/products/{slug}/reviews` | Public | ✅ Implemented | Public reviews |
-| GET | `/api/products/{slug}/comments` | Public | 🧱 501 | Comment module chưa làm |
-| GET | `/api/categories` | Public | 🧱 501 | Public category API chưa làm |
-| GET | `/api/categories/{slug}` | Public | 🧱 501 | Public category API chưa làm |
-| GET | `/api/brands` | Public | 🧱 501 | Public brand API chưa làm |
-| GET | `/api/brands/{slug}` | Public | 🧱 501 | Public brand API chưa làm |
-| POST | `/api/vouchers/check` | Public | ✅ Implemented | Voucher check |
-| POST | `/api/orders/lookup` | Public | ✅ Implemented | `throttle:10,1` |
-| GET | `/api/cart` | Public/Token optional | ✅ Implemented | Guest/User cart |
-| POST | `/api/cart/items` | Public/Token optional | ✅ Implemented | Add item |
-| PUT | `/api/cart/items/{itemId}` | Public/Token optional | ✅ Implemented | Update quantity |
-| DELETE | `/api/cart/items/{itemId}` | Public/Token optional | ✅ Implemented | Remove item |
-| DELETE | `/api/cart` | Public/Token optional | ✅ Implemented | Clear cart |
-| POST | `/api/checkout/guest` | Public | ✅ Implemented | Guest checkout (COD) |
-| GET | `/api/payments/callback` | Public | 🧱 501 | Payment gateway chưa làm |
-| POST | `/api/payments/callback` | Public | 🧱 501 | Payment gateway chưa làm |
-
----
-
-## 4) Protected user routes (`auth:sanctum`)
-
-| Method | Endpoint | Auth | Status | Notes |
-|---|---|---|---|---|
-| POST | `/api/auth/logout` | User | ✅ Implemented | Logout current token |
-| POST | `/api/auth/logout-all` | User | ✅ Implemented | Logout all tokens |
-| GET | `/api/auth/me` | User | ✅ Implemented | Me profile |
-| PUT | `/api/auth/me` | User | ✅ Implemented | Update profile |
-| PUT | `/api/auth/me/password` | User | ✅ Implemented | Change password |
-| GET | `/api/addresses` | User | 🧱 501 | Address module chưa làm |
-| POST | `/api/addresses` | User | 🧱 501 | Address module chưa làm |
-| GET | `/api/addresses/{address}` | User | 🧱 501 | Address module chưa làm |
-| PUT | `/api/addresses/{address}` | User | 🧱 501 | Address module chưa làm |
-| PATCH | `/api/addresses/{address}` | User | 🧱 501 | Address module chưa làm |
-| DELETE | `/api/addresses/{address}` | User | 🧱 501 | Address module chưa làm |
-| PUT | `/api/addresses/{id}/default` | User | 🧱 501 | Address module chưa làm |
-| POST | `/api/cart/merge` | User | ✅ Implemented | Merge guest cart |
-| GET | `/api/orders` | User | ✅ Implemented | Order list |
-| POST | `/api/orders` | User | ✅ Implemented | Auth checkout (COD) |
-| GET | `/api/orders/{order_code}` | User | ✅ Implemented | Order detail |
-| POST | `/api/orders/{order_code}/cancel` | User | ✅ Implemented | Customer cancel |
-| POST | `/api/payments/checkout` | User | 🧱 501 | Online payment chưa làm |
-| POST | `/api/products/{slug}/reviews` | User | ✅ Implemented | Create review |
-| POST | `/api/products/{slug}/comments` | User | 🧱 501 | Comment module chưa làm |
-| DELETE | `/api/reviews/{id}` | User | ✅ Implemented | Delete own review |
-| DELETE | `/api/comments/{id}` | User | 🧱 501 | Comment module chưa làm |
-| GET | `/api/wishlist` | User | ✅ Implemented | Wishlist list |
-| POST | `/api/wishlist/toggle` | User | ✅ Implemented | Wishlist toggle |
-| DELETE | `/api/wishlist/{product}` | User | ✅ Implemented | Idempotent delete |
-| POST | `/api/vouchers/apply` | User | 🧱 501 | Out-of-scope |
-
----
-
-## 5) Admin routes (`auth:sanctum + role:admin`)
-
-| Method | Endpoint | Auth | Status | Notes |
-|---|---|---|---|---|
-| GET | `/api/admin/products` | Admin | ✅ Implemented | Product list |
-| POST | `/api/admin/products` | Admin | ✅ Implemented | Product create |
-| GET | `/api/admin/products/{product}` | Admin | ✅ Implemented | Product detail |
-| PUT | `/api/admin/products/{product}` | Admin | ✅ Implemented | Product update |
-| PATCH | `/api/admin/products/{product}` | Admin | ✅ Implemented | Product update |
-| DELETE | `/api/admin/products/{product}` | Admin | ✅ Implemented | Soft delete |
-| POST | `/api/admin/products/{id}/restore` | Admin | ✅ Implemented | Restore product |
-| PATCH | `/api/admin/products/{id}/status` | Admin | ✅ Implemented | Toggle active |
-| GET | `/api/admin/products/{product}/images` | Admin | ✅ Implemented | Image list |
-| POST | `/api/admin/products/{product}/images` | Admin | ✅ Implemented | Image upload |
-| DELETE | `/api/admin/products/{product}/images/{image}` | Admin | ✅ Implemented | Image delete |
-| PATCH | `/api/admin/products/{product}/images/{image}/primary` | Admin | ✅ Implemented | Set primary |
-| GET | `/api/admin/products/{product}/variants` | Admin | ✅ Implemented | Variant list |
-| POST | `/api/admin/products/{product}/variants` | Admin | ✅ Implemented | Variant create |
-| GET | `/api/admin/products/{product}/variants/{variant}` | Admin | ✅ Implemented | Variant detail |
-| PUT | `/api/admin/products/{product}/variants/{variant}` | Admin | ✅ Implemented | Variant update |
-| PATCH | `/api/admin/products/{product}/variants/{variant}` | Admin | ✅ Implemented | Variant update |
-| DELETE | `/api/admin/products/{product}/variants/{variant}` | Admin | ✅ Implemented | Variant delete |
-| GET | `/api/admin/categories` | Admin | ✅ Implemented | Category list |
-| POST | `/api/admin/categories` | Admin | ✅ Implemented | Category create |
-| GET | `/api/admin/categories/{category}` | Admin | ✅ Implemented | Category detail |
-| PUT | `/api/admin/categories/{category}` | Admin | ✅ Implemented | Category update |
-| PATCH | `/api/admin/categories/{category}` | Admin | ✅ Implemented | Category update |
-| DELETE | `/api/admin/categories/{category}` | Admin | ✅ Implemented | Category delete |
-| GET | `/api/admin/brands` | Admin | ✅ Implemented | Brand list |
-| POST | `/api/admin/brands` | Admin | ✅ Implemented | Brand create |
-| GET | `/api/admin/brands/{brand}` | Admin | ✅ Implemented | Brand detail |
-| PUT | `/api/admin/brands/{brand}` | Admin | ✅ Implemented | Brand update |
-| PATCH | `/api/admin/brands/{brand}` | Admin | ✅ Implemented | Brand update |
-| DELETE | `/api/admin/brands/{brand}` | Admin | ✅ Implemented | Brand delete |
-| GET | `/api/admin/orders` | Admin | ✅ Implemented | Order list |
-| GET | `/api/admin/orders/{order_code}` | Admin | ✅ Implemented | Order detail |
-| PATCH | `/api/admin/orders/{order_code}/status` | Admin | ✅ Implemented | Status flow + cancel |
-| GET | `/api/admin/users` | Admin | 🧱 501 | Admin user module chưa làm |
-| GET | `/api/admin/users/{id}` | Admin | 🧱 501 | Admin user module chưa làm |
-| PUT | `/api/admin/users/{id}/ban` | Admin | 🧱 501 | Admin user module chưa làm |
-| GET | `/api/admin/vouchers` | Admin | ✅ Implemented | Voucher list |
-| POST | `/api/admin/vouchers` | Admin | ✅ Implemented | Voucher create |
-| GET | `/api/admin/vouchers/{voucher}` | Admin | ✅ Implemented | Voucher detail |
-| PUT | `/api/admin/vouchers/{voucher}` | Admin | ✅ Implemented | Voucher update |
-| PATCH | `/api/admin/vouchers/{voucher}` | Admin | ✅ Implemented | Voucher update |
-| DELETE | `/api/admin/vouchers/{voucher}` | Admin | ✅ Implemented | Voucher deactivate |
-| GET | `/api/admin/dashboard/stats` | Admin | ✅ Implemented | Dashboard metrics |
-| GET | `/api/admin/dashboard/revenue` | Admin | 🧱 501 | Out-of-scope |
-
----
-
-## 6) Out-of-scope summary (501)
-
-Các module hiện intentionally giữ route nhưng chưa implement:
-
-- Forgot/reset password
-- Public categories/brands API
-- Comment API
-- Address API
-- Payment checkout/callback (VNPay/MoMo phase sau)
-- Voucher apply endpoint
-- Admin user management
-- Admin dashboard revenue endpoint
-
-Tất cả các route này trả JSON 501 theo envelope chuẩn.
-
+- `PublicCategoryBrandTest` xác nhận Public Category/Brand API đã Implemented.
+- `RouteHardeningTest` cũ vẫn kỳ vọng bốn route Public Category/Brand trả `501`; `ApiResponseContractFoundationTest` cũng còn kỳ vọng Category list trả `501`.
+- `.env.example` hiện khai báo MySQL trong khi baseline tài liệu, PHPUnit và CI sử dụng SQLite; cần thống nhất cấu hình bàn giao.
+- Cloudinary production credentials và media lifecycle chưa được xác minh.
