@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 use Illuminate\Support\Facades\Route;
 /*
 |--------------------------------------------------------------------------
@@ -11,6 +11,21 @@ use Illuminate\Support\Facades\Route;
 | Prefix: /api
 |
 */
+
+// Health check endpoint (used by Render for health monitoring)
+Route::get('/health', function () {
+    try {
+        \Illuminate\Support\Facades\DB::connection()->getPdo();
+        $dbOk = true;
+    } catch (\Exception $e) {
+        $dbOk = false;
+    }
+    return response()->json([
+        'status' => 'ok',
+        'timestamp' => now()->toIso8601String(),
+        'database' => $dbOk ? 'connected' : 'disconnected',
+    ], $dbOk ? 200 : 503);
+});
 // ============================================================
 // PUBLIC ROUTES (không cần đăng nhập)
 // ============================================================
